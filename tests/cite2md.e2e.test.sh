@@ -7,6 +7,7 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
 TOOL="$REPO_ROOT/cite2md.sh"
+PAPERS_ROOT="${PAPERS_DIR:-$HOME/papers}"
 
 pass=0
 fail=0
@@ -23,8 +24,8 @@ require fd
 require rg
 require jq
 
-if [[ ! -d "$HOME/papers" ]]; then
-  echo "SKIP: PAPERS_DIR not found at $HOME/papers" >&2
+if [[ ! -d "$PAPERS_ROOT" ]]; then
+  echo "SKIP: PAPERS_DIR not found at $PAPERS_ROOT" >&2
   exit 2
 fi
 
@@ -56,7 +57,7 @@ has_line_matching() {
 outputs_path_and_exists() {
   local key="$1"
   local path
-  if ! path=$(PAPERS_DIR="$HOME/papers" "$TOOL" "$key" 2>/dev/null); then
+  if ! path=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "$key" 2>/dev/null); then
     return 1
   fi
   [[ -n "$path" && -f "$path" ]]
@@ -74,11 +75,11 @@ it "path lookup works for normalized key (no colon)" \
 
 it "latex citation form resolves and contains header when --cat" \
   has_line_matching '^# Are You Ready to Jump\?' \
-  PAPERS_DIR="$HOME/papers" "$TOOL" --cat "\\citet{$KEY_WITH_COLON}"
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" --cat "\\citet{$KEY_WITH_COLON}"
 
 first_sentence_ends_with_period() {
   local out
-  if ! out=$(PAPERS_DIR="$HOME/papers" "$TOOL" -1 "$KEY_WITH_COLON" 2>/dev/null); then
+  if ! out=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -1 "$KEY_WITH_COLON" 2>/dev/null); then
     return 1
   fi
   # Non-empty and ends with a period

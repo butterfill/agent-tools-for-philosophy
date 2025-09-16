@@ -7,6 +7,7 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
 TOOL="$REPO_ROOT/rg-sources"
+PAPERS_ROOT="${PAPERS_DIR:-$HOME/papers}"
 
 pass=0
 fail=0
@@ -21,8 +22,8 @@ require() {
 
 require rg
 
-if [[ ! -d "$HOME/papers" ]]; then
-  echo "SKIP: PAPERS_DIR not found at $HOME/papers" >&2
+if [[ ! -d "$PAPERS_ROOT" ]]; then
+  echo "SKIP: PAPERS_DIR not found at $PAPERS_ROOT" >&2
   exit 2
 fi
 
@@ -41,7 +42,7 @@ it() {
 run_ok_and_matches() {
   local pattern="$1"; shift
   local out
-  if ! out=$(PAPERS_DIR="$HOME/papers" "$TOOL" -n "$@" 2>/dev/null); then
+  if ! out=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -n "$@" 2>/dev/null); then
     return 1
   fi
   rg -q "$pattern" <<< "$out"
@@ -53,7 +54,7 @@ it "finds a known phrase in vesper2012_jumping via default Markdown types" \
 abs_path_rejected() {
   local rc=0
   set +e
-  PAPERS_DIR="$HOME/papers" "$TOOL" -- foo "/etc" >/dev/null 2>err.txt
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -- foo "/etc" >/dev/null 2>err.txt
   rc=$?
   set -e
   rg -q 'absolute paths not allowed' err.txt && test $rc -eq 2
