@@ -79,8 +79,12 @@ canonical_key_from_cite() {
   return 1
 }
 
-# 1) Filename heuristic: reinsert colon before 4-digit year
-colon_key=$(sed -E 's/^([A-Za-z][A-Za-z0-9-]*?)(19|20)([0-9]{2})(.*)$/\1:\2\3\4/' <<< "$last_word")
+# 1) Filename heuristic: reinsert colon before 4-digit year (portable; avoid GNU sed non-greedy)
+colon_key="$last_word"
+colon_tmp=$(awk 'match($0,/^([A-Za-z][A-Za-z0-9-]*)(19|20)([0-9]{2})(.*)$/,m){print m[1] ":" m[2] m[3] m[4]}' <<< "$last_word" || true)
+if [[ -n "$colon_tmp" ]]; then
+  colon_key="$colon_tmp"
+fi
 # Only try if we changed something or even if same; cite2bib will validate
 if key=$(canonical_key_from_cite "$colon_key" 2>/dev/null); then
   printf '%s\n' "$key"

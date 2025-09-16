@@ -96,6 +96,11 @@ it "resolves vesper:2012_jumping from a filename with spaces" \
   has_line_matching '^vesper:2012_jumping$' \
   "$TOOL" "some notes vesper2012_jumping.md"
 
+# 2b) Filename heuristic — complex prefix with escaped dot (macOS portability)
+it "resolves vesper:2012_jumping from a complex prefix with escaped dot" \
+  has_line_matching '^vesper:2012_jumping$' \
+  "$TOOL" "Vesper et al\\. - 2012 - Are You Ready to Jump Predictive Mechanisms vesper2012_jumping.md"
+
 # 3) Legacy mixed-case key with letters after year
 it "resolves Butterfill:2012fk from mixed-case legacy form" \
   has_line_matching '^Butterfill:2012fk$' \
