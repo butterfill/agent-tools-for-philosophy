@@ -17,34 +17,27 @@ The tools are on your PATH, so no `./` prefix is needed.
 - `find-bib --author steward --year 2009 --title animal` — get a key from CSL-JSON
   - Default source: `BIB_JSON=$HOME/endnote/phd_biblio.json` (Pandoc CSL-JSON from your BibTeX). Use `--json` or `--cat` for JSON or BibTeX output.
 
+**Note:** The tools `cite2md.sh` and `cite2bib.sh` accept either LaTeX-style citations (with `\citet{}`) or bare BibTeX keys. 
+
 ## Using find-bib (agents)
 - Purpose: Quickly locate bibliography entries using substring filters without parsing `.bib` files.
-- Source: CSL-JSON converted from your canonical BibTeX using Pandoc (`-t csljson`). Default path `BIB_JSON=$HOME/endnote/phd_biblio.json` (folder name historical only).
 - Common patterns:
   - Keys only (default): `find-bib --author butterfill --year 2022 --title motor`
-  - Full BibTeX via cite2bib.sh: `find-bib --author smith --cat`
-  - Raw JSON: `find-bib --abstract "joint action" --json`
+  - Full BibTeX: `find-bib --author smith --cat`
+  - BibTeX entry as JSON: `find-bib --abstract "joint action" --json`
   - Limit: `find-bib --author steward --limit 1`
 - Flags are repeatable and AND across fields; repeated flags are OR within that field.
 - Exit codes: 0 has results; 1 no matches; 2 usage/deps error.
 
-**Note:** The tools accept either LaTeX-style citations (with `\citet{}`) or bare BibTeX keys. 
-
 Please check you can execute the shell commands `cite2md.sh` and `cite2bib.sh` to obtain info for the key `vesper:2012_jumping`.  Use their `--help` as needed.  **If you cannot execute these commands, stop immediately and report the error.**
 
-## Searching sources in PAPERS_DIR
-You can search across the Markdown sources in the papers directory with:
-  - rg-sources — ripgrep scoped to `$PAPERS_DIR` (default: `$HOME/papers`)
+## Searching sources
+You can search across the Markdown sources with:
+  - rg-sources — ripgrep scoped to markdown fulltext of all available
 
 Behavior:
-- Runs inside `$PAPERS_DIR` and searches only there.
-- Defaults to Markdown types: `*.md`, `*.markdown`, `*.mdx`.
 - Pass any ripgrep flags as usual; your own `-t/-T/--glob/--iglob/--type-*` overrides defaults.
-- Absolute or parent-directory paths are not allowed (hard error). Use paths relative to `$PAPERS_DIR`.
 
 Usage examples:
 - `rg-sources -n "bayesian prior"` — search all markdown with line numbers.
 - `rg-sources -i -C2 "causal effect"` — case-insensitive with 2 lines context.
-- `rg-sources "kernel trick" notes/ ml/` — restrict to subfolders under `$PAPERS_DIR`.
-- `rg-sources -t mdx -S "export const"` — search only MDX, smart-case.
-- `rg-sources -g "drafts/**" "gradient"` — use your own glob; disables default type filter.
