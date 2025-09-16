@@ -88,5 +88,19 @@ it "normalized key fallback works" \
   has_line_matching '^@' \
   BIB_FILE="$TMP_BIB" "$TOOL" "vesper2012_jumping"
 
+# 4) Force POSIX awk path
+it "portable awk path works when forced" \
+  has_line_matching '^@' \
+  CITE2BIB_AWK_IMPL=awk BIB_FILE="$TMP_BIB" "$TOOL" "vesper2012_jumping"
+
+# 5) Force gawk path when available
+if command -v gawk >/dev/null 2>&1; then
+  it "gawk path works when forced" \
+    has_line_matching '^@' \
+    CITE2BIB_AWK_IMPL=gawk BIB_FILE="$TMP_BIB" "$TOOL" "vesper2012_jumping"
+else
+  echo "SKIP: gawk not found; skipping forced gawk test" >&2
+fi
+
 echo "RESULT: $pass passed, $fail failed"
 [[ "$fail" -eq 0 ]]

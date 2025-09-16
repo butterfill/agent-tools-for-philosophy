@@ -89,20 +89,41 @@ if [ -n "${start_line:-}" ]; then
 fi
 
 # Fallback: match on normalized key (colons removed)
-# Fast single-pass AWK scan using POSIX classes and literal '{' in a bracket expression
-start_line=$(awk -v nk="$normkey" '
-  # Portable POSIX AWK: avoid \t and capture arrays
-  $0 ~ /^[[:space:]]*@[A-Za-z]+\{/ {
-    line = $0
-    # Strip prefix up to the first "{"
-    sub(/^[[:space:]]*@[A-Za-z]+\{/, "", line)
-    # Key is up to the first comma
-    key = line
-    sub(/,.*/, "", key)
-    gsub(":", "", key)
-    if (key == nk) { print NR; exit }
-  }
-' "$BIB_FILE")
+# Prefer gawk for speed (capture array in match), else POSIX awk path.
+# Allow override via CITE2BIB_AWK_IMPL=awk|gawk for testing.
+awk_impl=${CITE2BIB_AWK_IMPL:-}
+if [ "$awk_impl" = "gawk" ]; then
+  : # force gawk path below
+elif [ "$awk_impl" = "awk" ]; then
+  : # force awk path below
+elif command -v gawk >/dev/null 2>&1; then
+  awk_impl="gawk"
+else
+  awk_impl="awk"
+fi
+
+if [ "$awk_impl" = "gawk" ]; then
+  start_line=$(gawk -v nk="$normkey" '
+    match($0, /^[[:space:]]*@[A-Za-z]+\{([^,]+),/, m) {
+      key=m[1]; gsub(":","",key);
+      if (key==nk) { print NR; exit }
+    }
+  ' "$BIB_FILE")
+else # POSIX awk
+  start_line=$(awk -v nk="$normkey" '
+    # Portable POSIX AWK: avoid capture arrays
+    $0 ~ /^[[:space:]]*@[A-Za-z]+\{/ {
+      line = $0
+      # Strip prefix up to the first "{"
+      sub(/^[[:space:]]*@[A-Za-z]+\{/, "", line)
+      # Key is up to the first comma
+      key = line
+      sub(/,.*/, "", key)
+      gsub(":", "", key)
+      if (key == nk) { print NR; exit }
+    }
+  ' "$BIB_FILE")
+fi
 
 if [ -n "${start_line:-}" ]; then
   extract_from_line "$start_line"
