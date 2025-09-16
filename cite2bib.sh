@@ -91,7 +91,7 @@ fi
 # Fallback: match on normalized key (colons removed)
 # Portable approach using rg + sed to extract entry starts and compare normalized keys
 start_line=$(
-  rg -n -o '^[[:space:]]*@[A-Za-z]+{[^,]+' "$BIB_FILE" | \
+  rg -n -o '^[[:space:]]*@[A-Za-z]+\{[^,]+' "$BIB_FILE" | \
   while IFS=: read -r ln pre; do
     key=$(printf '%s\n' "$pre" | sed -E 's/^[[:space:]]*@[A-Za-z]+[{]([^,]+)$/\1/')
     key_norm=$(printf '%s' "$key" | tr -d ':')
