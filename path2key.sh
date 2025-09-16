@@ -71,7 +71,7 @@ canonical_key_from_cite() {
   fi
   # Extract @type{key,
   local key
-  key=$(awk 'match($0,/^[[:space:]]*@[A-Za-z]+[{]([^,]+),/,m){print m[1]}' <<< "$first")
+  key=$(sed -n -E 's/^[[:space:]]*@[A-Za-z]+[{]([^,]+),.*/\1/p' <<< "$first")
   if [[ -n "$key" ]]; then
     printf '%s\n' "$key"
     return 0
@@ -79,10 +79,10 @@ canonical_key_from_cite() {
   return 1
 }
 
-# 1) Filename heuristic: reinsert colon before 4-digit year (portable; avoid GNU sed non-greedy)
+# 1) Filename heuristic: reinsert colon before 4-digit year (portable BSD/GNU sed)
 colon_key="$last_word"
-colon_tmp=$(awk 'match($0,/^([A-Za-z][A-Za-z0-9-]*)(19|20)([0-9]{2})(.*)$/,m){print m[1] ":" m[2] m[3] m[4]}' <<< "$last_word" || true)
-if [[ -n "$colon_tmp" ]]; then
+colon_tmp=$(sed -E 's/^([A-Za-z][A-Za-z0-9-]*)((19|20)[0-9]{2})(.*)$/\1:\2\4/' <<< "$last_word" || true)
+if [[ -n "$colon_tmp" && "$colon_tmp" != "$last_word" ]]; then
   colon_key="$colon_tmp"
 fi
 # Only try if we changed something or even if same; cite2bib will validate
