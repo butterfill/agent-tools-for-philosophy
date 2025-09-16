@@ -52,8 +52,8 @@ for f in "$SCRIPT_DIR"/*; do
   if [[ ! -f "$f" || ! -x "$f" ]]; then
     continue
   fi
-  # do not install the installer itself
-  if [[ "$base" == "install.sh" ]]; then
+  # do not install the installer itself or the test runner
+  if [[ "$base" == "install.sh" || "$base" == "run-tests.sh" ]]; then
     continue
   fi
   # copy tool
