@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Tests for path2key.sh
+#
+# Assumptions:
+# - $PAPERS_DIR exists and remains stable (default: $HOME/papers)
+# - $BIB_FILE exists and contains entries for the sample keys used below
+# - cite2bib.sh is installed and on PATH
+# - jq is installed (for index fallback test)
+
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
+cd "$REPO_ROOT"
+
+TOOL="$REPO_ROOT/path2key.sh"
+
+pass=0
+fail=0
+
+require() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "SKIP: missing dependency: $cmd" >&2
+    exit 2
+  fi
+}
+
+require cite2bib.sh
+require awk
+require sed
+require rg
+require jq
+
+# Prepare a temporary BibTeX file so cite2bib.sh can validate keys
+TMP_BIB=$(mktemp -t tmp_rovodev_path2key_bib.XXXX.bib)
+trap 'rm -f "$TMP_BIB"' EXIT
+cat > "$TMP_BIB" <<'BIB'
+@article{sinigaglia:2022_motor,
+  title={Motor representation in joint action},
+  author={Sinigaglia, Corrado and Butterfill, Stephen},
+  year={2022}
+}
+@article{vesper:2012_jumping,
+  title={Jumping together},
+  author={Vesper, Christina and Sebanz, Natalie and Knoblich, Günther},
+  year={2012}
+}
+@inproceedings{Butterfill:2012fk,
+  title={Some legacy key},
+  author={Butterfill, Stephen},
+  year={2012}
+}
+BIB
+export BIB_FILE="$TMP_BIB"
+
+# Helpers
+run_output() {
+  bash -lc "$*"
+}
+
+has_line_matching() {
+  local pattern="$1"; shift
+  local out
+  if ! out=$(run_output "$@" 2>/dev/null); then
+    return 1
+  fi
+  echo "$out" | rg -q "$pattern"
+}
+
+it() {
+  local name="$1"; shift
+  echo "TEST: $name"
+  if "$@"; then
+    echo "  PASS"
+    pass=$((pass+1))
+  else
+    echo "  FAIL ($name)" >&2
+    fail=$((fail+1))
+  fi
+}
+
+# --- Tests ---
+
+# 1) Filename heuristic — simple normalized key in basename
+it "resolves sinigaglia:2022_motor from basename" \
+  has_line_matching '^sinigaglia:2022_motor$' \
+  "$TOOL" "sinigaglia2022_motor.md"
+
+# 2) Filename heuristic — last word after spaces in filename
+it "resolves vesper:2012_jumping from a filename with spaces" \
+  has_line_matching '^vesper:2012_jumping$' \
+  "$TOOL" "some notes vesper2012_jumping.md"
+
+# 3) Legacy mixed-case key with letters after year
+it "resolves Butterfill:2012fk from mixed-case legacy form" \
+  has_line_matching '^Butterfill:2012fk$' \
+  "$TOOL" "Butterfill2012fk.md"
+
+# 4) Index fallback — use a temporary index mapping a non-heurstic basename to a known key
+it "resolves via index fallback when heuristic doesn't match" bash -lc '
+  command -v jq >/dev/null 2>&1 || exit 2
+  tmp_idx="$(mktemp -t tmp_rovodev_path2key_index.XXXX.jsonl)"
+  printf %s "{\"key\": \"sinigaglia:2022_motor\", \"filename\": \"random-nonheuristic-name.md\"}\n" > "$tmp_idx"
+  out=$(INDEX_FILE="$tmp_idx" "$TOOL" "random-nonheuristic-name.md" 2>/dev/null || true)
+  rm -f "$tmp_idx"
+  [[ "$out" == "sinigaglia:2022_motor" ]]
+'
+
+echo "RESULT: $pass passed, $fail failed"
+[[ "$fail" -eq 0 ]]

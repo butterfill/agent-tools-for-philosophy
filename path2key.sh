@@ -51,7 +51,7 @@ fi
 
 input_path="$1"
 # Derive basename and stem (drop last extension only)
-basename=$(basename -- "$input_path")
+basename=$(basename "$input_path")
 stem="${basename%.*}"
 [[ -z "$stem" ]] && stem="$basename"
 
@@ -71,7 +71,7 @@ canonical_key_from_cite() {
   fi
   # Extract @type{key,
   local key
-  key=$(sed -n 's/^\s*@[A-Za-z][A-Za-z]*\{\([^,][^,]*\),.*/\1/p' <<< "$first")
+  key=$(awk 'match($0,/^[[:space:]]*@[A-Za-z]+[{]([^,]+),/,m){print m[1]}' <<< "$first")
   if [[ -n "$key" ]]; then
     printf '%s\n' "$key"
     return 0

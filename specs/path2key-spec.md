@@ -21,8 +21,8 @@ A tiny CLI to infer and validate a BibTeX key from a file path located in (or re
 ## Behavior
 - Normalize the input and robustly handle paths that include all, part, or none of `$PAPERS_DIR`.
 - Determine `basename` and `stem` (basename without extension). If `basename` contains whitespace, the "last word" is the last whitespace-delimited token of `stem`.
-- Try index mapping (if available) from `.filename` or the basename of `.path` to `key`.
-- Otherwise, infer the key from the last word of `stem` by inserting a colon between the author surname and the 4-digit year.
+- Infer the key from the last word of `stem` by inserting a colon between the author surname and the 4-digit year.
+- If that fails, try index mapping (if available) from `.filename` or the basename of `.path` to `key`.
 - Validate any candidate key by calling `cite2bib.sh <candidate>` and only emit a key if that returns exit code 0.
 - On success, print the BibTeX key to stdout with no extra text.
 - On failure, exit non-zero with a clear error message to stderr.
