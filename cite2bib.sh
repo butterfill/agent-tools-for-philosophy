@@ -91,9 +91,16 @@ fi
 # Fallback: match on normalized key (colons removed)
 # Fast single-pass AWK scan using POSIX classes and literal '{' in a bracket expression
 start_line=$(awk -v nk="$normkey" '
-  match($0, /^[ \t]*@[A-Za-z]+\{([^,]+),/, m) {
-    key=m[1]; gsub(":","",key);
-    if (key==nk) { print NR; exit }
+  # Portable POSIX AWK: avoid \t and capture arrays
+  $0 ~ /^[[:space:]]*@[A-Za-z]+\{/ {
+    line = $0
+    # Strip prefix up to the first "{"
+    sub(/^[[:space:]]*@[A-Za-z]+\{/, "", line)
+    # Key is up to the first comma
+    key = line
+    sub(/,.*/, "", key)
+    gsub(":", "", key)
+    if (key == nk) { print NR; exit }
   }
 ' "$BIB_FILE")
 
