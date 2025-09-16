@@ -1,0 +1,36 @@
+[
+  {
+    "id": "steward:2009_animal",
+    "type": "article-journal",
+    "title": "Animal Agency",
+    "author": [ { "family": "Steward", "given": "Helen" } ],
+    "issued": { "date-parts": [[2009]] },
+    "DOI": "10.1080/00201740902917119",
+    "abstract": "This paper discusses animal agency in a way relevant to joint action."
+  },
+  {
+    "id": "agrillo:2017_numerical",
+    "type": "article-journal",
+    "title": "Numerical cognition in fish",
+    "author": [ { "family": "Agrillo", "given": "Christian" } ],
+    "issued": { "date-parts": [[2017]] },
+    "abstract": "We review numerical cognition in fish and motor behavior."
+  },
+  {
+    "id": "smith:2021_joint",
+    "type": "article-journal",
+    "title": "Motor processes in joint action",
+    "author": [ { "family": "Smith", "given": "Jane" }, { "family": "Doe", "given": "John" } ],
+    "issued": { "date-parts": [[2021]] },
+    "abstract": "We study motor processes underpinning joint action dynamics."
+  },
+  {
+    "id": "steward:2010_followup",
+    "type": "article-journal",
+    "title": "Followup on animal agency",
+    "author": [ { "family": "Steward", "given": "Helen" } ],
+    "issued": { "date-parts": [[2010]] },
+    "abstract": "More on agency."
+  }
+]
+

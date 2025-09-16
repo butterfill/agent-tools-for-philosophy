@@ -13,6 +13,7 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
 TOOL="$REPO_ROOT/path2key.sh"
+export TOOL
 
 pass=0
 fail=0
@@ -33,7 +34,9 @@ require jq
 
 # Prepare a temporary BibTeX file so cite2bib.sh can validate keys
 TMP_BIB=$(mktemp -t tmp_rovodev_path2key_bib.XXXX.bib)
-trap 'rm -f "$TMP_BIB"' EXIT
+TMP_IDX=$(mktemp -t tmp_rovodev_path2key_index.XXXX.jsonl)
+export TMP_IDX
+trap 'rm -f "$TMP_BIB" "$TMP_IDX"' EXIT
 cat > "$TMP_BIB" <<'BIB'
 @article{sinigaglia:2022_motor,
   title={Motor representation in joint action},
@@ -55,7 +58,9 @@ export BIB_FILE="$TMP_BIB"
 
 # Helpers
 run_output() {
-  bash -lc "$*"
+  local cmd
+  printf -v cmd '%q ' "$@"
+  bash -lc "$cmd"
 }
 
 has_line_matching() {
@@ -98,11 +103,9 @@ it "resolves Butterfill:2012fk from mixed-case legacy form" \
 
 # 4) Index fallback — use a temporary index mapping a non-heurstic basename to a known key
 it "resolves via index fallback when heuristic doesn't match" bash -lc '
-  command -v jq >/dev/null 2>&1 || exit 2
-  tmp_idx="$(mktemp -t tmp_rovodev_path2key_index.XXXX.jsonl)"
-  printf %s "{\"key\": \"sinigaglia:2022_motor\", \"filename\": \"random-nonheuristic-name.md\"}\n" > "$tmp_idx"
-  out=$(INDEX_FILE="$tmp_idx" "$TOOL" "random-nonheuristic-name.md" 2>/dev/null || true)
-  rm -f "$tmp_idx"
+  printf %s "{\"key\": \"sinigaglia:2022_motor\", \"filename\": \"random-nonheuristic-name.md\"}\n" > "$TMP_IDX"
+  out=$(INDEX_FILE="$TMP_IDX" "$TOOL" "random-nonheuristic-name.md" 2>/dev/null || true)
+  echo "$out"
   [[ "$out" == "sinigaglia:2022_motor" ]]
 '
 

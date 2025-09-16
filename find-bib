@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# find-bib — filter CSL-JSON (Pandoc) bibliography by fields and emit keys, JSON, or BibTeX via cite2bib.sh
+
+BIB_JSON=${BIB_JSON:-"$HOME/endnote/phd_biblio.json"}
+
+print_help() {
+  cat <<'EOH'
+find-bib — search entries in Pandoc CSL-JSON
+
+Usage:
+  find-bib [filters...] [--json|--cat] [--limit N]
+
+Filters (repeatable; case-insensitive substrings):
+  --author TXT     Match author field
+  --year YYYY      Match derived year (string compare)
+  --doi TXT        Match DOI field
+  --title TXT      Match title field
+  --abstract TXT   Match abstract field
+
+Output:
+  - default: print matching keys (one per line)
+  - --json: print matching JSON items (compact, one per line)
+  - --cat: for each key, print full BibTeX via cite2bib.sh
+  - --limit N: limit number of results (no limit by default)
+
+Environment:
+  - BIB_JSON: path to CSL-JSON file (default: $HOME/endnote/phd_biblio.json)
+  - BIB_FILE: used by cite2bib.sh when --cat is provided
+
+Exit codes:
+  0: success (printed at least one result)
+  1: no matches
+  2: usage/config error (e.g., missing jq or BIB_JSON, missing cite2bib.sh for --cat)
+EOH
+}
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+  print_help
+  exit 0
+fi
+
+command -v jq >/dev/null 2>&1 || { echo "find-bib: jq not found on PATH" >&2; exit 2; }
+
+if [[ ! -f "$BIB_JSON" ]]; then
+  echo "find-bib: CSL-JSON file not found: $BIB_JSON" >&2
+  exit 2
+fi
+
+authors=(); years=(); dois=(); titles=(); abstracts=()
+mode="keys"; limit=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --author) shift; authors+=("${1:-}"); shift || true ;;
+    --year) shift; years+=("${1:-}"); shift || true ;;
+    --doi) shift; dois+=("${1:-}"); shift || true ;;
+    --title) shift; titles+=("${1:-}"); shift || true ;;
+    --abstract) shift; abstracts+=("${1:-}"); shift || true ;;
+    --json) mode="json"; shift ;;
+    --cat) mode="cat"; shift ;;
+    --limit) shift; limit=${1:-0}; shift || true ;;
+    -h|--help) print_help; exit 0 ;;
+    -*) echo "find-bib: unknown flag: $1" >&2; exit 2 ;;
+    *) echo "find-bib: unexpected positional argument: $1" >&2; exit 2 ;;
+  esac
+done
+
+# Build jq arrays
+to_json_array() { # prints a JSON array from bash args, properly escaped via jq -R
+  if [[ $# -eq 0 ]]; then echo '[]'; else printf '%s\n' "$@" | jq -Rsc 'split("\n")[:-1]'; fi
+}
+
+authors_json=$(to_json_array "${authors[@]:-}")
+years_json=$(to_json_array "${years[@]:-}")
+dois_json=$(to_json_array "${dois[@]:-}")
+titles_json=$(to_json_array "${titles[@]:-}")
+abstracts_json=$(to_json_array "${abstracts[@]:-}")
+
+jq_prog='\
+def norm($s): ($s|tostring|gsub("[{}]";"")|ascii_downcase|gsub("\\s+";" ")|gsub("^\\s+|\\s+$";""));\
+def name_text($n): if ($n|type)=="object" then [ $n.family, $n.given ] | map(select(.!=null and .!="")) | join(", ") elif ($n|type)=="string" then $n else ($n|tostring) end;\
+def authors_text: if .author then ( if (.author|type)=="array" then (.author | map(name_text(.)) | join("; ")) else (.author|tostring) end ) elif .authors then (.authors|tostring) else "" end;\
+def year_text: if .issued and ((.issued["date-parts"]|type)=="array") and ((.issued["date-parts"][0]|type)=="array") and (.issued["date-parts"][0][0]) then (.issued["date-parts"][0][0]|tostring) elif .issued and (.issued.literal?) then (.issued.literal|tostring|capture("(?<y>(19|20)[0-9]{2})").y) elif .issued then (.issued|tostring|capture("(?<y>(19|20)[0-9]{2})").y) else "" end;\
+def key_of: .id // .ID // .key;\
+def get_items: if (type)=="array" then . else (.items // .records // []) end;\
+def match_any($hay; $needles): ($needles|length)==0 or ( [ $needles[] | norm(.) ] | any( . as $n | (norm($hay) | contains($n)) ) );\
+get_items\
+| map(select( (authors_text as $a | match_any($a; $authors))\
+             and (year_text as $y | match_any($y; $years))\
+             and ((.DOI // .doi // "") as $d | match_any($d; $dois))\
+             and ((.title // "") as $t | match_any($t; $titles))\
+             and ((.abstract // "") as $ab | match_any($ab; $abstracts)) ))\
+| .[]\
+'
+
+out=""
+case "$mode" in
+  keys)
+    out=$(jq -r \
+      --argjson authors "$authors_json" \
+      --argjson years "$years_json" \
+      --argjson dois "$dois_json" \
+      --argjson titles "$titles_json" \
+      --argjson abstracts "$abstracts_json" \
+      "$jq_prog | key_of" "$BIB_JSON")
+    ;;
+  json)
+    out=$(jq -c \
+      --argjson authors "$authors_json" \
+      --argjson years "$years_json" \
+      --argjson dois "$dois_json" \
+      --argjson titles "$titles_json" \
+      --argjson abstracts "$abstracts_json" \
+      "$jq_prog" "$BIB_JSON")
+    ;;
+  cat)
+    command -v cite2bib.sh >/dev/null 2>&1 || { echo "find-bib: cite2bib.sh not found for --cat" >&2; exit 2; }
+    keys=$(jq -r \
+      --argjson authors "$authors_json" \
+      --argjson years "$years_json" \
+      --argjson dois "$dois_json" \
+      --argjson titles "$titles_json" \
+      --argjson abstracts "$abstracts_json" \
+      "$jq_prog | key_of" "$BIB_JSON")
+    if [[ -n "$keys" ]]; then
+      # Apply limit if set during emission
+      count=0
+      while IFS= read -r k; do
+        [[ -z "$k" ]] && continue
+        cite2bib.sh "$k" || true
+        count=$((count+1))
+        if [[ $limit -gt 0 && $count -ge $limit ]]; then break; fi
+      done <<< "$keys"
+    fi
+    ;;
+esac
+
+if [[ "$mode" != "cat" ]]; then
+  if [[ $limit -gt 0 ]]; then
+    # Limit lines cleanly and drop empties
+    out=$(printf '%s\n' "$out" | sed '/^\s*$/d' | head -n "$limit")
+  else
+    out=$(printf '%s\n' "$out" | sed '/^\s*$/d')
+  fi
+  if [[ -n "$out" ]]; then
+    printf '%s\n' "$out"
+    exit 0
+  else
+    exit 1
+  fi
+else
+  # cat mode: decide success by whether anything matched
+  if jq -e \
+      --argjson authors "$authors_json" \
+      --argjson years "$years_json" \
+      --argjson dois "$dois_json" \
+      --argjson titles "$titles_json" \
+      --argjson abstracts "$abstracts_json" \
+      "$jq_prog | key_of | length > 0" "$BIB_JSON" >/dev/null; then
+    exit 0
+  else
+    exit 1
+  fi
+fi
+

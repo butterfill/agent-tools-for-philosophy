@@ -2,6 +2,7 @@
 You should be able to execute the following shell commands:
   - cite2md.sh - resolve citation/key to Markdown fulltext path
   - cite2bib.sh - resolve citation/key to BibTeX entry
+  - path2key.sh - resolve a file path (absolute, relative or basename) to a BibTeX key (validates against cite2bib.sh)
 
 The tools are on your PATH, so no `./` prefix is needed.
 
@@ -10,6 +11,8 @@ The tools are on your PATH, so no `./` prefix is needed.
 - `cite2md.sh "vesper:2012_jumping"` — get full text from BibTeX key
 - `cite2bib.sh "\citet{vesper:2012_jumping}"` — get BibTeX entry from LaTeX citation  
 - `cite2bib.sh "vesper:2012_jumping"` — get BibTeX entry from BibTeX key
+- `path2key.sh "some notes vesper2012_jumping.md"` — get BibTeX key from filename (uses filename-first heuristic and validates with cite2bib.sh)
+- `path2key.sh "random-nonheuristic-name.md"` — check index fallback via `$PAPERS_DIR/bibtex-index.jsonl` if present
 
 **Note:** The tools accept either LaTeX-style citations (with `\citet{}`) or bare BibTeX keys. 
 
