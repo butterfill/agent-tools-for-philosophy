@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# fd-sources — fd scoped to Markdown sources in PAPERS_DIR (search by filename)
+
+PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+
+print_help() {
+  cat <<'EOF'
+fd-sources — filename search scoped to fulltext sources
+
+Usage:
+  fd-sources [fd-flags...] [--] [pattern] [paths...]
+
+Notes:
+  - Runs inside PAPERS_DIR (default $HOME/papers)
+  - Rejects absolute or parent-directory paths to keep scope tight
+  - Adds default extensions (.md, .mdx) unless you pass your own -e/--extension
+
+Examples:
+  fd-sources vesper2012_jumping
+  fd-sources -i 'vesper.*jump'
+  fd-sources -e md -e mdx butterfill
+EOF
+}
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+  print_help
+  exit 0
+fi
+
+command -v fd >/dev/null 2>&1 || { echo "fd-sources: fd not found on PATH" >&2; exit 2; }
+
+if [[ ! -d "$PAPERS_DIR" ]]; then
+  echo "fd-sources: PAPERS_DIR not found: $PAPERS_DIR" >&2
+  exit 2
+fi
+
+add_default_exts=true
+
+declare -a ARGS
+
+for arg in "$@"; do
+  # Disallow absolute paths anywhere
+  if [[ "$arg" == /* ]]; then
+    echo "fd-sources: absolute paths not allowed: $arg" >&2
+    exit 2
+  fi
+  # Disallow parent-directory tokens anywhere
+  if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+    echo "fd-sources: parent-directory paths not allowed: $arg" >&2
+    exit 2
+  fi
+
+  # Track explicit extension options to avoid adding defaults
+  case "$arg" in
+    -e|--extension|--extension=*) add_default_exts=false ;;
+  esac
+
+  ARGS+=("$arg")
+done
+
+cd "$PAPERS_DIR"
+
+declare -a CMD
+CMD=(fd)
+
+if $add_default_exts; then
+  CMD+=("--extension" "md" "--extension" "mdx")
+fi
+
+exec "${CMD[@]}" "${ARGS[@]}"
+
