@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# rg-sources — ripgrep scoped to Markdown sources in PAPERS_DIR
+#
+# Behaves like rg, but restricts search scope to PAPERS_DIR (default: $HOME/papers)
+# and, by default, limits to Markdown files (.md, .markdown, .mdx).
+#
+# Notes:
+# - All rg flags/options are passed through unchanged.
+# - Absolute or parent-directory paths in positional args are rejected (hard error).
+# - If you specify your own types/globs (-t/-T/--glob/--iglob/--type-*) the default
+#   Markdown filtering is not applied.
+
+PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+
+print_help() {
+  cat <<'EOF'
+rg-sources — ripgrep scoped to Markdown in PAPERS_DIR
+
+Usage:
+  rg-sources [rg-flags...] [--] [pattern] [paths...]
+
+Scope:
+  - Searches only within $PAPERS_DIR (cd there before running rg).
+  - Rejects absolute or parent-directory paths in positional arguments.
+
+Defaults:
+  - Targets Markdown by default (md, markdown, mdx).
+  - If you provide -t/-T/--glob/--iglob/--type-* yourself, no defaults are added.
+
+Environment:
+  - PAPERS_DIR: override papers root (default: $HOME/papers)
+
+Examples:
+  rg-sources -n "bayesian prior"
+  rg-sources -i -C1 "causal" notes/ ml/
+  rg-sources --type-list | rg '^mdx$'
+EOF
+}
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+  print_help
+  exit 0
+fi
+
+if [[ ! -d "$PAPERS_DIR" ]]; then
+  echo "rg-sources: PAPERS_DIR not found: $PAPERS_DIR" >&2
+  exit 2
+fi
+
+# Detect whether caller has supplied their own type/glob filters. If not, we add defaults.
+add_default_types=true
+
+# Track whether the next token is a value for an option that takes an argument.
+expect_value_for=""
+
+# Collect args to pass to rg, possibly with our injected type settings.
+declare -a ARGS
+
+seen_double_dash=false
+
+for arg in "$@"; do
+  if $seen_double_dash; then
+    # After --, all are paths; enforce scope restrictions.
+    if [[ "$arg" == /* ]]; then
+      echo "rg-sources: absolute paths not allowed: $arg" >&2
+      exit 2
+    fi
+    if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+      echo "rg-sources: parent-directory paths not allowed: $arg" >&2
+      exit 2
+    fi
+    ARGS+=("$arg")
+    continue
+  fi
+
+  if [[ -n "$expect_value_for" ]]; then
+    # Don't treat as path; it's a value for the preceding option.
+    # Absolute paths as values (e.g., -f /abs/file) are disallowed to keep scope tight.
+    if [[ "$arg" == /* ]]; then
+      echo "rg-sources: absolute paths not allowed for $expect_value_for: $arg" >&2
+      exit 2
+    fi
+    if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+      echo "rg-sources: parent-directory paths not allowed for $expect_value_for: $arg" >&2
+      exit 2
+    fi
+    ARGS+=("$arg")
+    expect_value_for=""
+    continue
+  fi
+
+  if [[ "$arg" == "--" ]]; then
+    seen_double_dash=true
+    ARGS+=("$arg")
+    continue
+  fi
+
+  if [[ "$arg" == -* ]]; then
+    # Option flags. Detect those that imply custom type/glob filtering
+    case "$arg" in
+      -t|--type)
+        add_default_types=false; expect_value_for="$arg" ;;
+      -T|--type-not)
+        add_default_types=false; expect_value_for="$arg" ;;
+      --type-add|--type-clear)
+        add_default_types=false; expect_value_for="$arg" ;;
+      --type-list)
+        add_default_types=false ;;
+      -g|--glob|--iglob)
+        add_default_types=false; expect_value_for="$arg" ;;
+      # Options that take a value but don't affect types; ensure we skip path checks on their values
+      -e|--regexp|-f|--file|-C|--context|-A|--after-context|-B|--before-context|--max-columns|--max-count|-m|--max-depth|--threads|-j|--ignore-file|--path-separator|--encoding)
+        expect_value_for="$arg" ;;
+      --glob=*|--iglob=*|--type-add=*|--type-clear=*)
+        add_default_types=false ;;
+    esac
+    ARGS+=("$arg")
+    continue
+  fi
+
+  # Non-option token before -- could be a pattern or a path. To keep it simple,
+  # we only error on tokens that clearly look like absolute/parent-directory paths.
+  if [[ "$arg" == /* ]]; then
+    echo "rg-sources: absolute paths not allowed: $arg" >&2
+    exit 2
+  fi
+  if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+    echo "rg-sources: parent-directory paths not allowed: $arg" >&2
+    exit 2
+  fi
+
+  ARGS+=("$arg")
+done
+
+# Build command
+declare -a CMD
+CMD=(rg)
+
+if $add_default_types; then
+  CMD+=("--type-add" "mdx:*.mdx" "-t" "md" "-t" "mdx")
+fi
+
+# Change into PAPERS_DIR to scope search and keep output paths relative
+cd "$PAPERS_DIR"
+
+exec "${CMD[@]}" "${ARGS[@]}"
+
