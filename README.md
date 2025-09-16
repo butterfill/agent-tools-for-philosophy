@@ -4,6 +4,16 @@ These are CLI tools created for use by agents (codex, rovodev, ...).
 
 This file is for the agent. It instructs the agent on how to use each tool.
 
+## Install (for developers)
+
+- Run `./install.sh` to copy executable tools into a user bin.
+- Target selection (in order):
+  1) `$HOME/syncthing/bin` (if it exists)
+  2) `$HOME/.local/bin` (must already exist)
+  3) `$HOME/bin` (must already exist)
+- The script does not create directories. If none exist, it exits with a message.
+- It installs all executable files in this directory (excluding `install.sh`). Ensure the target dir is on your `PATH`.
+
 ## Contributing Tools (for developers)
 
 - Location and naming

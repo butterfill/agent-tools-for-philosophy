@@ -4,9 +4,8 @@ set -euo pipefail
 # install.sh — install agent-tools into a user-accessible bin directory
 # Preference order:
 #   1) $HOME/syncthing/bin (if exists)
-#   2) $HOME/.local/bin (create if missing)
-#   3) $HOME/bin (create if missing)
-#   4) First writable directory already in $PATH
+#   2) $HOME/.local/bin (must already exist)
+#   3) $HOME/bin (must already exist)
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
@@ -20,39 +19,24 @@ choose_target_dir() {
     return 0
   fi
 
-  # 2) ~/.local/bin (create if needed)
-  if [[ -d "$HOME/.local/bin" ]] || mkdir -p "$HOME/.local/bin" 2>/dev/null; then
-    if [[ -w "$HOME/.local/bin" ]]; then
-      printf '%s\n' "$HOME/.local/bin"
-      return 0
-    fi
+  # 2) ~/.local/bin (must already exist)
+  if [[ -d "$HOME/.local/bin" && -w "$HOME/.local/bin" ]]; then
+    printf '%s\n' "$HOME/.local/bin"
+    return 0
   fi
 
-  # 3) ~/bin (create if needed)
-  if [[ -d "$HOME/bin" ]] || mkdir -p "$HOME/bin" 2>/dev/null; then
-    if [[ -w "$HOME/bin" ]]; then
-      printf '%s\n' "$HOME/bin"
-      return 0
-    fi
+  # 3) ~/bin (must already exist)
+  if [[ -d "$HOME/bin" && -w "$HOME/bin" ]]; then
+    printf '%s\n' "$HOME/bin"
+    return 0
   fi
-
-  # 4) first writable directory already in PATH
-  IFS=':' read -r -a path_dirs <<< "${PATH:-}"
-  for d in "${path_dirs[@]}"; do
-    # skip empty elements
-    [[ -z "$d" ]] && continue
-    if [[ -d "$d" && -w "$d" ]]; then
-      printf '%s\n' "$d"
-      return 0
-    fi
-  done
 
   return 1
 }
 
 TARGET_DIR=$(choose_target_dir || true)
 if [[ -z "${TARGET_DIR:-}" ]]; then
-  echo "install.sh: could not find a writable bin directory. Set PATH or create ~/.local/bin." >&2
+  echo "install.sh: no install directory found. Create one of: $HOME/syncthing/bin, $HOME/.local/bin, or $HOME/bin and re-run." >&2
   exit 2
 fi
 
@@ -91,4 +75,3 @@ case ":${PATH}:" in
   *:"${TARGET_DIR}":*) ;; # already present
   *) echo "Note: $TARGET_DIR is not on PATH; add it to your shell profile." ;;
 esac
-
