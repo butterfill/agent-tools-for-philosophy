@@ -75,3 +75,10 @@ case ":${PATH}:" in
   *:"${TARGET_DIR}":*) ;; # already present
   *) echo "Note: $TARGET_DIR is not on PATH; add it to your shell profile." ;;
 esac
+
+# Run test suite after installation
+if [[ -x "$SCRIPT_DIR/run-tests.sh" ]]; then
+  echo "Running test suite..."
+  # Prepend install dir to PATH so tests that rely on installed names work
+  PATH="$TARGET_DIR:$PATH" "$SCRIPT_DIR/run-tests.sh"
+fi
