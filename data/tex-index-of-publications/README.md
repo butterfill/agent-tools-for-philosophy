@@ -1,0 +1,1 @@
+I got rovodev to create this index following the instructions in `task-create-tex-index-of-my-publications.md`. Of course we do not have tex sources for all publications.
