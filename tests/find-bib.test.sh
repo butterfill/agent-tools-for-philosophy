@@ -45,7 +45,7 @@ has_line_matching() {
   if ! out=$(run_output "$@" 2>/dev/null); then
     return 1
   fi
-  echo "$out" | rg -q "$pattern"
+  rg -q "$pattern" <<< "$out"
 }
 
 has_n_lines() {

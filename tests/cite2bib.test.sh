@@ -51,7 +51,7 @@ has_line_matching() {
   if ! out=$(run_output "$@" 2>/dev/null); then
     return 1
   fi
-  echo "$out" | rg -q "$pattern"
+  rg -q "$pattern" <<< "$out"
 }
 
 it() {
@@ -78,7 +78,7 @@ not_found_ok() {
   out=$(BIB_FILE="$TMP_BIB" "$TOOL" "acting" 2>&1)
   rc=$?
   set -e
-  echo "$out" | rg -q 'BibTeX entry not found for key: acting \(normalized: acting\)' && test $rc -eq 1
+  rg -q 'BibTeX entry not found for key: acting \(normalized: acting\)' <<< "$out" && test $rc -eq 1
 }
 
 it "non-existent key prints a not-found message and exits 1" not_found_ok
