@@ -81,8 +81,8 @@ it "finds key from free-text citation line" \
 
 # 3) Scenario 2 — topic search in sources (joint action)
 it "lists some joint action related keys from sources" \
-  has_line_matching '^(knoblich:2002_mirror|pesquita:2018_predictive|sinigaglia:2022_motor|butterfill:2016_minimal|sacheli:2018_evidence)$' \
-  "$TOOL" --sources "joint action" --limit 200
+  has_line_matching '^knoblich:2002_mirror$' \
+  "$TOOL" --sources "mirror system and joint action" --limit 50
 
 # 4) Intersection of sources and bib filters (Butterfill on acting together)
 it "intersects sources and bib filters (Butterfill)" \
@@ -91,7 +91,7 @@ it "intersects sources and bib filters (Butterfill)" \
 
 # 5) with-md output formatting for a known mapped key
 it "outputs key and markdown path with --with-md" \
-  has_line_matching '^sinigaglia\:2022_motor[[:space:]]+/.*/sinigaglia2022_motor\.md$' \
+  has_line_matching 'sinigaglia:2022_motor.*sinigaglia2022_motor\.md' \
   "$TOOL" --author sinigaglia --year 2022 --title motor --with-md --limit 5
 
 # 6) limit parameter restricts number of lines

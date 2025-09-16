@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# path2key.sh — resolve a file path to a BibTeX key
+#
+# Behavior (no flags):
+# - Input: one positional path (absolute, relative, or basename)
+# - Strategy: filename-first heuristic, then index fallback
+# - Validation: never emit a key unless cite2bib.sh can resolve it
+# - Output: print the BibTeX key only to stdout on success
+# - Env:
+#     PAPERS_DIR (default: $HOME/papers)
+#     INDEX_FILE (default: $PAPERS_DIR/bibtex-index.jsonl)
+#     BIB_FILE is used indirectly by cite2bib.sh
+# - Exit codes: 0 success; 1 not found; 2 usage/config error
+
+PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+INDEX_FILE=${INDEX_FILE:-"$PAPERS_DIR/bibtex-index.jsonl"}
+
+print_help() {
+  cat <<'EOF'
+path2key.sh — resolve a file path to a BibTeX key
+
+Usage:
+  path2key.sh <path>
+
+Input may be absolute, relative, or just a basename. The tool:
+  1) infers a key from the last word of the filename (colon reinserted before year),
+  2) falls back to $PAPERS_DIR/bibtex-index.jsonl if available.
+
+Never prints a key unless cite2bib.sh can resolve it.
+
+Exit codes: 0 success; 1 not found; 2 usage/config error
+EOF
+}
+
+if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
+  print_help
+  exit 0
+fi
+
+if [[ $# -lt 1 ]]; then
+  print_help >&2
+  exit 2
+fi
+
+if ! command -v cite2bib.sh >/dev/null 2>&1; then
+  echo "path2key.sh: missing dependency: cite2bib.sh" >&2
+  exit 2
+fi
+
+input_path="$1"
+# Derive basename and stem (drop last extension only)
+basename=$(basename -- "$input_path")
+stem="${basename%.*}"
+[[ -z "$stem" ]] && stem="$basename"
+
+# Extract last word token from stem (whitespace-delimited); if no whitespace, use whole stem
+last_word=$(awk 'NF{print $NF}' <<< "${stem}" || true)
+[[ -z "$last_word" ]] && last_word="$stem"
+
+# Helper: try to get canonical key from cite2bib output
+canonical_key_from_cite() {
+  local probe="$1"
+  local first
+  if ! first=$(cite2bib.sh "$probe" 2>/dev/null | sed -n '1p'); then
+    return 1
+  fi
+  if [[ -z "$first" ]]; then
+    return 1
+  fi
+  # Extract @type{key,
+  local key
+  key=$(sed -n 's/^\s*@[A-Za-z][A-Za-z]*\{\([^,][^,]*\),.*/\1/p' <<< "$first")
+  if [[ -n "$key" ]]; then
+    printf '%s\n' "$key"
+    return 0
+  fi
+  return 1
+}
+
+# 1) Filename heuristic: reinsert colon before 4-digit year
+colon_key=$(sed -E 's/^([A-Za-z][A-Za-z0-9-]*?)(19|20)([0-9]{2})(.*)$/\1:\2\3\4/' <<< "$last_word")
+# Only try if we changed something or even if same; cite2bib will validate
+if key=$(canonical_key_from_cite "$colon_key" 2>/dev/null); then
+  printf '%s\n' "$key"
+  exit 0
+fi
+
+# Try without colon (some environments rely on normalized input; we still extract canonical)
+if key=$(canonical_key_from_cite "$last_word" 2>/dev/null); then
+  printf '%s\n' "$key"
+  exit 0
+fi
+
+# 2) Index fallback (if available): match by .filename or basename(.path)
+if [[ -f "$INDEX_FILE" ]] && command -v jq >/dev/null 2>&1; then
+  idx_key=$(jq -r --arg n "$basename" 'select((.filename==$n) or (.path and ((.path|split("/")|last)==$n))) | .key' "$INDEX_FILE" 2>/dev/null | head -n1 || true)
+  if [[ -n "${idx_key:-}" && "$idx_key" != null ]]; then
+    if key=$(canonical_key_from_cite "$idx_key" 2>/dev/null); then
+      printf '%s\n' "$key"
+      exit 0
+    fi
+  fi
+fi
+
+# Not found
+echo "path2key.sh: could not resolve a BibTeX key from: $input_path" >&2
+exit 1
