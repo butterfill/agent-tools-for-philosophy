@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Tests for cite2bib.sh focusing on macOS-compatible regex and fallback scan
+# Tests for cite2bib focusing on macOS-compatible regex and fallback scan
 
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
-TOOL="$REPO_ROOT/cite2bib.sh"
+TOOL="$REPO_ROOT/cite2bib"
 
 pass=0
 fail=0

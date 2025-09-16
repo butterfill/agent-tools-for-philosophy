@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# find-bib — filter CSL-JSON (Pandoc) bibliography by fields and emit keys, JSON, or BibTeX via cite2bib.sh
+# find-bib — filter CSL-JSON (Pandoc) bibliography by fields and emit keys, JSON, or BibTeX via cite2bib
 
 BIB_JSON=${BIB_JSON:-"$HOME/endnote/phd_biblio.json"}
 
@@ -22,17 +22,17 @@ Filters (repeatable; case-insensitive substrings):
 Output:
   - default: print matching keys (one per line)
   - --json: print matching JSON items (compact, one per line)
-  - --cat: for each key, print full BibTeX via cite2bib.sh
+  - --cat: for each key, print full BibTeX via cite2bib
   - --limit N: limit number of results (no limit by default)
 
 Environment:
   - BIB_JSON: path to CSL-JSON file (default: $HOME/endnote/phd_biblio.json)
-  - BIB_FILE: used by cite2bib.sh when --cat is provided
+  - BIB_FILE: used by cite2bib when --cat is provided
 
 Exit codes:
   0: success (printed at least one result)
   1: no matches
-  2: usage/config error (e.g., missing jq or BIB_JSON, missing cite2bib.sh for --cat)
+  2: usage/config error (e.g., missing jq or BIB_JSON, missing cite2bib for --cat)
 EOH
 }
 
@@ -116,7 +116,7 @@ case "$mode" in
       "$jq_prog" "$BIB_JSON")
     ;;
   cat)
-    command -v cite2bib.sh >/dev/null 2>&1 || { echo "find-bib: cite2bib.sh not found for --cat" >&2; exit 2; }
+    command -v cite2bib >/dev/null 2>&1 || { echo "find-bib: cite2bib not found for --cat" >&2; exit 2; }
     keys=$(jq -r \
       --argjson authors "$authors_json" \
       --argjson years "$years_json" \
@@ -129,7 +129,7 @@ case "$mode" in
       count=0
       while IFS= read -r k; do
         [[ -z "$k" ]] && continue
-        cite2bib.sh "$k" || true
+        cite2bib "$k" || true
         count=$((count+1))
         if [[ $limit -gt 0 && $count -ge $limit ]]; then break; fi
       done <<< "$keys"

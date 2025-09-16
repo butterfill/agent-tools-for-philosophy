@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Tests for path2key.sh
+# Tests for path2key
 #
 # Assumptions:
 # - $PAPERS_DIR exists and remains stable (default: $HOME/papers)
 # - $BIB_FILE exists and contains entries for the sample keys used below
-# - cite2bib.sh is installed and on PATH
+# - cite2bib is installed and on PATH
 # - jq is installed (for index fallback test)
 
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
-TOOL="$REPO_ROOT/path2key.sh"
+TOOL="$REPO_ROOT/path2key"
 export TOOL
+# Ensure local tools are discoverable (cite2bib)
+export PATH="$REPO_ROOT:$PATH"
 
 pass=0
 fail=0
@@ -26,13 +28,13 @@ require() {
   fi
 }
 
-require cite2bib.sh
+require cite2bib
 require awk
 require sed
 require rg
 require jq
 
-# Prepare a temporary BibTeX file so cite2bib.sh can validate keys
+# Prepare a temporary BibTeX file so cite2bib can validate keys
 TMP_BIB=$(mktemp -t tmp_rovodev_path2key_bib.XXXX.bib)
 TMP_IDX=$(mktemp -t tmp_rovodev_path2key_index.XXXX.jsonl)
 export TMP_IDX

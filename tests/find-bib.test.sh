@@ -9,6 +9,9 @@ cd "$REPO_ROOT"
 TOOL="./find-bib"
 FIXTURE_JSON="tests/fixtures/phd_biblio.json"
 
+# Ensure local tools are discoverable (cite2bib) for --cat integration
+export PATH="$REPO_ROOT:$PATH"
+
 pass=0
 fail=0
 
@@ -77,13 +80,13 @@ it "outputs compact JSON with --json" \
   has_line_matching '"id"\s*:\s*"agrillo:2017_numerical"' \
   BIB_JSON="$FIXTURE_JSON" "$TOOL" --author agrillo --json
 
-# 5) cat output via cite2bib.sh (using sample.bib fixture)
-if command -v cite2bib.sh >/dev/null 2>&1; then
+# 5) cat output via cite2bib (using sample.bib fixture)
+if command -v cite2bib >/dev/null 2>&1; then
   it "emits BibTeX via --cat for smith:2021_joint" \
     has_line_matching '^@\w+\{smith:2021_joint,' \
     BIB_FILE="tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat
 else
-  echo "SKIP: cite2bib.sh not found; skipping --cat test" >&2
+  echo "SKIP: cite2bib not found; skipping --cat test" >&2
 fi
 
 echo "RESULT: $pass passed, $fail failed"

@@ -9,10 +9,10 @@ INDEX_FILE="$PAPERS_DIR/bibtex-index.jsonl"
 
 print_help() {
   cat <<'EOF'
-cite2md.sh — resolve citation/key to Markdown fulltext path
+cite2md — resolve citation/key to Markdown fulltext path
 
 Usage:
-  ./cite2md.sh [--cat|-c] [--first|-1] <citation-or-key>
+  cite2md [--cat|-c] [--first|-1] <citation-or-key>
 
 Inputs accepted:
   - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
@@ -41,9 +41,9 @@ Dependencies:
   - fd, jq, sed, awk
 
 Examples:
-  ./cite2md.sh "\citet{vesper:2012_jumping}"
-  ./cite2md.sh -c vesper:2012_jumping | sed -n '1,5p'
-  rg -n "joint outcome" "$(./cite2md.sh vesper2012_jumping)"
+  cite2md "\citet{vesper:2012_jumping}"
+  cite2md -c vesper:2012_jumping | sed -n '1,5p'
+  rg -n "joint outcome" "$(cite2md vesper2012_jumping)"
 EOF
 }
 

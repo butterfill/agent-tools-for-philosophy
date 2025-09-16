@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# E2E tests for rg-sources using real $HOME/papers
+# E2E tests for rg-sources using real $PAPERS_DIR
 
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"

@@ -8,10 +8,10 @@ BIB_FILE=${BIB_FILE:-"$HOME/endnote/phd_biblio.bib"}
 
 print_help() {
   cat <<'EOF'
-cite2bib.sh — resolve citation/key to BibTeX entry (from ~/endnote/phd_biblio.bib)
+cite2bib — resolve citation/key to BibTeX entry (from ~/endnote/phd_biblio.bib)
 
 Usage:
-  ./cite2bib.sh <citation-or-key>
+  cite2bib <citation-or-key>
 
 Inputs accepted:
   - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
@@ -37,9 +37,9 @@ Dependencies:
   - ripgrep (rg), awk, sed
 
 Examples:
-  ./cite2bib.sh "\citet{vesper:2012_jumping}" | rg '^@'
-  ./cite2bib.sh vesper2012_jumping > vesper.bib
-  ./cite2bib.sh alter:2009_uniting | rg doi
+  cite2bib "\citet{vesper:2012_jumping}" | rg '^@'
+  cite2bib vesper2012_jumping > vesper.bib
+  cite2bib alter:2009_uniting | rg doi
 EOF
 }
 

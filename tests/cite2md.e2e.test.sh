@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# E2E tests for cite2md.sh using real $HOME/papers and $HOME/endnote
+# E2E tests for cite2md using real $PAPERS_DIR
 
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
-TOOL="$REPO_ROOT/cite2md.sh"
+TOOL="$REPO_ROOT/cite2md"
 PAPERS_ROOT="${PAPERS_DIR:-$HOME/papers}"
 
 pass=0

@@ -28,25 +28,25 @@ Git commit history may be helpful as you are typically looking for recently modi
 
 Do not include .tex files which are merely wrappers: only include .txt files which have the content of the publication.
 
-Use the `cite2bib.sh` and `cite2md.sh` cli commands explained below to check whether you have the correct .tex source. Verify each source carefully. 
+Use the `cite2bib` and `cite2md` cli commands explained below to check whether you have the correct .tex source. Verify each source carefully. 
 
 It is often very difficult to identify the exact .tex source file. In general, I want one that is close to the published version. As in the example above, it is fine to have a version that includes minor corrections if that exists.
 
 
 ## Finding the fulltext of a cited source
 You should be able to execute two shell commands:
-  - cite2md.sh - resolve citation/key to Markdown fulltext path
-  - cite2bib.sh - resolve citation/key to BibTeX entry
+  - cite2md - resolve citation/key to Markdown fulltext path
+  - cite2bib - resolve citation/key to BibTeX entry
 
 **Usage examples:**
-- `cite2md.sh -c "\citet{butterfill:2019_goals}"` — get full text from LaTeX citation
-- `cite2md.sh "butterfill:2019_goals"` — get full text from BibTeX key
-- `cite2bib.sh "\citet{butterfill:2019_goals}"` — get BibTeX entry from LaTeX citation  
-- `cite2bib.sh "butterfill:2019_goals"` — get BibTeX entry from BibTeX key
+- `cite2md -c "\citet{butterfill:2019_goals}"` — get full text from LaTeX citation
+- `cite2md "butterfill:2019_goals"` — get full text from BibTeX key
+- `cite2bib "\citet{butterfill:2019_goals}"` — get BibTeX entry from LaTeX citation  
+- `cite2bib "butterfill:2019_goals"` — get BibTeX entry from BibTeX key
 
 **Note:** Both tools accept either LaTeX-style citations (with `\citet{}`) or bare BibTeX keys. The tools are on your PATH, so no `./` prefix is needed.
 
-Please check you can execute the shell commands `cite2md.sh` and `cite2bib.sh` to obtain info for the key `butterfill:2019_goals`.  Use their `--help` as needed.  **If you cannot execute these commands, stop immediately and report the error.**
+Please check you can execute the shell commands `cite2md` and `cite2bib` to obtain info for the key `butterfill:2019_goals`.  Use their `--help` as needed.  **If you cannot execute these commands, stop immediately and report the error.**
 
 
 

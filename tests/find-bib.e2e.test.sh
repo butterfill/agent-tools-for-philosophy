@@ -8,7 +8,11 @@ cd "$REPO_ROOT"
 
 TOOL="$REPO_ROOT/find-bib"
 BIB_JSON_PATH="${BIB_JSON:-$HOME/endnote/phd_biblio.json}"
+BIB_JSON_PATH="${BIB_JSON:-$HOME/endnote/phd_biblio.json}"
 BIB_FILE_PATH="${BIB_FILE:-$HOME/endnote/phd_biblio.bib}"
+
+# Ensure local tools are discoverable (cite2bib) for --cat
+export PATH="$REPO_ROOT:$PATH"
 
 pass=0
 fail=0
@@ -78,13 +82,13 @@ it "--limit 1 limits to a single result for Steward" \
   has_n_lines 1 \
   BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author steward --limit 1
 
-# 4) --cat emits BibTeX via cite2bib.sh when BIB_FILE provided
-if command -v cite2bib.sh >/dev/null 2>&1; then
+# 4) --cat emits BibTeX via cite2bib when BIB_FILE provided
+if command -v cite2bib >/dev/null 2>&1; then
   it "--cat prints a BibTeX entry for vesper:2012_jumping" \
     has_line_matching '^@\w+\{vesper:2012_jumping,' \
     BIB_FILE="$BIB_FILE_PATH" BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --title jump --cat --limit 1
 else
-  echo "SKIP: cite2bib.sh not on PATH; skipping --cat e2e" >&2
+  echo "SKIP: cite2bib not on PATH; skipping --cat e2e" >&2
 fi
 
 echo "RESULT: $pass passed, $fail failed"

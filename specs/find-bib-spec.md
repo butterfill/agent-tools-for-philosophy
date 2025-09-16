@@ -9,7 +9,7 @@ A small, agent-friendly CLI to locate bibliography entries by case‑insensitive
 ## Configuration & Env Vars
 - `BIB_JSON` (default: `$HOME/endnote/phd_biblio.json`)
   - Primary data source (CSL‑JSON from Pandoc). No CLI to override (keep agent setup simple). Note: the `endnote` folder name is historical only and does not imply EndNote format.
-- `BIB_FILE` (optional): used only when emitting BibTeX via `--cat`, defaulting to `cite2bib.sh`’s default (`$HOME/endnote/phd_biblio.bib`).
+- `BIB_FILE` (optional): used only when emitting BibTeX via `--cat`, defaulting to `cite2bib`’s default (`$HOME/endnote/phd_biblio.bib`).
 - No use of `PAPERS_DIR` (this tool does not read Markdown).
 
 ## Inputs (CLI)
@@ -20,7 +20,7 @@ A small, agent-friendly CLI to locate bibliography entries by case‑insensitive
   - `--title "text"`
   - `--abstract "text"`
 - Output control:
-  - `--cat` — print full BibTeX entries by resolving keys via `cite2bib.sh` (default prints keys, one per line)
+  - `--cat` — print full BibTeX entries by resolving keys via `cite2bib` (default prints keys, one per line)
   - `--json` — print raw JSON entries instead of keys (one object per line)
   - `--limit N` — limit number of printed results (no limit by default)
 - Help:
@@ -46,17 +46,17 @@ A small, agent-friendly CLI to locate bibliography entries by case‑insensitive
 
 ## Output
 - Default: keys only (one per line), no extra logging.
-- `--cat`: for each matched key, call `cite2bib.sh <key>` and print the resulting BibTeX entry. Entries are separated by a blank line (as produced by `cite2bib.sh`).
+- `--cat`: for each matched key, call `cite2bib <key>` and print the resulting BibTeX entry. Entries are separated by a blank line (as produced by `cite2bib`).
 - `--json`: print matching entry objects as compact JSON, one per line.
 
 ## Exit Codes
 - 0: at least one match printed
 - 1: no matches
-- 2: usage/config error (e.g., missing or unreadable `BIB_JSON`, missing `cite2bib.sh` when `--cat` is used)
+- 2: usage/config error (e.g., missing or unreadable `BIB_JSON`, missing `cite2bib` when `--cat` is used)
 
 ## Dependencies
 - Required: `jq` (for fast, robust JSON filtering) or an equivalent standard‑library implementation if not using shell.
-- Optional for `--cat`: `cite2bib.sh` on `PATH` (reads `BIB_FILE`).
+- Optional for `--cat`: `cite2bib` on `PATH` (reads `BIB_FILE`).
 - No Python runtime or `bibtexparser` dependency.
 
 ## Behavior Details
@@ -64,10 +64,10 @@ A small, agent-friendly CLI to locate bibliography entries by case‑insensitive
 - Build normalized strings for fields to support case‑insensitive substring filtering.
 - Iterate once over entries; short‑circuit when `--limit` is reached.
 - Keep stdout reserved for results; send diagnostics/errors to stderr.
-- Performance: avoid full BibTeX parsing; operate on JSON only. Resolving `--cat` delegates per‑key to `cite2bib.sh` for correctness and consistency with other tools.
+- Performance: avoid full BibTeX parsing; operate on JSON only. Resolving `--cat` delegates per‑key to `cite2bib` for correctness and consistency with other tools.
 
 ## Consistency With Existing Tools
-- Mirrors conventions in `cite2bib.sh` / `cite2md.sh`:
+- Mirrors conventions in `cite2bib` / `cite2md`:
   - Simple `--help`, clear exit codes, env var config with safe defaults.
   - No extra noise on success.
   - Fail fast on missing inputs/resources.

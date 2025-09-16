@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# path2key.sh — resolve a file path to a BibTeX key
+# path2key — resolve a file path to a BibTeX key
 #
 # Behavior (no flags):
 # - Input: one positional path (absolute, relative, or basename)
 # - Strategy: filename-first heuristic, then index fallback
-# - Validation: never emit a key unless cite2bib.sh can resolve it
+# - Validation: never emit a key unless cite2bib can resolve it
 # - Output: print the BibTeX key only to stdout on success
 # - Env:
 #     PAPERS_DIR (default: $HOME/papers)
 #     INDEX_FILE (default: $PAPERS_DIR/bibtex-index.jsonl)
-#     BIB_FILE is used indirectly by cite2bib.sh
+#     BIB_FILE is used indirectly by cite2bib
 # - Exit codes: 0 success; 1 not found; 2 usage/config error
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
@@ -19,16 +19,16 @@ INDEX_FILE=${INDEX_FILE:-"$PAPERS_DIR/bibtex-index.jsonl"}
 
 print_help() {
   cat <<'EOF'
-path2key.sh — resolve a file path to a BibTeX key
+path2key — resolve a file path to a BibTeX key
 
 Usage:
-  path2key.sh <path>
+  path2key <path>
 
 Input may be absolute, relative, or just a basename. The tool:
   1) infers a key from the last word of the filename (colon reinserted before year),
   2) falls back to $PAPERS_DIR/bibtex-index.jsonl if available.
 
-Never prints a key unless cite2bib.sh can resolve it.
+Never prints a key unless cite2bib can resolve it.
 
 Exit codes: 0 success; 1 not found; 2 usage/config error
 EOF
@@ -44,8 +44,8 @@ if [[ $# -lt 1 ]]; then
   exit 2
 fi
 
-if ! command -v cite2bib.sh >/dev/null 2>&1; then
-  echo "path2key.sh: missing dependency: cite2bib.sh" >&2
+if ! command -v cite2bib >/dev/null 2>&1; then
+  echo "path2key: missing dependency: cite2bib" >&2
   exit 2
 fi
 
@@ -63,7 +63,7 @@ last_word=$(awk 'NF{print $NF}' <<< "${stem}" || true)
 canonical_key_from_cite() {
   local probe="$1"
   local first
-  if ! first=$(cite2bib.sh "$probe" 2>/dev/null | sed -n '1p'); then
+  if ! first=$(cite2bib "$probe" 2>/dev/null | sed -n '1p'); then
     return 1
   fi
   if [[ -z "$first" ]]; then
@@ -109,5 +109,5 @@ if [[ -f "$INDEX_FILE" ]] && command -v jq >/dev/null 2>&1; then
 fi
 
 # Not found
-echo "path2key.sh: could not resolve a BibTeX key from: $input_path" >&2
+echo "path2key: could not resolve a BibTeX key from: $input_path" >&2
 exit 1
