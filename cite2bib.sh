@@ -91,7 +91,7 @@ fi
 # Fallback: match on normalized key (colons removed)
 # Fast single-pass AWK scan using POSIX classes and literal '{' in a bracket expression
 start_line=$(awk -v nk="$normkey" '
-  match($0, /^[[:space:]]*@[A-Za-z]+[{]([^,]+),/, m) {
+  match($0, /^[ \t]*@[A-Za-z]+\{([^,]+),/, m) {
     key=m[1]; gsub(":","",key);
     if (key==nk) { print NR; exit }
   }
