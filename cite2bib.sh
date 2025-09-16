@@ -81,7 +81,7 @@ extract_from_line() {
 }
 
 # Try exact key match first
-start_line=$(rg -n "^\s*@\w+\{${bibkey}," "$BIB_FILE" | head -n1 | cut -d: -f1 || true)
+start_line=$(rg -n "^[[:space:]]*@[A-Za-z]+\{${bibkey}," "$BIB_FILE" | head -n1 | cut -d: -f1 || true)
 
 if [ -n "${start_line:-}" ]; then
   extract_from_line "$start_line"
@@ -91,7 +91,7 @@ fi
 # Fallback: match on normalized key (colons removed)
 # Scan for entry starts and compare normalized keys
 start_line=$(awk -v nk="$normkey" '
-  match($0, /^\s*@[A-Za-z]+\{([^,]+),/, m) {
+  match($0, /^[[:space:]]*@[A-Za-z]+[{]([^,]+),/, m) {
     key=m[1]; gsub(":","",key);
     if (key==nk) { print NR; exit }
   }' "$BIB_FILE")
