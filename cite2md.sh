@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve a LaTeX citation or BibTeX key to a Markdown fulltext file in ~/papers
+# See --help for detailed usage.
+
+PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+INDEX_FILE="$PAPERS_DIR/bibtex-index.jsonl"
+
+print_help() {
+  cat <<'EOF'
+cite2md.sh — resolve citation/key to Markdown fulltext path
+
+Usage:
+  ./cite2md.sh [--cat|-c] [--first|-1] <citation-or-key>
+
+Inputs accepted:
+  - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
+  - BibTeX key with colons, e.g. vesper:2012_jumping
+  - Normalized key (colons removed), e.g. vesper2012_jumping
+
+Output modes (default: path):
+  - path (default): absolute file path to the Markdown fulltext
+  - --cat, -c: print the entire Markdown file to stdout
+  - --first, -1: print the first full sentence (skips headings/blank lines)
+
+Resolution strategy:
+  1) Search $PAPERS_DIR for files ending with <normalized-key>.md
+  2) Fallback to $PAPERS_DIR/bibtex-index.jsonl, matching .key (with colons)
+     or normalized .key (colons removed), using .path or .filename
+
+Environment:
+  - PAPERS_DIR: override papers root (default: $HOME/papers)
+
+Exit codes:
+  - 0: success
+  - 1: not found
+  - 2: usage error / missing input
+
+Dependencies:
+  - fd, jq, sed, awk
+
+Examples:
+  ./cite2md.sh "\citet{vesper:2012_jumping}"
+  ./cite2md.sh -c vesper:2012_jumping | sed -n '1,5p'
+  rg -n "joint outcome" "$(./cite2md.sh vesper2012_jumping)"
+EOF
+}
+
+if [ $# -lt 1 ]; then
+  print_help >&2
+  exit 2
+fi
+
+# Parse flags
+MODE="path" # default: print file path
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -c|--cat)
+      MODE="cat"; shift ;;
+    -1|--first|--first-sentence)
+      MODE="first"; shift ;;
+    -h|--help)
+      print_help; exit 0 ;;
+    --)
+      shift; break ;;
+    -*)
+      echo "Unknown flag: $1" >&2; exit 2 ;;
+    *)
+      break ;;
+  esac
+done
+
+if [ $# -lt 1 ]; then
+  echo "Missing citation or key" >&2; exit 2
+fi
+
+input="$1"
+
+# Extract bibkey if LaTeX citation; otherwise use input as key
+if [[ "$input" =~ \{[^}]+\} ]]; then
+  bibkey=$(printf '%s\n' "$input" | sed -n 's/.*{\([^}]*\)}.*/\1/p')
+else
+  bibkey="$input"
+fi
+
+if [ -z "$bibkey" ]; then
+  echo "Could not parse a key from input: $input" >&2
+  exit 2
+fi
+
+# Normalize by removing colons for filename convention
+normkey=$(printf '%s' "$bibkey" | tr -d ':')
+
+# Prefer files whose names end with <normkey>.md
+file=$(fd -a -t f --regex "${normkey}\\.md$" "$PAPERS_DIR" | head -n1 || true)
+
+# Fallback: look up mapping in JSONL index using original key (with colons)
+if [ -z "$file" ] && [ -f "$INDEX_FILE" ]; then
+  # First try exact bibkey match (with colons)
+  rel=$(jq -r --arg k "$bibkey" 'select(.key==$k) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
+  # If not found and input lacked colons, match on normalized key against normalized .key
+  if [ -z "${rel:-}" ] || [ "$rel" = "null" ]; then
+    rel=$(jq -r --arg nk "$normkey" 'select((.key|gsub(":";""))==$nk) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
+  fi
+  if [ -n "${rel:-}" ] && [ "$rel" != "null" ]; then
+    # If rel is already an absolute or contains slashes, respect it; else assume file in root
+    if [[ "$rel" = /* || "$rel" == */* ]]; then
+      file="$PAPERS_DIR/$rel"
+    else
+      file="$PAPERS_DIR/$rel"
+    fi
+  fi
+fi
+
+if [ -z "$file" ] || [ ! -f "$file" ]; then
+  echo "Not found: $bibkey (normalized: $normkey) in $PAPERS_DIR" >&2
+  exit 1
+fi
+
+case "$MODE" in
+  path)
+    # Print absolute path only
+    printf '%s\n' "$file" ;;
+  cat)
+    cat "$file" ;;
+  first)
+    # Print the first full sentence (skip leading headings/blank lines)
+    awk 'BEGIN{s=0} {if(s==0 && ($0 ~ /^\s*$/ || $0 ~ /^#/)) next; s=1; txt=txt $0 " "} END{ if (match(txt,/[^.]*\./)) print substr(txt,RSTART,RLENGTH) }' "$file" ;;
+esac
