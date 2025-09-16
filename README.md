@@ -14,6 +14,14 @@ This file is for the agent. It instructs the agent on how to use each tool.
 - The script does not create directories. If none exist, it exits with a message.
 - It installs all executable files in this directory (excluding `install.sh`). Ensure the target dir is on your `PATH`.
 
+## Testing
+
+- Run individual test scripts in `tests/` directly:
+  - `bash tests/find-bib.csljson.test.sh`
+  - `bash tests/path2key.test.sh`
+- Tests rely on local scripts in this directory being executable (no `./` prefix is required if installed on PATH, but tests call them via `./`).
+- The `find-bib` tests use a small CSL‑JSON fixture at `tests/fixtures/phd_biblio.json` and a small BibTeX fixture at `tests/fixtures/sample.bib` for `--cat` integration with `cite2bib.sh`.
+
 ## Contributing Tools (for developers)
 
 - Location and naming

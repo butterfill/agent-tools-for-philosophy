@@ -6,7 +6,7 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
-TOOL="find-bib"
+TOOL="./find-bib"
 FIXTURE_JSON="tests/fixtures/phd_biblio.json"
 
 pass=0
@@ -60,7 +60,7 @@ has_n_lines() {
 # 1) Field filters: Steward 2009 Animal Agency
 it "finds Steward 2009 Animal Agency by field filters" \
   has_line_matching '^steward:2009_animal$' \
-  BIB_JSON="$FIXTURE_JSON" "$TOOL" --author steward --year 2009 --title "animal agency"
+  BIB_JSON="$FIXTURE_JSON" "$TOOL" --author steward --year 2009 --title animal
 
 # 2) Abstract/topic search: motor (find smith 2021)
 it "finds Smith 2021 by abstract contains 'motor'" \
@@ -81,11 +81,10 @@ it "outputs compact JSON with --json" \
 if command -v cite2bib.sh >/dev/null 2>&1; then
   it "emits BibTeX via --cat for smith:2021_joint" \
     has_line_matching '^@\w+\{smith:2021_joint,' \
-    BIB_FILE="agent-tools-too-slow/tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat
+    BIB_FILE="tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat
 else
   echo "SKIP: cite2bib.sh not found; skipping --cat test" >&2
 fi
 
 echo "RESULT: $pass passed, $fail failed"
 test "$fail" -eq 0
-

@@ -78,21 +78,21 @@ dois_json=$(to_json_array "${dois[@]:-}")
 titles_json=$(to_json_array "${titles[@]:-}")
 abstracts_json=$(to_json_array "${abstracts[@]:-}")
 
-jq_prog='\
-def norm($s): ($s|tostring|gsub("[{}]";"")|ascii_downcase|gsub("\\s+";" ")|gsub("^\\s+|\\s+$";""));\
-def name_text($n): if ($n|type)=="object" then [ $n.family, $n.given ] | map(select(.!=null and .!="")) | join(", ") elif ($n|type)=="string" then $n else ($n|tostring) end;\
-def authors_text: if .author then ( if (.author|type)=="array" then (.author | map(name_text(.)) | join("; ")) else (.author|tostring) end ) elif .authors then (.authors|tostring) else "" end;\
-def year_text: if .issued and ((.issued["date-parts"]|type)=="array") and ((.issued["date-parts"][0]|type)=="array") and (.issued["date-parts"][0][0]) then (.issued["date-parts"][0][0]|tostring) elif .issued and (.issued.literal?) then (.issued.literal|tostring|capture("(?<y>(19|20)[0-9]{2})").y) elif .issued then (.issued|tostring|capture("(?<y>(19|20)[0-9]{2})").y) else "" end;\
-def key_of: .id // .ID // .key;\
-def get_items: if (type)=="array" then . else (.items // .records // []) end;\
-def match_any($hay; $needles): ($needles|length)==0 or ( [ $needles[] | norm(.) ] | any( . as $n | (norm($hay) | contains($n)) ) );\
-get_items\
-| map(select( (authors_text as $a | match_any($a; $authors))\
-             and (year_text as $y | match_any($y; $years))\
-             and ((.DOI // .doi // "") as $d | match_any($d; $dois))\
-             and ((.title // "") as $t | match_any($t; $titles))\
-             and ((.abstract // "") as $ab | match_any($ab; $abstracts)) ))\
-| .[]\
+jq_prog='
+def norm($s): ($s|tostring|gsub("[{}]";"")|ascii_downcase|gsub("\\s+";" ")|gsub("^\\s+|\\s+$";""));
+def name_text($n): if ($n|type)=="object" then [ $n.family, $n.given ] | map(select(.!=null and .!="")) | join(", ") elif ($n|type)=="string" then $n else ($n|tostring) end;
+def authors_text: if .author then ( if (.author|type)=="array" then (.author | map(name_text(.)) | join("; ")) else (.author|tostring) end ) elif .authors then (.authors|tostring) else "" end;
+def year_text: if .issued and ((.issued["date-parts"]|type)=="array") and ((.issued["date-parts"][0]|type)=="array") and (.issued["date-parts"][0][0]) then (.issued["date-parts"][0][0]|tostring) elif .issued and (.issued.literal?) then (.issued.literal|tostring|capture("(?<y>(19|20)[0-9]{2})").y) elif .issued then (.issued|tostring|capture("(?<y>(19|20)[0-9]{2})").y) else "" end;
+def key_of: .id // .ID // .key;
+def get_items: if (type)=="array" then . else (.items // .records // []) end;
+def match_any($hay; $needles): ($needles|length)==0 or ( [ $needles[] | norm(.) ] | any( . as $n | (norm($hay) | contains($n)) ) );
+get_items
+| map(select( (authors_text as $a | match_any($a; $authors))
+             and (year_text as $y | match_any($y; $years))
+             and ((.DOI // .doi // "") as $d | match_any($d; $dois))
+             and ((.title // "") as $t | match_any($t; $titles))
+             and ((.abstract // "") as $ab | match_any($ab; $abstracts)) ))
+| .[]
 '
 
 out=""
@@ -164,4 +164,3 @@ else
     exit 1
   fi
 fi
-
