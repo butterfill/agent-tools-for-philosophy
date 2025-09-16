@@ -16,26 +16,14 @@ PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 
 print_help() {
   cat <<'EOF'
-rg-sources — ripgrep scoped to Markdown in PAPERS_DIR
+rg-sources — ripgrep scoped to fulltext of available academic sources
 
 Usage:
   rg-sources [rg-flags...] [--] [pattern] [paths...]
 
-Scope:
-  - Searches only within $PAPERS_DIR (cd there before running rg).
-  - Rejects absolute or parent-directory paths in positional arguments.
-
-Defaults:
-  - Targets Markdown by default (md, markdown, mdx).
-  - If you provide -t/-T/--glob/--iglob/--type-* yourself, no defaults are added.
-
-Environment:
-  - PAPERS_DIR: override papers root (default: $HOME/papers)
-
 Examples:
   rg-sources -n "bayesian prior"
-  rg-sources -i -C1 "causal" notes/ ml/
-  rg-sources --type-list | rg '^mdx$'
+  rg-sources -i -C1 "causal"
 EOF
 }
 
