@@ -89,18 +89,13 @@ if [ -n "${start_line:-}" ]; then
 fi
 
 # Fallback: match on normalized key (colons removed)
-# Portable approach using rg + sed to extract entry starts and compare normalized keys
-start_line=$(
-  rg -n -o '^[[:space:]]*@[A-Za-z]+\{[^,]+' "$BIB_FILE" | \
-  while IFS=: read -r ln pre; do
-    key=$(printf '%s\n' "$pre" | sed -E 's/^[[:space:]]*@[A-Za-z]+[{]([^,]+)$/\1/')
-    key_norm=$(printf '%s' "$key" | tr -d ':')
-    if [ "$key_norm" = "$normkey" ]; then
-      printf '%s\n' "$ln"
-      break
-    fi
-  done
-)
+# Fast single-pass AWK scan using POSIX classes and literal '{' in a bracket expression
+start_line=$(awk -v nk="$normkey" '
+  match($0, /^[[:space:]]*@[A-Za-z]+[{]([^,]+),/, m) {
+    key=m[1]; gsub(":","",key);
+    if (key==nk) { print NR; exit }
+  }
+' "$BIB_FILE")
 
 if [ -n "${start_line:-}" ]; then
   extract_from_line "$start_line"
