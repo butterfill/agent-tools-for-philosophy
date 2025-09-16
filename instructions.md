@@ -3,7 +3,7 @@ You should be able to execute the following shell commands:
   - cite2md.sh - resolve citation/key to Markdown fulltext path
   - cite2bib.sh - resolve citation/key to BibTeX entry
   - path2key.sh - resolve a file path (absolute, relative or basename) to a BibTeX key (validates against cite2bib.sh)
-  - find-bib - search CSL-JSON bibliography by fields and emit keys/entries
+  - find-bib - search bibliography by fields and emit BibTeX keys/entries
 
 The tools are on your PATH, so no `./` prefix is needed.
 
