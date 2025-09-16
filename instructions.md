@@ -4,6 +4,7 @@ You should be able to execute the following shell commands:
   - cite2bib.sh - resolve citation/key to BibTeX entry
   - path2key.sh - resolve a file path (absolute, relative or basename) to a BibTeX key
   - find-bib - search bibliography by fields and emit BibTeX keys/entries
+  - rg-sources — search fulltext of souces with ripgrep syntax
 
 The tools are on your PATH, so no `./` prefix is needed.
 
@@ -19,7 +20,7 @@ The tools are on your PATH, so no `./` prefix is needed.
 
 **Note:** The tools `cite2md.sh` and `cite2bib.sh` accept either LaTeX-style citations (with `\citet{}`) or bare BibTeX keys. 
 
-## Using find-bib (agents)
+## Using find-bib
 - Purpose: Quickly locate bibliography entries using substring filters without parsing `.bib` files.
 - Common patterns:
   - Keys only (default): `find-bib --author butterfill --year 2022 --title motor`
@@ -31,12 +32,9 @@ The tools are on your PATH, so no `./` prefix is needed.
 
 Please check you can execute the shell commands `cite2md.sh` and `cite2bib.sh` to obtain info for the key `vesper:2012_jumping`.  Use their `--help` as needed.  **If you cannot execute these commands, stop immediately and report the error.**
 
-## Searching sources
-You can search across the Markdown sources with:
-  - rg-sources — ripgrep scoped to markdown fulltext of all available
-
+## Searching sources with `rg-sources`
 Behavior:
-- Pass any ripgrep flags as usual; your own `-t/-T/--glob/--iglob/--type-*` overrides defaults.
+- Pass any ripgrep flags as usual
 
 Usage examples:
 - `rg-sources -n "bayesian prior"` — search all markdown with line numbers.
