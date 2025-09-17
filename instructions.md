@@ -4,6 +4,7 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 ### Core Tools
 - cite2md — print a Markdown fulltext path or content for a citation/key
   - Accepts multiple keys via args or stdin; use `--cat` to stream content.
+- draft2keys — extract keys from a draft and optionally print fulltext (`--cat`)
 - cite2bib — print the corresponding BibTeX entry for a citation/key
 - path2key — infer the BibTeX key from a filename or path
 - find-bib — search the bibliography by fields; output keys or BibTeX
@@ -39,6 +40,7 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
   - From `fd-sources`: `fd-sources vesper2012_jumping | cat-sources`
   - From `rg-sources`: `rg-sources -l 'bayesian prior' | cat-sources`
   - From a citation/key: `cite2md vesper:2012_jumping | cat-sources`
+  - From a draft: `draft2keys draft.md --cat`
 
 ### Missing fulltext
 - When `cite2md` cannot resolve a key, it prints a standardized message to stderr and appends the key to `missing-fulltext.txt` in the current working directory (one key per line) for follow‑up.

@@ -28,6 +28,7 @@ New: agents can now read source files directly
 - Discovery tools support one-shot reading:
   - `fd-sources --cat <pattern>` streams matched files.
   - `rg-sources --cat <pattern>` streams content of files matching the search.
+ - `draft2keys <draft.md> --cat` streams content of sources cited in a draft. Missing fulltext is logged to `missing-fulltext.txt`.
 
 ## Install (for developers)
 - Ensure `jq` is installed (required for `find-bib`)
