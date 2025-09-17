@@ -52,3 +52,7 @@ Resolves a LaTeX-style citation or BibTeX key to the corresponding BibTeX entry 
 - LaTeX citation form:
   - `cite2bib "\citet{alter:2009_uniting}" | rg doi`
 
+## Missing Key Handling
+- On failure to locate an entry, prints standardized message to stderr:
+  - `MISSING cite2bib: <key> (normalized: <normkey>) in <BIB_FILE>`
+- Also appends the missing key (verbatim) to a local file `missing-keys.txt` in the current working directory (one key per line).

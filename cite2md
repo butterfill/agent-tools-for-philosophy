@@ -93,7 +93,7 @@ if [[ ${#INPUTS[@]} -eq 0 ]]; then
 fi
 
 resolved_any=false
-missing_log_file="missing-keys.txt"
+missing_log_file="missing-fulltext.txt"
 
 resolve_one() {
   local input="$1"; local bibkey normkey file rel

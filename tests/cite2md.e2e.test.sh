@@ -87,17 +87,17 @@ reads_from_stdin_single() {
 
 it "reads path from stdin for a single key" reads_from_stdin_single
 
-writes_missing_keys_log() {
+writes_missing_fulltext_log() {
   local missing="no:such_key_zzzz"
-  rm -f missing-keys.txt
+  rm -f missing-fulltext.txt
   set +e
   PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "$missing" >/dev/null 2>err.txt
   rc=$?
   set -e
-  test $rc -eq 1 && rg -q "^$missing$" missing-keys.txt
+  test $rc -eq 1 && rg -q "^$missing$" missing-fulltext.txt
 }
 
-it "appends missing keys to missing-keys.txt in cwd" writes_missing_keys_log
+it "appends missing keys to missing-fulltext.txt in cwd" writes_missing_fulltext_log
 
 echo "RESULT: $pass passed, $fail failed"
 [[ "$fail" -eq 0 ]]

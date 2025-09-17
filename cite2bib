@@ -130,5 +130,7 @@ if [ -n "${start_line:-}" ]; then
   exit 0
 fi
 
-echo "BibTeX entry not found for key: $bibkey (normalized: $normkey)" >&2
+# Not found: standardized stderr and log to ./missing-keys.txt
+echo "MISSING cite2bib: $bibkey (normalized: $normkey) in $BIB_FILE" >&2
+printf '%s\n' "$bibkey" >> "missing-keys.txt"
 exit 1

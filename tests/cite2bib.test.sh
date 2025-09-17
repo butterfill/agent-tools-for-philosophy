@@ -74,14 +74,16 @@ it "exact key match works" \
 # 2) Non-existent key should not error; should print not found message and exit non-zero
 not_found_ok() {
   local out rc
+  rm -f missing-keys.txt
   set +e
   out=$(BIB_FILE="$TMP_BIB" "$TOOL" "acting" 2>&1)
   rc=$?
   set -e
-  rg -q 'BibTeX entry not found for key: acting \(normalized: acting\)' <<< "$out" && test $rc -eq 1
+  rg -q 'MISSING cite2bib: acting \(normalized: acting\) in ' <<< "$out" && \
+  test $rc -eq 1 && rg -q '^acting$' missing-keys.txt
 }
 
-it "non-existent key prints a not-found message and exits 1" not_found_ok
+it "non-existent key prints standardized MISSING message, logs key, and exits 1" not_found_ok
 
 # 3) Normalized key match (colons removed)
 it "normalized key fallback works" \
