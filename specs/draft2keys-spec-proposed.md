@@ -1,7 +1,10 @@
 # draft2keys — Extract cited keys from drafts (Proposed)
 
 Purpose
-- Parse a draft (LaTeX/Pandoc Markdown) and emit unique BibTeX keys; optionally chain into fulltext or BibTeX.
+- Parse a draft and emit unique BibTeX keys; optionally chain into fulltext or BibTeX.
+
+Format
+- Drafts always use BibTeX citations (for example, `\citep{vesper:2012_jumping}`) even where the file extension is .md or .njk
 
 CLI
 - `draft2keys <draft-file> [--keys|--paths|--cat|--bib]`
