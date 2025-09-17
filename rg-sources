@@ -22,9 +22,11 @@ rg-sources — ripgrep scoped to fulltext of available academic sources
 Usage:
   rg-sources [rg-flags...] [--] [pattern] [paths...]
 
-Examples:
+Examples (list → then read one):
   rg-sources -n "bayesian prior"
   rg-sources -i -C1 "causal"
+  rg-sources -l -i "causal effect" > hits.txt
+  p=$(sed -n '1p' hits.txt); cat-sources "$p"
   Note: file types are fixed to Markdown; type/glob overrides are not supported here. Use `rg-sources -l ... | cat-sources` to stream content.
 EOF
 }

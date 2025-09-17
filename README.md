@@ -64,6 +64,7 @@ New: agents can now read source files directly
   - Keep stdout for the tool’s primary data. Send diagnostics to stderr.
   - Avoid extra wrapper noise; let underlying tools (e.g., `rg`) control formatting.
   - Prefer minimal CLI surface: long flags only, avoid short aliases and decorative output (e.g., no headers/line numbers). Keep defaults strong over configurability.
+  - Encourage list → then read one workflows in `--help` examples. Avoid examples that suggest streaming many files at once unless necessary for a use case.
 - Documentation hook
   - After adding a tool, add a short entry to `instructions.md` (agent-facing). Avoid duplicating `--help` text.
 - Testing

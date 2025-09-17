@@ -23,6 +23,12 @@ Output:
   - default: print matching keys (one per line)
   - --cat: for each key, print full BibTeX via cite2bib
 
+Suggested workflow (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key"
+  # Or: p=$(cite2md "$key")
+
 Environment:
   - BIB_JSON: path to CSL-JSON file (default: $HOME/endnote/phd_biblio.json)
   - BIB_FILE: used by cite2bib when --cat is provided

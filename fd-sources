@@ -16,11 +16,11 @@ Usage:
 Notes:
   - Use the cat-sources tool to stream the Markdown fulltext of a filename discovered with fd-sources (via a pipe).
 
-Examples:
+Examples (list → then read one):
   fd-sources vesper2012_jumping
   fd-sources -i 'vesper.*jump'
   fd-sources -i 'butterfill.*2019'
-  fd-sources vesper2012_jumping | cat-sources
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
 EOF
 }
 

@@ -20,6 +20,11 @@ Citation forms parsed:
 Output:
   - unique keys (in first-occurrence order), one per line
 
+Suggested workflow:
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
+
 Exit codes:
   0: success (printed at least one key)
   1: no citations found

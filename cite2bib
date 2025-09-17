@@ -36,10 +36,11 @@ Exit codes:
 Dependencies:
   - ripgrep (rg), awk, sed
 
-Examples:
-  cite2bib "\citet{vesper:2012_jumping}" | rg '^@'
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key" | rg '^@'
   cite2bib vesper2012_jumping > vesper.bib
-  cite2bib alter:2009_uniting | rg doi
 EOF
 }
 

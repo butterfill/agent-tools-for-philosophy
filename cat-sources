@@ -22,10 +22,10 @@ Usage:
   cat-sources [paths...]
   cat-sources               # read newline-delimited paths from stdin
 
-Examples:
-  fd-sources vesper2012_jumping | cat-sources
-  rg-sources -l 'bayesian prior' | cat-sources
-  cite2md vesper:2012_jumping | cat-sources
+Examples (list → then read one):
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
+  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
+  cite2md --cat vesper:2012_jumping
 EOF
 }
 
