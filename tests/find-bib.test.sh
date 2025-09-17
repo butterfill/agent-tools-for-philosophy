@@ -71,16 +71,7 @@ it "finds Smith 2021 by abstract contains 'motor'" \
   BIB_JSON="$FIXTURE_JSON" "$TOOL" --abstract motor
 
 # 3) limit parameter
-it "respects --limit for author with multiple entries (Steward)" \
-  has_n_lines 1 \
-  BIB_JSON="$FIXTURE_JSON" "$TOOL" --author steward --limit 1
-
-# 4) JSON output
-it "outputs compact JSON with --json" \
-  has_line_matching '"id"\s*:\s*"agrillo:2017_numerical"' \
-  BIB_JSON="$FIXTURE_JSON" "$TOOL" --author agrillo --json
-
-# 5) cat output via cite2bib (using sample.bib fixture)
+# 3) cat output via cite2bib (using sample.bib fixture)
 if command -v cite2bib >/dev/null 2>&1; then
   it "emits BibTeX via --cat for smith:2021_joint" \
     has_line_matching '^@\w+\{smith:2021_joint,' \

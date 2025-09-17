@@ -12,8 +12,6 @@ A tiny, agent-friendly CLI to print the contents of Markdown source files locate
 - With no positional args, reads newline-delimited paths from stdin (blank lines and lines starting with `#` are ignored).
 - Flags:
   - `-h|--help` — print concise usage and exit 0.
-  - `--headers` — print a header `==> path <==` before each file when more than one input path is provided.
-  - `-n|--number` — add line numbers to output (reset per file).
 
 ## Behavior
 - Validates `PAPERS_DIR` exists; `cd` into it to keep scope tight and output paths relative.
@@ -42,4 +40,3 @@ A tiny, agent-friendly CLI to print the contents of Markdown source files locate
 - Prints known file content from `$PAPERS_DIR`.
 - Reads paths from stdin; prints multiple files with `--headers`.
 - `fd-sources --cat` and `rg-sources --cat` e2e cases return non-empty content for known fixtures.
-

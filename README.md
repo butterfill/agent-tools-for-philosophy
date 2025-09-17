@@ -62,6 +62,7 @@ New: agents can now read source files directly
 - Output discipline
   - Keep stdout for the tool’s primary data. Send diagnostics to stderr.
   - Avoid extra wrapper noise; let underlying tools (e.g., `rg`) control formatting.
+  - Prefer minimal CLI surface: long flags only, avoid short aliases and decorative output (e.g., no headers/line numbers). Keep defaults strong over configurability.
 - Documentation hook
   - After adding a tool, add a short entry to `instructions.md` (agent-facing). Avoid duplicating `--help` text.
 - Testing

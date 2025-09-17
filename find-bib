@@ -10,7 +10,7 @@ print_help() {
 find-bib — search entries in Pandoc CSL-JSON
 
 Usage:
-  find-bib [filters...] [--json|--cat] [--limit N]
+  find-bib [filters...] [--cat]
 
 Filters (repeatable; case-insensitive substrings):
   --author TXT     Match author field
@@ -21,9 +21,7 @@ Filters (repeatable; case-insensitive substrings):
 
 Output:
   - default: print matching keys (one per line)
-  - --json: print matching JSON items (compact, one per line)
   - --cat: for each key, print full BibTeX via cite2bib
-  - --limit N: limit number of results (no limit by default)
 
 Environment:
   - BIB_JSON: path to CSL-JSON file (default: $HOME/endnote/phd_biblio.json)
@@ -49,7 +47,7 @@ if [[ ! -f "$BIB_JSON" ]]; then
 fi
 
 authors=(); years=(); dois=(); titles=(); abstracts=()
-mode="keys"; limit=0
+mode="keys"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -58,9 +56,7 @@ while [[ $# -gt 0 ]]; do
     --doi) shift; dois+=("${1:-}"); shift || true ;;
     --title) shift; titles+=("${1:-}"); shift || true ;;
     --abstract) shift; abstracts+=("${1:-}"); shift || true ;;
-    --json) mode="json"; shift ;;
     --cat) mode="cat"; shift ;;
-    --limit) shift; limit=${1:-0}; shift || true ;;
     -h|--help) print_help; exit 0 ;;
     -*) echo "find-bib: unknown flag: $1" >&2; exit 2 ;;
     *) echo "find-bib: unexpected positional argument: $1" >&2; exit 2 ;;
@@ -106,15 +102,6 @@ case "$mode" in
       --argjson abstracts "$abstracts_json" \
       "$jq_prog | key_of" "$BIB_JSON")
     ;;
-  json)
-    out=$(jq -c \
-      --argjson authors "$authors_json" \
-      --argjson years "$years_json" \
-      --argjson dois "$dois_json" \
-      --argjson titles "$titles_json" \
-      --argjson abstracts "$abstracts_json" \
-      "$jq_prog" "$BIB_JSON")
-    ;;
   cat)
     command -v cite2bib >/dev/null 2>&1 || { echo "find-bib: cite2bib not found for --cat" >&2; exit 2; }
     keys=$(jq -r \
@@ -125,25 +112,16 @@ case "$mode" in
       --argjson abstracts "$abstracts_json" \
       "$jq_prog | key_of" "$BIB_JSON")
     if [[ -n "$keys" ]]; then
-      # Apply limit if set during emission
-      count=0
       while IFS= read -r k; do
         [[ -z "$k" ]] && continue
         cite2bib "$k" || true
-        count=$((count+1))
-        if [[ $limit -gt 0 && $count -ge $limit ]]; then break; fi
       done <<< "$keys"
     fi
     ;;
 esac
 
 if [[ "$mode" != "cat" ]]; then
-  if [[ $limit -gt 0 ]]; then
-    # Limit lines cleanly and drop empties
-    out=$(printf '%s\n' "$out" | sed '/^\s*$/d' | head -n "$limit")
-  else
-    out=$(printf '%s\n' "$out" | sed '/^\s*$/d')
-  fi
+  out=$(printf '%s\n' "$out" | sed '/^\s*$/d')
   if [[ -n "$out" ]]; then
     printf '%s\n' "$out"
     exit 0

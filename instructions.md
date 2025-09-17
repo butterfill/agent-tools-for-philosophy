@@ -6,13 +6,13 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 - cite2md — print a Markdown fulltext path or content for a citation/key
 - cite2bib — print the corresponding BibTeX entry for a citation/key
 - path2key — infer the BibTeX key from a filename or path
-- find-bib — search the bibliography by fields; output keys, JSON, or BibTeX
+- find-bib — search the bibliography by fields; output keys or BibTeX
 - rg-sources — ripgrep search across Markdown fulltext of available sources (use `--cat` to stream content)
 - fd-sources — filename search across Markdown sources (use `--cat` to stream content)
 
 ### Common Tasks
 - Read full text for a citation
-  - `cite2md -c "\citet{vesper:2012_jumping}"`
+  - `cite2md --cat "\citet{vesper:2012_jumping}"`
 - Get the file path for a key
   - `cite2md vesper:2012_jumping`
 - Fetch a BibTeX entry
@@ -23,8 +23,7 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 - Find relevant entries by fields
   - Keys: `find-bib --author steward --year 2009 --title animal`
   - BibTeX: `find-bib --author smith --cat`
-  - JSON: `find-bib --abstract "joint action" --json`
-  - Limit: `find-bib --author steward --limit 1`
+  - (keys only by default; add --cat for BibTeX)
 - Search within all fulltext sources
   - `rg-sources -n "bayesian prior"`
   - `rg-sources -i -C2 "causal effect"`

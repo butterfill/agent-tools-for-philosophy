@@ -72,21 +72,10 @@ it "finds vesper:2012_jumping by author/year/title filters" \
   has_line_matching '^vesper:2012_jumping$' \
   BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --title jump
 
-# 2) JSON output returns id field for vesper:2012_jumping
-it "--json outputs entry with id vesper:2012_jumping" \
-  has_line_matching '"id"\s*:\s*"vesper:2012_jumping"' \
-  BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --json
 
-# 3) Limit parameter with a prolific author
-it "--limit 1 limits to a single result for Steward" \
-  has_n_lines 1 \
-  BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author steward --limit 1
-
-# 4) --cat emits BibTeX via cite2bib when BIB_FILE provided
+# 2) --cat emits BibTeX via cite2bib when BIB_FILE provided
 if command -v cite2bib >/dev/null 2>&1; then
-  it "--cat prints a BibTeX entry for vesper:2012_jumping" \
-    has_line_matching '^@\w+\{vesper:2012_jumping,' \
-    BIB_FILE="$BIB_FILE_PATH" BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --title jump --cat --limit 1
+  it "--cat prints a BibTeX entry for vesper:2012_jumping"     has_line_matching '^@\w+\{vesper:2012_jumping,'     BIB_FILE="$BIB_FILE_PATH" BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --title jump --cat
 else
   echo "SKIP: cite2bib not on PATH; skipping --cat e2e" >&2
 fi

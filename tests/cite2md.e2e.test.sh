@@ -77,16 +77,5 @@ it "latex citation form resolves and contains header when --cat" \
   has_line_matching '^# Are You Ready to Jump\?' \
   PAPERS_DIR="$PAPERS_ROOT" "$TOOL" --cat "\\citet{$KEY_WITH_COLON}"
 
-first_sentence_ends_with_period() {
-  local out
-  if ! out=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -1 "$KEY_WITH_COLON" 2>/dev/null); then
-    return 1
-  fi
-  # Non-empty and ends with a period
-  [[ -n "$out" ]] && printf '%s' "$out" | rg -q '\.$'
-}
-
-it "--first prints a non-empty sentence ending with a period" first_sentence_ends_with_period
-
 echo "RESULT: $pass passed, $fail failed"
 [[ "$fail" -eq 0 ]]

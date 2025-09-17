@@ -21,8 +21,6 @@ A small, agent-friendly CLI to locate bibliography entries by case‑insensitive
   - `--abstract "text"`
 - Output control:
   - `--cat` — print full BibTeX entries by resolving keys via `cite2bib` (default prints keys, one per line)
-  - `--json` — print raw JSON entries instead of keys (one object per line)
-  - `--limit N` — limit number of printed results (no limit by default)
 - Help:
   - `-h`, `--help`
 
@@ -47,7 +45,6 @@ A small, agent-friendly CLI to locate bibliography entries by case‑insensitive
 ## Output
 - Default: keys only (one per line), no extra logging.
 - `--cat`: for each matched key, call `cite2bib <key>` and print the resulting BibTeX entry. Entries are separated by a blank line (as produced by `cite2bib`).
-- `--json`: print matching entry objects as compact JSON, one per line.
 
 ## Exit Codes
 - 0: at least one match printed

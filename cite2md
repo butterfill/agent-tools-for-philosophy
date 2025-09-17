@@ -12,7 +12,7 @@ print_help() {
 cite2md — resolve citation/key to Markdown fulltext path
 
 Usage:
-  cite2md [--cat|-c] [--first|-1] <citation-or-key>
+  cite2md [--cat] <citation-or-key>
 
 Inputs accepted:
   - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
@@ -21,8 +21,7 @@ Inputs accepted:
 
 Output modes (default: path):
   - path (default): absolute file path to the Markdown fulltext
-  - --cat, -c: print the entire Markdown file to stdout
-  - --first, -1: print the first full sentence (skips headings/blank lines)
+  - --cat: print the entire Markdown file to stdout
 
 Resolution strategy:
   1) Search $PAPERS_DIR for files ending with <normalized-key>.md
@@ -56,10 +55,8 @@ fi
 MODE="path" # default: print file path
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -c|--cat)
+    --cat)
       MODE="cat"; shift ;;
-    -1|--first|--first-sentence)
-      MODE="first"; shift ;;
     -h|--help)
       print_help; exit 0 ;;
     --)
@@ -124,7 +121,4 @@ case "$MODE" in
     printf '%s\n' "$file" ;;
   cat)
     cat "$file" ;;
-  first)
-    # Print the first full sentence (skip leading headings/blank lines)
-    awk 'BEGIN{s=0} {if(s==0 && ($0 ~ /^\s*$/ || $0 ~ /^#/)) next; s=1; txt=txt $0 " "} END{ if (match(txt,/[^.]*\./)) print substr(txt,RSTART,RLENGTH) }' "$file" ;;
 esac
