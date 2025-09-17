@@ -12,16 +12,15 @@ fd-sources — filename search scoped to fulltext sources
 
 Usage:
   fd-sources [fd-flags...] [--] [pattern] [paths...]
-  fd-sources [fd-flags...] --cat [pattern]
 
 Notes:
-  - Use the cat-sources tool to stream the Markdown fulltext of a filename discovered with fd-sources.
+  - Use the cat-sources tool to stream the Markdown fulltext of a filename discovered with fd-sources (via a pipe).
 
 Examples:
   fd-sources vesper2012_jumping
   fd-sources -i 'vesper.*jump'
-  fd-sources -e md -e mdx butterfill
-  fd-sources vesper2012_jumping --cat
+  fd-sources -i 'butterfill.*2019'
+  fd-sources vesper2012_jumping | cat-sources
 EOF
 }
 
@@ -36,8 +35,6 @@ if [[ ! -d "$PAPERS_DIR" ]]; then
   echo "fd-sources: PAPERS_DIR not found: $PAPERS_DIR" >&2
   exit 2
 fi
-
-do_cat=false
 
 declare -a ARGS
 
@@ -54,7 +51,6 @@ for arg in "$@"; do
   fi
 
   case "$arg" in
-    --cat) do_cat=true; continue ;;
     -e|--extension|--extension=*)
       echo "fd-sources: file type overrides are not supported; use fd directly for non-Markdown" >&2
       exit 2 ;;
@@ -70,18 +66,4 @@ CMD=(fd)
 
 CMD+=("--extension" "md" "--extension" "mdx")
 
-if $do_cat; then
-  # Stream results into cat-sources
-  set -o pipefail
-  cs_bin=$(command -v cat-sources 2>/dev/null || true)
-  if [[ -z "${cs_bin:-}" && -x "$SCRIPT_DIR/cat-sources" ]]; then
-    cs_bin="$SCRIPT_DIR/cat-sources"
-  fi
-  if [[ -z "${cs_bin:-}" ]]; then
-    echo "fd-sources: cat-sources not found on PATH or alongside script" >&2
-    exit 2
-  fi
-  "${CMD[@]}" "${ARGS[@]}" | "$cs_bin"
-else
-  exec "${CMD[@]}" "${ARGS[@]}"
-fi
+exec "${CMD[@]}" "${ARGS[@]}"

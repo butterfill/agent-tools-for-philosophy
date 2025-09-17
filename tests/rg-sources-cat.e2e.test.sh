@@ -42,15 +42,14 @@ it() {
 run_ok_and_matches() {
   local pattern="$1"; shift
   local out
-  if ! out=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -i "$@" --cat 2>/dev/null); then
+  if ! out=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -i -l "$@" 2>/dev/null | "$REPO_ROOT/cat-sources" 2>/dev/null); then
     return 1
   fi
   rg -q "$pattern" <<< "$out"
 }
 
-it "--cat prints content for known phrase search" \
+it "prints content via pipe to cat-sources for known phrase search" \
   run_ok_and_matches "Are You Ready to Jump\?" "Are You Ready to Jump\?"
 
 echo "RESULT: $pass passed, $fail failed"
 [[ "$fail" -eq 0 ]]
-

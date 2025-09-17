@@ -8,8 +8,8 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 - cite2bib — print the corresponding BibTeX entry for a citation/key
 - path2key — infer the BibTeX key from a filename or path
 - find-bib — search the bibliography by fields; output keys or BibTeX
-- rg-sources — ripgrep search across Markdown fulltext of available sources (use `--cat` to stream content)
-- fd-sources — filename search across Markdown fulltext sources (use `--cat` to stream content)
+- rg-sources — ripgrep search across Markdown fulltext of available sources
+- fd-sources — filename search across Markdown fulltext sources
 - cat-sources — print contents of source files from a filename
 
 ### Common Tasks

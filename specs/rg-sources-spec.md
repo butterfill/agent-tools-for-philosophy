@@ -12,7 +12,6 @@ A thin wrapper around ripgrep that confines searches to the local papers directo
 
 ## CLI
 - `rg-sources [rg-flags...] [--] [pattern] [paths...]`
-- `rg-sources [rg-flags...] --cat [pattern]`
 - Help: `-h|--help`
 
 ### Defaults & Pass‑through
@@ -24,9 +23,7 @@ A thin wrapper around ripgrep that confines searches to the local papers directo
 - Changes directory to `$PAPERS_DIR` prior to running the search so output paths are relative and scope is enforced.
 
 ### Convenience
-- `--cat`: print contents of matched files instead of match lines.
-  - Internally runs: `rg -l … | sort -u | cat-sources`.
-  - Requires `cat-sources` on `PATH` or alongside the script.
+- To stream file contents, pipe paths to `cat-sources`: `rg-sources -l … | sort -u | cat-sources`.
 
 ## Output
 - Default: identical to `rg` output for the given flags and pattern.

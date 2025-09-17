@@ -26,8 +26,8 @@ This file is for the agent. It instructs the agent on how to use each tool.
 New: agents can now read source files directly
 - Use `cat-sources` to print contents of files under `$PAPERS_DIR`.
 - Discovery tools support one-shot reading:
-  - `fd-sources --cat <pattern>` streams matched files.
-  - `rg-sources --cat <pattern>` streams content of files matching the search.
+ - `fd-sources <pattern> | cat-sources` streams matched files.
+ - `rg-sources -l <pattern> | cat-sources` streams content of files matching the search.
  - `draft2keys <draft.md> | cite2md --cat` streams content of sources cited in a draft. Missing fulltext is logged to `missing-fulltext.txt`.
 
 ## Install (for developers)
