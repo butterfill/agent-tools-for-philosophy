@@ -16,7 +16,7 @@ PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 
 print_help() {
   cat <<'EOF'
-cat-sources — print contents of source files under PAPERS_DIR
+cat-sources — print fulltext contents of one or more files from filename
 
 Usage:
   cat-sources [paths...]
