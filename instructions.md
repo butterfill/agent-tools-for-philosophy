@@ -2,7 +2,6 @@
 Use these CLI tools to locate sources, read full text, and fetch citations. Tools are on your PATH; call them directly (no `./` required). Inputs can be LaTeX-style citations (e.g., `\citet{key}`) or bare BibTeX keys (e.g., `author:year_title`).
 
 ### Core Tools
-- cat-sources — print contents of source files under `PAPERS_DIR`
 - cite2md — print a Markdown fulltext path or content for a citation/key
   - Accepts multiple keys via args or stdin; use `--cat` to stream content.
 - cite2bib — print the corresponding BibTeX entry for a citation/key
@@ -10,7 +9,7 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 - find-bib — search the bibliography by fields; output keys or BibTeX
 - rg-sources — ripgrep search across Markdown fulltext of available sources (use `--cat` to stream content)
 - fd-sources — filename search across Markdown sources (use `--cat` to stream content)
-  Note: both are Markdown-only by design; use plain `rg`/`fd` for other file types.
+- cat-sources — print contents of source files from a filename
 
 ### Common Tasks
 - Read full text for a citation
@@ -41,11 +40,10 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
   - From `rg-sources`: `rg-sources -l 'bayesian prior' | cat-sources`
   - From a citation/key: `cite2md vesper:2012_jumping | cat-sources`
 
-
-Missing fulltext
+### Missing fulltext
 - When `cite2md` cannot resolve a key, it prints a standardized message to stderr and appends the key to `missing-fulltext.txt` in the current working directory (one key per line) for follow‑up.
 
-Missing BibTeX entries
+### Missing BibTeX entries
 - When `cite2bib` cannot resolve a key in the BibTeX file, it prints a standardized message to stderr and appends the key to `missing-keys.txt` in the current working directory (one key per line).
 
 ### Notes
