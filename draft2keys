@@ -8,27 +8,25 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 print_help() {
   cat <<'EOF'
-draft2keys — extract BibTeX keys from a draft and optionally print fulltext
+draft2keys — extract BibTeX keys from a draft
 
 Usage:
-  draft2keys [--cat] <draft-file>
+  draft2keys <draft-file>
 
 Citation forms parsed:
   - LaTeX: \cite...{key1,key2} with optional * and up to two [..] args
   - Pandoc: @key and [@key]
 
 Output:
-  - default: unique keys (in first-occurrence order), one per line
-  - --cat: resolve each key via cite2md and stream concatenated Markdown
+  - unique keys (in first-occurrence order), one per line
 
 Exit codes:
-  0: success (printed at least one key or any content in --cat)
-  1: no citations found (or none resolved in --cat)
-  2: usage/config error (e.g., missing draft, missing dependencies)
+  0: success (printed at least one key)
+  1: no citations found
+  2: usage/config error (e.g., missing draft)
 
 Dependencies:
   - rg (ripgrep), sed/awk
-  - --cat requires cite2md (uses PAPERS_DIR)
 EOF
 }
 
@@ -42,17 +40,10 @@ if ! command -v rg >/dev/null 2>&1; then
   exit 2
 fi
 
-MODE="keys"
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --cat)
-      MODE="cat"; shift ;;
-    -*)
-      echo "draft2keys: unknown option: $1" >&2; exit 2 ;;
-    *)
-      break ;;
-  esac
-done
+if [[ ${1:-} == --* ]]; then
+  echo "draft2keys: unknown option: $1" >&2
+  exit 2
+fi
 
 if [[ $# -lt 1 ]]; then
   echo "draft2keys: missing draft file" >&2
@@ -82,32 +73,5 @@ if [[ -z "${all_keys//\n/}" ]]; then
   exit 1
 fi
 
-case "$MODE" in
-  keys)
-    printf '%s\n' "$all_keys"
-    ;;
-  cat)
-    cs_bin=$(command -v cite2md 2>/dev/null || true)
-    if [[ -z "${cs_bin:-}" && -x "$SCRIPT_DIR/cite2md" ]]; then
-      cs_bin="$SCRIPT_DIR/cite2md"
-    fi
-    if [[ -z "${cs_bin:-}" ]]; then
-      echo "draft2keys: cite2md not found on PATH or alongside script" >&2
-      exit 2
-    fi
-    # Stream keys via cite2md one by one; rely on cite2md for missing handling/logging
-    any=false
-    while IFS= read -r k; do
-      [[ -z "$k" ]] && continue
-      if out=$(PAPERS_DIR="$PAPERS_DIR" "$cs_bin" --cat "$k" 2>/dev/null); then
-        printf '%s' "$out"
-        any=true
-      fi
-    done <<< "$all_keys"
-    if ! $any; then
-      exit 1
-    fi
-    ;;
-esac
-
+printf '%s\n' "$all_keys"
 exit 0

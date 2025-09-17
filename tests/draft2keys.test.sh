@@ -5,7 +5,6 @@ REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
 TOOL="$REPO_ROOT/draft2keys"
-PAPERS_ROOT="${PAPERS_DIR:-$HOME/papers}"
 
 pass=0
 fail=0
@@ -55,22 +54,7 @@ keys_extraction_works() {
 
 it "extracts keys from LaTeX and Pandoc forms" keys_extraction_works
 
-cat_mode_streams_known_content() {
-  local draft out
-  draft=$(mktemp -t tmp_draft2keys.XXXX.md)
-  cat > "$draft" <<'MD'
-This cites only Vesper: \citet{vesper:2012_jumping}.
-MD
-  if [[ ! -d "$PAPERS_ROOT" ]]; then
-    echo "SKIP: PAPERS_DIR not found at $PAPERS_ROOT" >&2
-    return 0
-  fi
-  out=$(PAPERS_DIR="$PAPERS_ROOT" "$TOOL" --cat "$draft" 2>/dev/null || true)
-  rg -q '^# Are You Ready to Jump\?' <<< "$out"
-}
-
-it "--cat streams known fulltext (when available)" cat_mode_streams_known_content
+:
 
 echo "RESULT: $pass passed, $fail failed"
 [[ "$fail" -eq 0 ]]
-
