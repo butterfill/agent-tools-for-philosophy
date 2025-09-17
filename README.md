@@ -1,4 +1,8 @@
-These are CLI tools created for use by agents (codex, rovodev, ...).
+These are CLI tools created for use by AI coding/analysis agents (codex, Claude Code, rovodev, etc.) focused on philosophical analysis: reading, searching, quoting, and citing.
+
+## Goals
+- Keep mental model simple: discover → read → quote/cite.
+- Reduce friction in common scenarios
 
 ## Scenarios
 - an agent is reviewing a draft which contains BibTeX citations. The agent’s task is to check that the draft provides an accurate, insightful and fair characterisation of the sources it cites.

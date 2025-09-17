@@ -10,7 +10,7 @@ CLI
 
 Behavior
 - For each input token (key or LaTeX citation form), resolve via `cite2md` to a path and stream via `cat-sources`.
-- Rejects tokens that do not resolve (print error to stderr, continue to next).
+- Rejects tokens that do not resolve (print error to stderr and append to `keys2cat-missing-keys.log`, continue to next).
 
 Exit Codes
 - 0: at least one file printed

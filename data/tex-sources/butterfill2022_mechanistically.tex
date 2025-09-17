@@ -1,0 +1,1368 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+
+\def \papersize {a4paper}
+
+\documentclass[12pt,\papersize]{extarticle}
+
+
+\usepackage[\papersize]{geometry} % see geometry.pdf
+\geometry{twoside=false}
+\geometry{headsep=2em} %keep running header away from text
+\geometry{footskip=1cm} %keep page numbers away from text
+\geometry{top=3cm} %increase to 3.5 if use header
+\geometry{left=4cm} %increase to 3.5 if use header
+\geometry{right=4cm} %increase to 3.5 if use header
+\geometry{textheight=22cm}
+
+
+%for underline
+\usepackage[normalem]{ulem}
+
+
+\usepackage{natbib}
+\setcitestyle{aysep={}}  %philosophy style: no comma between author & year
+
+
+
+%lists
+\usepackage{enumitem}
+
+
+%avoid overhang
+\tolerance=5000
+
+
+% for creating word doc - disable hyphenation
+\usepackage[none]{hyphenat}
+
+
+\begin{document}
+
+\setlength\footnotesep{1em}
+
+%screws up word count for some reason:
+\bibliographystyle{$HOME/latex_imports/mynewapa} %apalike
+
+
+%for MIND journal
+\renewcommand\labelenumi{(\theenumi)}
+
+
+
+
+
+
+
+
+
+\noindent
+\Large
+\textbf{Towards a Mechanistically Neutral Account of Acting Jointly: The Notion of a Collective Goal}
+\normalsize
+
+\
+
+\noindent
+\textsc{Stephen A. Butterfill}
+
+\noindent
+Department of Philosophy, University of Warwick, UK 
+
+\noindent
+\underline{s.butterfill@warwick.ac.uk}
+
+\
+
+\noindent
+\&
+
+\
+
+\noindent
+\textsc{Corrado Sinigaglia}
+
+\noindent
+Dipartimento di Filosofia, Universita degli Studi di Milano, Italy 
+
+\noindent
+\underline{corrado.sinigaglia@unimi.it}
+
+\
+
+\
+
+\begin{abstract}
+\noindent
+Anyone who has ever walked, cooked or crafted with a friend is in a position to know that acting jointly is not just acting side-by-side.  But what distinguishes acting jointly from acting in parallel yet merely individually?  Four decades of philosophical research have yielded broad consensus on a strategy for answering this question.  This strategy is \emph{mechanistically committed}; that is, it hinges on invoking states of the agents who are acting jointly (often dubbed ‘shared’, ‘we-’ or ‘collective’ intentions).  Despite the consensus, enduring disagreement remains. The disagreement may be a consequence of the strategy; at least this is plausible enough to motivate considering the prospects for an alternative. Our aim is therefore to draw attention to a coherent alternative that is present in the literature but often overlooked. This alternative is \emph{mechanistically neutral}: it avoids invoking states of agents. Implementing the alternative, we introduce the notion of a collective goal and a characterisation of acting jointly which meets criteria standardly used in evaluating other accounts and may have some advantages over those accounts.
+\end{abstract}
+
+
+
+\section{\textbf{Introduction}}
+\label{sec:intro}
+\label{sec:problems}
+
+Many of the things we do are, or could be, done with others.
+Mundane examples favoured by philosophers include 
+painting a house together \citep{Bratman:1992mi}, 
+  lifting a heavy sofa together \citep{Velleman:1997oo}, 
+  preparing a hollandaise sauce together \citep{Searle:1990em}, 
+  going to Chicago together \citep{Kutz:2000si}, 
+  and walking together \citep{gilbert_walking_1990}.
+These examples are supposed to be paradigm cases of a phenomenon, or class of phenomena, we shall call \emph{acting jointly}, although a variety of labels have been used.%
+\footnote{%
+Labels include 
+‘joint action’ \citep{brooks_joint_1981, Sebanz:2006yq, Knoblich:2010fk,Tollefsen:2005vh,pettit:2006_joint,Carpenter:2009wq,Pacherie:2010fk,brownell:2011_early,sacheli:2018_evidence,meyer:2013_higher-order},
+‘social action’ \citep{tuomela:1985_weintentions},
+‘collective action’ \citep{Searle:1990em, Gilbert:2010fk},
+‘joint activity’ \citep{baier:1997_joint},
+‘acting together’ \citep{tuomela:2000_cooperation}, % ‘Acting together involves sociality in the relatively strong sense that such action must be based on joint intention or shared collective goal.’
+‘shared intentional activity’ \citep{Bratman:1999fr},
+‘plural action’ \citep{Schmid:2008},
+‘joint agency’ \citep{pacherie:2013_lite},
+‘small scale shared agency’ \citep{bratman:2014_book}, 
+‘intentional joint action’ \citep{blomberg:2015_common},
+‘collective intentional behavior’ \citep{ludwig:2016_individual}, and 
+‘collective activity’ \citep{longworth:2019_sharing}.
+We leave open whether these are all labels for a single phenomenon or whether different researchers are targeting different things. 
+As we use ‘acting jointly’, the term applies to everything any of these labels applies to.
+}
+% Further, reflection on these examples is supposed to ensure sufficient 
+% agreement that it makes sense to ask which features distinguish 
+% cases of acting jointly from other things we do.
+To delimit which cases are of interest, 
+philosophers have also contrasted things they take to be cases of acting jointly with things they take to be cases of people merely acting in parallel with each other.
+For instance, when members of a flash mob in the Central Cafe respond to a pre-arranged cue by noisily opening their newspapers in order to create a salient marker for the opening of their performance, they are held to be acting jointly. 
+But when someone not part of the mob just happens to noisily open her newspaper in response to the same cue, she is held to be acting in parallel with the others but merely individually.%
+\footnote{%
+See \citet{Searle:1990em}; in his example park visitors simultaneously run to a shelter, in one case as part of dancing together and in another case because of a storm. 
+Compare \citet{Pears:1971fk} who uses contrast cases to argue that whether something is an ordinary, individual action depends on its antecedents. 
+}
+To give another example, 
+  two former members of the mob are held to be acting jointly when they 
+    later walk to the metro station together. 
+But two people who merely happen to be walking to the metro station side-by-side among a crowd of people heading that way are held to be acting in parallel but merely individually. (This example is adapted from \citet[pp. 5--6]{bratman:2014_book}, who borrowed it from \citet{gilbert_walking_1990}.)
+These paradigm and contrast cases invite the question, What features distinguish acting jointly from acting in parallel but merely individually?
+
+Although some philosophers may question some of these claims about paradigm cases and contrast cases,%
+\footnote{%
+For views which imply or may motivate dissent, see for example \citet{baier:1997_joint}, \citet{chant_unintentional_2007}, \citet{petersson_collectivity_2007}, and \citet[pp.~13ff]{longworth:2019_sharing}.
+}
+we shall follow those cited above in assuming, provisionally,%
+\footnote{%
+We propose a way to avoid relying on this assumption in §\ref{sec:objection-evidence} below.
+}
+that reflection on the examples and contrasts can ensure sufficient agreement 
+on the topic 
+that it makes sense to ask which features distinguish acting jointly from acting in parallel but merely individually.
+This assumption is consistent with neutrality both on whether there is just one distinction or several to be drawn, and also on which of the above claims about paradigm cases and contrast cases are correct.
+
+A standard strategy for distinguishing acting jointly from acting in parallel but merely individually involves invoking states of the agents who are acting jointly, often dubbed ‘we-’, ‘shared’ or ‘collective intentions’.%
+\footnote{%
+This strategy has been pursued by a number of philosophers. One early example (although not the first) is \citet{tuomela:1985_weintentions}; it may be that \citet{tuomela_we-intentions_1988} and \citet{Searle:1990em}’s response initiated contemporary debate.
+This is not to say that no philosophers have taken an alternative line. 
+\citet[p.~138]{petersson_collectivity_2007}, for instance, 
+attempts to explicate the distinction between acting jointly and acting in parallel but merely individually ‘in terms of dispositions and causal agency’. 
+% \citet[p.~138]{petersson_collectivity_2007}  ‘we need a notion of collectivity that does not presuppose intention.’ 
+See also \citet[][]{chant_unintentional_2007} for another alternative line.
+}
+The idea, very roughly, is that acting jointly (or one kind of acting jointly if there are several) 
+is distinguished from acting in parallel but merely individually by these states playing some particular role.
+The central task, on this strategy, is to characterise the states and their explanatory relation to acting jointly (compare \citealp[p.~10]{bratman:2014_book}).
+There is, however, considerable debate about the nature of the states on which this distinction hinges.
+Some hold that the states in question involve a novel attitude \citep{Searle:1990em,gallotti:2013_social}. 
+Others have explored the notion that the primary distinguishing feature of  these states is not the kind of attitude involved but rather the kind of subject, which is plural \citep{helm_plural_2008}. 
+Or they may differ from ordinary intentions in involving distinctive obligations or commitments to others (\citealp{Gilbert:1992rs}; \citealp{Roth:2004ki}).%
+\footnote{%
+\label{fn:gilbert_mech_committed}%
+Because Gilbert can be interpreted as characterising states of an agent in terms of commitments (compare \citet[p.~10]{gilbert:2014_book}: ‘I take [...] acting together to involve collective intentions—understood in terms of joint commitment’), she does provide materials that can be used by a proponent of the standard strategy. However it may be more accurate to interpret her as offering an alternative to the standard strategy, one which does not involve invoking any states of the agents at all but only certain normative facts (see further §\ref{sec:objection-evidence}). 
+Related points could be made about others cited in this paragraph (particularly \citealp{Gold:2007zd} and \citealp{bratman:2014_book}). What unites them is that they do provide materials for proponents of the standard strategy to identify states of the agents in distinguishing acting jointly.
+}
+Or perhaps the most fundamental distinguishing mark of these states is the way they arise, namely through team reasoning \citep{Gold:2007zd,pacherie:2013_lite}.
+Opposing all such views, \citet{Bratman:1992mi,bratman:2014_book} argues that the distinctive states, which he calls `shared intentions', can be realised
+by multiple ordinary individual intentions and other attitudes whose contents interlock in a distinctive way.%
+\footnote{%
+In \citet{Bratman:1992mi}, the ordinary individual intentions and other attitudes were offered as jointly sufficient {and individually necessary} conditions; the retreat to sufficient conditions only occurs in \citet[][pp.\ 143-4]{Bratman:1999fr}: `for all that I have said, shared intention might be multiply realizable.'  Because Bratman distinguishes two tasks in characterising acting jointly---specifying a functional role and identifying states which realise it---his work provides materials both for proponents of the standard strategy and also for proponents of an alternative strategy. We return to this in §\ref{sec:objection-evidence}.
+}  
+Bratman’s approach has inspired a family accounts along broadly these lines, including  \citet{asarnow:2020_shared}, \citet{blomberg:2015_common}, \citet{ludwig_collective_2007,ludwig:2016_individual} and \citet{Tollefsen:2005vh}.
+
+% IDEA for this paragraph : there is a way of singling out correct from incorrect accounts which is available when you are mechanistically neutral but unavailable when you are mechanistically committed.
+How are we to determine when any two of these accounts should be regarded as competing attempts to characterise a single phenomenon and when they should be regarded as compatible attempts to characterise different phenomena? And how are we to single out, from among all of these accounts, those which are correct?  The growing number and increasing diversity of accounts make urgent these twin problems. It may be that they can be solved. But we believe that there is sufficient doubt to motivate investigating an alternative to the standard strategy, one which makes available a distinctive way of singling out correct accounts.  And our aim in this paper is to do just this.
+
+In investigating an alternative strategy, we are not promising to adjudicate among accounts which follow the standard strategy. However, we will show how those accounts can be recast in line with the alternative strategy and their main insights adjudicated.  To anticipate, one consequence of this will be that some accounts which appeared incompatible from the point of view of the standard strategy turn out not to be incompatible when recast.
+
+
+% If we follow this strategy---the strategy of invoking states of the agents in distinguishing acting jointly from acting in parallel but merely individually---how are we to single out a correct account from its competitors? 
+% This is a pressing problem because there are many accounts, and for each account there is a variant differing only slightly, or else it would be possible to construct one.  To further complicate matters, it may be difficult to discover when two accounts should be regarded as competing attempts to characterise a single phenomenon or when they should be regarded as compatible attempts to characterise different phenomena.
+% The question of how we can single out a correct account from its competitors is therefore a problem.
+
+% It may be that this problem arises merely because more work along the same lines is needed. 
+% Another possibility, however, is that this problem can be avoided by adopting an alternative to the strategy to that of invoking states of the agents.
+% In what follows, we will identify and pursue an alternative strategy for distinguishing acting jointly from acting in parallel but merely individually. 
+% This strategy can be found in the literature, but we believe its full potential may have been overlooked. We will also show (in §\ref{sec:objection-evidence}) that this alternative does not face the same problems we have identified for the standard strategy.
+
+
+
+
+\section{\textbf{An alternative strategy}}
+\label{sec:alternative_strategy}
+
+Proponents of what we call the standard strategy differ in important ways but have one thing in common: in attempting to distinguish acting jointly from acting in parallel but merely individually, they are invoking states of the agents. 
+On the standard strategy, there is no way of drawing this distinction without being committed to a claim about which states, or structures of states, cause the actions agents perform when they act jointly.
+
+To see that this is not the only possible strategy, consider philosophical accounts of ordinary, individual action.
+We might ask, following \citet{Davidson:1971fz},
+what distinguishes those events which are actions from events which merely happen to an agent?
+In answering this question many have, like Davidson, focussed on intentional actions only.
+Some philosophers answer the question by saying---to put it very roughly and incompletely---that intentional actions are those caused in a certain way by beliefs, desires, intentions or other kinds of state.%
+\footnote{%
+Examples include \citet[][]{bach:1978_representational} and \citet{Dretske:1988sq}.  
+Although \citet{Bratman:1987xw} is sometimes said to be a proponent of this view \citep{schlosser:2019_agency}, we take Bratman to be primarily concerned with developing a theory of intention---and although this involves investigating relations between  intentional action and intentions, it does not obviously require commitment to characterising the former in terms of the latter.
+}
+This is an example of what we shall call a \emph{mechanistically committed} answer: that is, an answer which involves making commitments concerning which states, or structures of states, cause intentional actions. 
+Although this is the dominant approach, and one which has provided a framework for much philosophy of action (\citealp{brand:1984_intending} is a nice illustration), it is not the only way philosophers have attempted to answer the question.
+An intentional action may be characterised, very roughly and incompletely, as an action that happens because its agent has certain reasons for bringing an outcome about, or at least for attempting to do so.
+% Steve hausaufgaben: read \citep{alvarez:2016_reasons} and her 2010 book
+% \citet{schlosser:2019_agency}: ‘to act intentionally is to act for a reason, and [...] to act for a reason is to act in a way that can be rationalized by the premises of a sound practical syllogism’
+This is an example of what we shall call a \emph{mechanistically neutral} answer: that is, one which does not involve making commitments concerning which states, or structures of states, cause intentional actions.%
+\footnote{%
+But is this second answer really mechanistically neutral?
+According to \citet{alvarez:2016_reasons}, philosophers sometimes conceive of  ‘motivating and explanatory reasons \ldots\ as mental states of agents’.
+Providing a mechanistically neutral characterisation of intentional action requires a mechanistically neutral characterisation of reasons, too.
+If, as we suppose, such a characterisation exists, then there are mechanistically neutral attempts to characterise intentional action.
+}
+
+Proponents of a mechanistically neutral characterisation need not deny that intentional actions are caused by intentions or other states of agents. 
+They merely insist on separating two questions:
+%
+\begin{enumerate}
+
+\item What distinguishes intentional actions from things which merely happen to an agent (and from nonintentional actions, if there are any)?
+
+\item Which states cause intentional actions?  
+
+\end{enumerate}
+%
+All sides can agree that fully understanding action requires answering both questions (and more).%
+\footnote{%
+Of course there are philosophers who might deny that the second question bears on any philosophical questions about action (\citet[][]{ginet:1990_action}, for example).
+Proponents of a mechanistically neutral characterisation are free to oppose such philosophers on the grounds that the answers to the two questions are mutually constraining (see §\ref{sec:objection-evidence} below). They may therefore oppose both causal theorists (whose strategy is to answer the first question by answering the second) and non-causal theorists (who deny that the second question is relevant).
+}
+But whereas a mechanistically committed characterisation answers the first question in a way that involves answering, partially or wholly, the second, a mechanistically neutral characterisation answers the first question in a way that does not.%
+\footnote{%
+Note that the possibility of characterising A in terms which do not mention B does not in general imply that it is possible for there to be As without corresponding Bs.  Proponents of a mechanistically neutral approach may therefore accept that intentional actions are caused by intentions and could not be caused in some other way (to borrow, with our thanks, some words from a critic).
+}
+What makes an approach mechanistically neutral is not the pattern of answers given to the questions but the recognition that the answers are to an interesting degree theoretically independent.
+
+To see when a mechanistically neutral characterisation could be useful, consider Bratman’s position as an example. He allows that actions can be intentional ‘even though [the agent] has no distinctive attitude of intending’ \citep[p.~132]{Bratman:1987xw}, and even though the agent lacks the capacity to form intentions altogether \citep[p.~51]{bratman:2000_valuing}.  This view follows from two claims: first, intentions are distinct from any combination of beliefs and desires; and second, beliefs and desires alone may, in certain cases, determine what an agent intentionally does.
+Of course, this second claim would make no sense if we answered the first question above by saying that intentional actions are things caused by intentions.
+But Bratman’s position clearly makes sense if we rely on a mechanistically neutral characterisation of intentional action.
+If we anchor the notion of intentional action by saying that intentional actions are things which happen because an agent has reasons, we can then coherently postulate variety in the states and processes which cause intentional actions.
+%
+%\footnote{%
+%Of course, making sense of Bratman’s position does not obviously require a mechanistically neutral characterisation of intentional action. On the face of it, we could also make sense of Bratman’s view if we relied on a disjunctive mechanistically committed characterisation: intentional actions are things caused either by intentions or by belief-desire pairs. We are not arguing that there is no way to understand Bratman’s position other than by relying on a mechanistically neutral characterisation of intentional action. Our suggestion is only that this provides one coherent, reasonably natural way of doing so.
+%}
+
+Until now we have considered approaches which focus on intentional actions only. But this is not the only coherent approach. Another possibility is to first characterise a notion of purposive action (invoking goals) and then elaborate on this in characterising intentional action (invoking reasons concerning the goals).
+%
+%\footnote{%
+%This is possible even if there are, in fact, no purposive actions which are not intentional actions: the issue concerns theoretical relations between the notions only.  
+%}
+In this case there is also a divide between mechanistically committed and mechanistically neutral characterisations. 
+A purposive action is an action directed to one or more goals.  
+Some take goals to be states of agents \citep[p.~338]{austin:1996_goal}.
+%
+%\footnote{%
+%In an influential review, \citet[p.~338]{austin:1996_goal} write,
+%‘[w]e define \emph{goals} as internal representations of desired states.’
+%}
+Any characterisation relying on such a notion of goal is mechanistically committed: purposive actions are characterised in terms of states which cause them.
+By contrast, others have used ‘goal’ as a label for those outcomes to which an action is directed \citep[e.g.][]{wilson:2016_action} 
+and have offered, or relied on, mechanistically neutral characterisations of purposive action (\citealp[p.~42]{Bennett:1976rg}; \citealp{Butterfill:2001kc}; \citealp{Gergely:1995sq,Csibra:2007hm}; \citealp{Wright:1976ls}). 
+
+How does any of this bear on our question about which features distinguish acting jointly from acting in parallel but merely individually? 
+Consideration of ordinary, individual action suggests two things.
+First, that it may also be possible to provide a mechanistically neutral characterisation of acting jointly.
+And, second, that it is coherent not to focus exclusively on a notion of acting jointly where acting jointly is intentional.
+We can therefore separate two questions:
+%
+\begin{enumerate}
+
+\item What distinguishes acting jointly from acting in parallel but merely individually?
+
+\item Which states cause the actions agents perform when they act jointly?  
+
+\end{enumerate}
+%
+We shall extend our terminology and distinguish \emph{mechanistically committed} from \emph{mechanistically neutral} answers to the first question according to whether they do, or do not, involve making commitments concerning the second question. 
+
+% As the partial parallel with ordinary, individual action indicates,
+% proponents of both mechanistically committed and mechanistically neutral answers aim, ultimately, to answer each of the questions above.
+
+Giving a mechanistically neutral answer is consistent with denying that the second question bears on the first at all, perhaps because you see the first as a normative question and one quite separate from any concern about causes.
+But, as we explain in §\ref{sec:objection-evidence}, giving a mechanistically neutral answer is also consistent with allowing that the questions are mutually constraining.
+
+
+
+% MAYBE ADD THIS:
+% To illustrate, consider answering the question about what distinguishes acting jointly by saying, first, that acting jointly involves shared intention and then going on to characterise shared intention. 
+% Such an approach is mechanistically committed to an interesting degree: this answer rules out the possibility that 
+
+
+In what follows, we explore the prospects for an alternative strategy which deviates from the standard strategy in aiming to provide a mechanistically neutral characterisation. The initial focus is not on joint counterparts of intentional action but on the notion of acting jointly (allowing that intentional cases of acting jointly may eventually turn out to be in some respect more fundamental). We shall argue that the alternative yields a characterisation of acting jointly which, although probably incomplete, meets criteria standardly used in evaluating other accounts. We shall also argue that the alternative strategy offers an advantage in solving the twin problems from §\ref{sec:intro}: the problem of 
+singling out correct accounts, and the problem of determining when two accounts are competing attempts to characterise a single phenomenon rather than compatible attempts to characterise different phenomena. 
+
+% mechanistically neutral :
+% - it’s clear that each different account is a compatible attempt to capture distinct phenomena (should they exist); there’s no doubt about competing accounts of a single phenomenon. 
+% - each account, if sufficiently detailed, should generate testable hypotheses (because it raises the question about what mechanisms could implement).
+% - mechanistically committed theories should be separable into mechanistically neutral and committed parts anyway (e.g. motor )
+
+
+%  We shall argue that these differences are sufficient in this sense: proponents of the alternative strategy will not face the same problems (identified in §\ref{sec:problems}) which confront proponents of the standard strategy.
+
+
+% TODO : (*We need to say that philosophers do this above: so far we only said they are standardly mechanistically committed.)
+
+
+
+% goal section draft gone to bin at: https://docs.google.com/document/d/1zw07xKXJu1W7T6c2YDbhIVKN86edqhV_O7nOyvN-3F8/edit
+
+
+
+\section{\textbf{Collective vs distributive}}
+\label{sec:collective_vs_distributive}
+
+This and the following sections sketch a mechanistically neutral answer to the question, What distinguishes acting jointly from acting in parallel but merely individually?  We focus initially on the purposive aspect of acting jointly, and will only later (in §\ref{sec:intentional}) turn to its intentional aspect. Just as the notion of a goal is central to any account of ordinary, individual purposive action, so our  central notion will be that of a collective goal. In order to introduce this notion (in §\ref{sec:collective_goals}), we first need to clarify how we will use the term  ‘collective’ (in this section) and what it means for an action to have a goal (in §\ref{sec:goals}). 
+
+Consider these sentences:
+%
+\begin{enumerate}
+\item The tiny leaves fell from the tree.
+\item The tiny leaves blocked the drain.
+\end{enumerate}
+%
+The first sentence is naturally read \emph{distributively}; that is, as specifying something
+that each leaf did individually.  Perhaps first one leaf fell, then another fell.
+But the second sentence is naturally read \emph{collectively}.
+No one leaf blocked the drain; rather the blocking was something that the leaves 
+accomplished together.
+For the sentence to be true on this collective reading, the tiny leaves' blocking the drain cannot be, or cannot only be, a matter of each leaf blocking the drain.%
+\footnote{%
+This informal contrast between collective and distributive readings is linked to a debate about the logic of plural quantification; see \citet{Linnebo:2005ig} for an overview of that debate.
+}
+
+% Read collectively, the second sentence may appear to involve reference to a plurality of things. To emphasise this point, contrast a further sentence:
+% % 
+% \begin{enumerate}[resume]
+% \item The tiny leaves formed a barrier, which blocked the drain.
+% \end{enumerate}
+% %
+% The barrier has no parts other than the tiny leaves, their parts and any  mereological sums of these (we stipulate).
+% Nevertheless there may appear to be a contrast between this sentence and the previous one: whereas the former appears to refer to a plurality of leaves, the second part of this one is naturally read as referring to a single thing which blocked the drain, namely the barrier.
+% (The first part of this third sentence also appears to refer to a plurality of leaves, of course.)
+
+% Some may hold that there is not really any such contrast between the second and third sentences.
+% They may insist that, where sentences appear to refer to a plurality they are in fact covertly referring to some single larger structure, such as a barrier or a set (see §5 of \citet{Linnebo:2005ig} for an overview of the debate).
+% This issue about the semantics of plural quantification is orthogonal to our present aims.
+% In what follows, our argument will hinge only on the claim that there is a contrast between natural readings of the first two sentences.
+% This is accepted by all sides, and 
+% we use the terms \emph{collective} and \emph{distributive} to mark this contrast without any commitment on whether or not collective readings somehow involve reference to, or quantification over, pluralities.
+
+Now consider an example involving actions and their outcomes:
+% 
+\begin{enumerate}[resume]
+\item Those thoughtless actions blocked the drain.
+\end{enumerate}
+%
+This sentence can be read in at least two ways, distributively or collectively.
+We can read it distributively  as concerning a sequence of actions done 
+over a period of time, each of which blocked the drain.
+In this case, the truth of the sentence is just a matter of the same type of outcome, namely blocking the drain, being an outcome of each action.
+Alternatively we can read it as concerning several actions which have this outcome collectively---perhaps
+a bunch of people dropped cigarette butts into the drain more or less simultaneously.
+In this case the outcome, blocking the drain, is not necessarily an outcome of any of the 
+individual actions, but it is an outcome of all of them taken together (or, depending on your views about the semantics of plural quantification, an outcome of one thing that somehow bundles together the actions).
+This is the collective reading.
+% (There are also ways  of reading the sentence associated with the possibility that some of the actions collectively blocked the drain while others did so distributively; we can ignore these.)
+
+Note that the difference is not merely terminological.
+To see this, consider how many times the drain must have been blocked.
+On the distributive reading it was blocked at least as many times as there were actions.
+On the collective reading it was not necessarily blocked more than once.
+% Relatedly, on the distributive reading there are several outcomes of the same type, and each action has a different outcome of this type; on the collective reading there is a single token outcome which is the outcome of two or more actions (or of something that somehow bundles them together).
+So the difference between collective and distributive is not just a matter of words: it concerns how the actions and outcomes are related.
+
+
+\section{\textbf{Goals}}
+\label{sec:goals}
+
+Our aim (in the next section) will be to show that there are collective readings not only of sentences about the actual outcomes of actions but also of sentences about the outcomes to which actions are directed---that is, about the goals of actions.%
+\footnote{%
+As we noted earlier (in §\ref{sec:alternative_strategy}), the term ‘goal’ has been used, coherently, both to label states of agents and also to label those outcomes to which an action is directed.
+We shall (by stipulation) use ‘goal’ to label outcomes.
+}
+To this end we first need to say what it is for an action
+to be directed to an outcome.
+
+% A goal is an outcome to which an action is directed.
+The challenge is to cash out the metaphor of directedness. One familiar response involves intention. To a first approximation, the directedness of an action to an outcome consists in an agent acting on an intention where the intention plays a role in coordinating (and maybe in planning) the agent’s actions in such a way that would normally facilitate the outcome’s occurrence. %
+% \footnote{%
+% This core idea arguably needs to be refined in various ways. For instance, consider that your intention to cook beans together with a false belief that the cabbage pan contains the beans can coordinate your actions around the cooking of cabbage.  If intentions represent outcomes, we might try to avoid this consequence by adding, as a further condition, that the outcome must be represented by the intention. This would, however, require further refinements \citep{Bratman:1984jr}. 
+% % Our argument will require only that the core idea about directedness being characterised in terms of coordination is correct.
+% }
+This is one coherent way of thinking about directedness. But it may not be the whole story about the goals of actions. For some have argued that actions can be directed to outcomes in virtue of states other than intentions, including desires \citep[e.g.][]{bratman:2000_valuing} and motor representations \citep[e.g.][]{butterfill:2012_intention}. 
+Note that regardless of which states of an agent (intentions or others) are invoked, we can use the same basic pattern: directedness is grounded by states which coordinate the action in such a way that would normally facilitate the outcome’s occurrence.%
+\footnote{%
+\citet[p.~177]{dickinson:2016_instrumental} offers a more sophisticated analysis of directedness which is also neutral on which states are involved.
+}
+
+%
+%\footnote{%
+%There is, of course, debate about which states of agents link actions to outcomes.  For example, some have argued that intentions are a variety of beliefs \citep{Velleman:2010ch}, or that their role can be played by belief-desire pairs \citep{sinhababu:2013_desirebelief}, while others make a case for the distinctiveness of intention \citep{Bratman:1985fk}. There is also debate about whether  motor representations are distinct from intentions (for example, \citealp{mylopoulos:2016_intentions} favour this view while \citealp{shepherd:2018_skilled} provides materials for an alternative). It is possible, therefore, that directedness could be uniformly explicated by invoking intention only.
+%} 
+
+
+% One suggestion is that for an action to be directed to an outcome is for the action to be of a type which tends to bring about this outcome and for it to occur now because it is of a type which has brought about this outcome in the past.%
+% \footnote{%
+% We take this idea from \citet{Taylor:1964tr} and \citet[p.~39]{Wright:1976ls}. It can be developed much further (see, for example, \citealp{Millikan:1984ib,Price:2001hs}).
+% }
+% Without denying that this suggestion may yield a coherent notion of directedness, we surmise that it would, taken in isolation, yield a notion distinct from that characterised by invoking intentions or other states.
+% An alternative is suggested by 
+
+Is it possible to characterise directedness without appealing to any states of an agent at all? \citet[p.~61]{Bennett:1976rg} suggests that the directedness of an action to an outcome is a matter of the agent acting because she is ‘so structured and situated’ as to do things which increase the probability of the outcome occurring.  We take Bennett to be introducing two ideas. First, directedness is not always only a matter of states of the agent but can also involve her environment and history. Second, directedness can be characterised independently of any particular mechanism. Borrowing these ideas we can draw a parallel with the core idea about intention mentioned above: the directedness of an action to an outcome consists in there being a state, structure or situation which plays a role in coordinating the agent’s actions in such a way that would normally facilitate the outcome’s occurrence.%
+\footnote{%
+Perhaps directedness is better characterised in terms of an agent’s relation to an outcome (as in \citealp{Bennett:1976rg}). We explain below why we do not offer this as our primary candidate (our position is neutral).
+} 
+The state, structure or situation may be intention, habit, biological function or other behaviour-organizing circumstance connecting the agent’s actions to the outcome (or any combination of these). The key to characterising directedness is not any specific state, structure or situation but the role of those in linking actions to outcomes.
+%
+%\footnote{%
+%This is a simplification, of course. There are typically sets of goals hierarchically organised by the means-end relation. Directedness might therefore be better understood as relating actions to sets of hierarchically organised outcomes.  The mechanistically neutral story is richer than it initially seems.
+%}
+
+
+
+This proposal about directedness is, to put it politely, theoretically modest. It captures nothing but the bare structure of how actions and goals relate.
+(And even that incompletely, for goals can be partially ordered by the means--ends relation and actions by the part--whole relation; directedness needs to be understood, more generally, as a relation of structures of actions to structures of outcomes.)
+But theoretical modesty is an advantage in one respect: the proposal leaves open for discovery questions about what it is in virtue of which actions are directed to outcomes.
+%
+%\footnote{%
+%The mechanistically neutral characterisation of directedness is consistent, of course, with the view that intention is the only state which ever grounds the link between actions and goals.
+%}
+
+This openness is valuable because we can make discoveries about the goals of particular actions without yet knowing anything about the kind of state, structure or situation in virtue of which the actions are directed to the goal. For example, consider that ant behaviour is routinely and uncontroversially characterized in terms of goals:
+%
+\begin{quote}
+The ants protect their fungal cultivar from pathogens and parasites, provide the fungus with a constant source of nutrients, and aid in its growth and dispersal. […] To promote the initial degradation of plant biomass this material is masticated, mixed with ant fecal droplets, and inoculated with fungal mycelia. \citep[~e9922]{scott:2010_microbial}
+\end{quote}
+%
+Facts about the specific goals of the ants’ actions are important discoveries. But for the most part, these discoveries were made independently of much insight into what grounds the directness of the actions to the goals. % (and also of commitment on whether the agents are individual ants). 
+Indeed, discoveries about goals are often foundational for understanding mechanisms. 
+To illustrate with another species, knowing that the goal of certain actions is hunting enabled the discovery that portid spiders use information about routes to prey even after that information is no longer available in their environment \citep[pp.~118-121]{jackson:2011_spider}, suggesting that representation may be involved.
+
+
+% As introducing ants and spiders indicates, we are assuming a liberal notion of action (for which there are some famous precedents, including \citealp{frankfurt1978problem}). 
+% Combining a liberal notion of action with our proposal about directedness has consequences some may find unacceptable.
+% To illustrate, suppose you trip at the top of a short staircase, tumble down and smash an antique vase. 
+% In the right circumstances, gravity together with the arrangement of stairs and the shape of your body will play a role in coordinating your movements in such a way that would normally facilitate the outcome’s occurrence.
+% So if your movements are actions, they are directed to the goal of breaking the vase.
+% Our proposal about directedness therefore requires either 
+% accepting this as a consequence 
+% or else 
+% substituting a less liberal notion of action.
+% % showing that there is a way to distinguish actions from other patterns of joint displacements and bodily configurations which excludes cases like tripping and falling. 
+% What follows is compatible with either possibility.
+
+One quirk of our proposal is that we have characterised directedness as linking actions, not agents, to outcomes. Our concern here is to avoid a commitment. Consider:
+%
+\begin{quote}
+The goal of her action is to compost the leaf cuttings.
+\end{quote}
+and:
+\begin{quote}
+Her goal is to compost the leaf cuttings.
+\end{quote}
+%
+To some, the first may sound like an awkward paraphrase of the second.
+But others might deny that the first implies the second---perhaps on the grounds that the first can be true of ants but ants cannot have goals; or perhaps on the grounds that actions can be subagential in something like the way that (on some views) mental states can be subpersonal. 
+To avoid such controversies, we characterise directedness as a relation between an action and an outcome. 
+However what follows could be adapted to work with directedness as a relation between agents and outcomes.
+
+
+\section{\textbf{Collective goals}}
+\label{sec:collective_goals}
+
+Having clarified our use of ‘collective’ (in §\ref{sec:collective_vs_distributive}) and characterised goals (in the previous section) we are in a position to see how the distinction between collective and distributive readings appears to apply to sentences concerning the goals of actions.
+Consider the sentence:
+%
+\begin{enumerate}[resume]
+\item Those actions had the goal of blocking the drain.
+\end{enumerate}
+% She, in acting as she did, had the goal of blocking the drain.
+%
+Whereas the previous sentence (in §\ref{sec:collective_vs_distributive}) was about causal relations between actions and outcomes, this sentence concerns teleological relations.
+We claim that, like the previous sentence, this sentence has both distributive and collective readings.
+On the distributive reading, each of the actions had the goal of blocking the drain.
+This would fit a sequence of events in which someone attempted to block the drain first by covering it with a metal sheet and then, after this failed to block it, removing the metal sheet and pouring cement powder into it.
+On the collective reading, by contrast, the actions’ having the goal of blocking the drain was not, or not only, a matter of each of the actions having that goal.
+This would fit an episode in which someone maliciously and patiently blocks a drain by dropping just one cigarette butt into it each day, counting on their accumulation to do its work. 
+% [repetitive] Just as the butts’ (or tiny leaves’) blocking the drain is not only a matter of their each blocking it, so also the butt-dropping actions’ being directed to the outcome of blocking the drain is not, or not only, a matter of each individual butt-dropping action being directed to this outcome.
+
+
+The collective reading also appears to be possible in many mundane cases.  
+Imagine kneading some dough. This involves a sequence of folding and stretching actions, and perhaps adding some flour as you go. The point of all this is to get the dough into a condition that it will later rise in a particular way. So we might say, of the sequence, that those actions had the goal of getting the dough into a state where it will rise nicely.  
+If we are describing an ordinary baking activity, this statement would be true on a collective reading. 
+
+So far we have considered actions with just one agent. But we can also read sentences about goals collectively when there are two or more agents involved. After all, the examples of blocking the drain and kneading the dough could just as well have involved two agents rather than just one.  
+
+% We anticipate that some may object that there are no collective readings of sentences such as (5) above, ‘Those actions had the goal of blocking the drain.’  This objection could be developed by insisting that where a distributive reading fails to capture what is communicated, this is because there is some kind of lexical ambiguity around the term ‘goal’ which creates the mere illusion of a collective reading.
+% A proponent of the objection might insist that, where we suppose the collective reading to concern actions and outcomes to which they are directed, the sentence actually specifies some kind of intention or shared intention or other state of an agent.
+% In reply, consider one last sentence:
+% %
+% \begin{enumerate}[resume]
+% \item Those actions had the goal of finding a new home.
+% \end{enumerate}
+% % They, in acting as they did, had the goal of finding a new home.
+% %
+% Someone might coherently understand this sentence on a collective reading in advance of knowing much about the agents of the actions.
+% It might subsequently be revealed that the agents are newlyweds on the housing market, or, alternatively, that the agents are some recently displaced honey bees.
+% We take it that the states and processes in virtue of which the sentence is true will differ radically between these two cases (and between other conceivable pairs of cases involving other eusocial animals).
+% But as understanding the sentence and making inferences from it does not require knowing which species the agents are (nor even whether they are biological organisms), it cannot require knowing something about specific kinds of states such as intentions or shared intentions.
+
+Where a sentence about some actions being directed to a single outcome is true on the collective reading, we stipulate, as a matter of terminology, that the actions are \emph{collectively directed} to that outcome and that the outcome is a \emph{collective goal} of the actions.
+
+We have explicated the notion of a collective goal only negatively by saying that it is not, or not only, a matter of each action individually being directed to the 
+outcome. What is it a matter of? 
+One answer to this question might involve using one of the existing theories about states of agents to further explicate the notion of a collective goal.  
+This would be incompatible with our aim of being mechanistically neutral, of course. 
+But there are also other kinds of structure that can ground collective goals. In the case of honey bees foraging \citep{leadbeater:2005new} or ants farming fungus (see §\ref{sec:goals}), what underpins collective goals may be behavioural patterns, scent marks and other signals which ensure coordination; and of course much the same may be true in some situations involving humans too.  In characterising collective goals we therefore avoid invoking any particular states or structures, just as we did in characterising goals (in §\ref{sec:goals}). Indeed, our proposal about goals can be extended to collective goals in a natural way by switching from intra-agental to inter-agential coordination: the collective directedness of some agents’ actions to an outcome consists in there being a state, structure or situation which plays a role in coordinating all the actions in such a way that would normally facilitate the outcome’s occurrence. 
+
+Nothing that follows depends on the details of this proposal.
+We require only that the collective readings of sentences about goals serve to single out, within a limited but useful range of cases, which things are collective goals.
+
+
+
+% Note that others use the term ‘collective goal’ for different phenomena.
+% For instance, \citet[p.~30--1]{tuomela:2002_collective} defines the term ‘collective goal’ as involving ‘persons believing or collectively accepting that the goal state \ldots\ is to be collectively achieved’ (see also \citealp[][p.~34]{miller:2014_collective}); and \citet[p.~34]{gilbert:2014_book} uses the term in connection with cases where people ‘collectively espouse a certain goal, and each one is acting \ldots\ in light of the fact that the goal is their collective goal.’
+% Relatedly, \citet[p.~59]{miller_social_2001} uses the term ‘collective end’ for something that agents possess only when they mutually truly believe that they have it.%
+% \footnote{%
+% This is not an exhaustive survey; our aim is merely to illustrate diversity in how the term ‘collective goal’ and related terms are used.
+% }
+
+%By contrast, we have identified a notion of collective goal without any appeal to believing, accepting, espousing or any psychological states or processes.
+%And we use the term ‘collective’ as explained in §\ref{sec:collective_vs_distributive}.  This is the sense of ‘collective’ in which some tiny leaves can collectively block a drain and the sense in which several late nights can collectively result in exhaustion.%
+%\footnote{%
+%None of this entails that it is possible for our actions to have collective goals without our believing, accepting, espousing or being in certain psychological states, of course.
+%We remain neutral on this matter. 
+%Even if, as a matter of fact, there were only one kind of state of agents (perhaps some kind of shared intention, for instance) in virtue of which actions could have collective goals, it would not follow that there is any need to invoke this state in characterising collective goals.
+%}
+
+
+
+% Note that a collective goal is just an actual or possible outcome of an action.
+% Note also that this definition involves no assumptions about the intentions or other states  of the agents; and it is the actions rather than the agents which have a collective goal.
+
+
+\section{\textbf{The collective goal account}}
+\label{sec:collective-goal-account}
+
+Can collective goals assist in providing a mechanistically neutral account of how acting jointly differs from acting in parallel but merely individually? %
+% \footnote{%
+% Any positive answer to this question depends, of course, on the existence of a mechanistically neutral characterisation of collective goals. As we noted (in §\ref{sec:collective_goals}), we have not provided a characterisation but limited ourselves here to providing a way of identifying which things are collective goals.  It remains possible in principle, therefore, that there is no coherent mechanistically neutral account of collective goals.  However, the existence of mechanistically neutral accounts of ordinary, individual purposive and intentional actions (see §\ref{sec:alternative_strategy}) is reason to suppose that there are mechanistically neutral accounts of collective goals even in advance of providing one.
+% }
+Consider the least subtle attempt to give a positive answer, which we will call \emph{The Collective Goal Account}:
+%
+\begin{quote}
+When the actions of two or more agents have a collective goal, the agents are, in performing those actions, acting jointly; otherwise they are acting in parallel but merely individually.
+\end{quote}
+%
+This account is neutral on which states of the agents make it the case that their actions have a collective goal.  It is consistent with, but neutral on, the further claim that it is only ever in virtue of the agents’ shared intentions that actions have collective goals. 
+
+How does this account fare with respect to the examples and contrast cases we mentioned at the start of this paper?  In giving the examples standardly offered which we mentioned in opening this paper---painting a house together, lifting a heavy sofa together, and the rest (see §\ref{sec:intro})---philosophers are distinguishing which thing is occurring by specifying a goal (the lifting of the sofa, for instance).  And these examples do indeed appear to be cases where the specified goal would typically be a collective goal.  It can hardly be very controversial, therefore, that one feature of standard examples is the presence of a collective goal.%
+\footnote{%
+This is not entirely uncontroversial, of course. If \citet{baier:1997_joint} is right, some cases of acting jointly do not involve collective goals.
+}
+
+Next consider the two contrast cases we mentioned at the start of this paper (in §\ref{sec:intro}).  The first contrasted the 
+actions of members of a flash mob who noisily crack open their newspapers in order to create a salient marker for the start of their performance 
+with 
+the actions of the flash mob plus those of an onlooker who happens to crack open her newspaper simultaneously in response to the same cue.  
+The actions of the flash mob would typically have a collective goal, namely the creation of the salient marker. By contrast, there is no single token outcome to which the onlooker’s actions plus the flash mob members’ actions are directed.%
+\footnote{%
+This point is easily overlooked, perhaps because there is clearly one type of outcome to which all the agents’ actions are directed, namely the opening of some newspaper or other.  
+But note that the onlooker’s action may be entirely successful (she may crack open her own newspaper) while another agent’s fails (she fumbles and drops hers). 
+This makes it clear that the outcomes are distinct, although they are of the same type.
+} 
+It follows, of course, that there is no collective goal. So invoking the notion of a collective goal suffices to distinguish this contrast case.
+
+The second contrast case was a contrast between two members of the flash mob later walking to the metro station together, who (by stipulation) are acting jointly, and two people who happen to be walking to the station side-by-side among a crowd heading that way.
+The success of the flash mob members’ activity requires at least that both walk to the station. 
+And this is just the kind of case in which the two agents’ arrival at the metro station would be a collective goal of their actions.
+By contrast, when two people just happen to be walking to the station side-by-side, one person’s actions may succeed even though the other accidentally falls into the sewer through a hole and never reaches the station.  
+It follows that invoking the notion of a collective goal is sufficient to distinguish this contrast case too.
+
+Reflection on both contrast cases shows, however, that invoking the notion of a collective goal is not necessary.
+There is a simpler way to distinguish these contrast cases. 
+Indeed, the presence or absence of a single outcome to which all the agents’ actions are directed is already sufficient to distinguish the contrast cases.
+Our appeal to collective goals therefore lacks motivation.  
+If the examples and contrast cases can be dealt with just by invoking the existence of a single outcome to which all agents’ actions are directed, why bother with the additional complexity of collective goals?
+
+An initially tempting idea is to introduce further contrast cases.  
+For instance:
+%
+\begin{quote}
+Case 1: A bear has been spotted near each of two villages on either side of a mountain.
+In each village there is a hunter who sets out to hunt the bear.
+The villagers are entirely unaware of each other.
+Despite tracking the bear from nearly opposite directions, 
+the bear comes into view for both hunters at the same time. 
+Each takes a shot at it. 
+Neither shot is individually fatal, but sadly their combined effect kills the bear.
+\end{quote}
+%
+\begin{quote}
+Case 2: Two friends from a city go hunting a bear together.
+They hide in a tree waiting for the bear to come into view. 
+When it does, each takes a shot at it.
+Neither shot is individually fatal, but sadly their combined effect kills the bear.
+\end{quote}
+%
+As each villager justifiably regards herself as having succeeded in her project,
+we can be confident that the actions of the villagers are directed to a single outcome, namely the death of the bear. This implies that 
+there is a single outcome to which all their actions are directed.
+So we cannot capture this contrast by appealing only to the idea that the agents’ actions are all directed to a single outcome; this is a feature of both cases. 
+Nevertheless, there does appear to be a contrast with respect to acting jointly between the villagers’ actions and those of the city dwellers. 
+We can capture this contrast by appeal to collective goals.
+We might say, ‘The villagers’ actions had the goal of killing the bear.’ This sentence is true on the distributive reading, as each of them performed  actions which were indeed directed to the goal of killing the bear. But the sentence is untrue on the collective reading, for there is nothing more to their actions having the goal of killing the bear than that each villager individually performed actions directed to this outcome. By contrast, actions performed by the two city dwellers are coordinated in such a way that would normally facilitate the bear’s killing and therefore collectively directed to this outcome (see §\ref{sec:collective_goals}). 
+So the Collective Goal Account is able to distinguish acting jointly in this case.
+
+We doubt that introducing further examples and contrast cases will be sufficient, however.
+When we have given talks or shared drafts, there are always researchers in the audience whose intuitions differ from what we expect on just about any contrast case we have mentioned.  Some awkward dissenters want to say, for instance, that the village dwellers are acting jointly no less than the city dwellers are.%
+\footnote{%
+We have also encountered awkward dissenters on other influential cases in the literature including Bratman’s going to New York ‘in the mafia sense’ \citep[p.~333]{Bratman:1992mi} and Blomberg’s no-common-knowledge cases \citep{blomberg:2015_common}.  The Collective Goal Account broadly agrees with Bratman on the former (as the victim, once locked in the trunk, does not perform any action directed to the goal) and with Blomberg on the latter (as it does not  necessarily require common knowledge). 
+}
+Others may dissent on the grounds that the presence of a collective goal is insufficient for the city dwellers to be acting jointly.%
+\footnote{%
+\citet{blomberg:2015_shared} provides one means of constructing contrast cases which appear to support such dissent.
+}
+Several lengthy conversations combined with reflection on the diversity of philosophers’ accounts of acting jointly have gradually shifted us away from thinking of the awkward dissenters as people who just haven’t tuned in. Their  dissent is informative. Simply providing examples and contrast cases does not reliably give an audience a single signal to tune in to. The contrast cases on which there is little dissent do not enable us to lock on to whatever phenomena those responsible for the leading accounts of acting jointly are interested in; and the contrast cases with the potential to do this are, to a sufficiently diverse audience, themselves too controversial to put much weight on.
+
+%When it comes to understanding how acting jointly differs from acting in parallel but merely individually, the quest for reflective equilibrium%
+%\footnote{%
+%A set of principles is in reflective equilibrium just if ‘when conjoined to    our beliefs and knowledge of the circumstances, [they] would lead us to make [judgments we are pre-theoretically disposed to make] with their supporting reasons were we to apply these principles conscientiously and intelligently’ \citep[p.~41]{rawls:1999_theory}.
+%}
+% is likely to be too solitary a pursuit to settle anything.
+As far as examples and contrast cases go, we find no grounds for preferring this account over a competitor (or conversely).  
+In the next section we shall therefore introduce another way of defending the Collective Goal Account.
+
+
+
+\section{\textbf{How to defend a mechanistically neutral account of acting jointly}}
+\label{sec:objection-evidence}
+
+Our problem is how to single out correct from incorrect attempts to distinguish acting jointly from acting in parallel but merely individually. 
+The problem arises because it is possible to construct multiple accounts---whether mechanistically committed (see §\ref{sec:intro}) or mechanistically neutral (see §\ref{sec:collective-goal-account})---where each account will be found by at least some people to accord with how they intuitively make the distinction.
+In this section we shall characterise a strategy on which this problem is actually an advantage.
+
+As mentioned in the introduction (§\ref{sec:intro}), the mechanistically neutral strategy can be found in the literature.  Consider the approach of \citeauthor{Sebanz:2006yq}, who offer this influential characterisation:
+%
+\begin{quote}
+Joint action can be regarded as any form of social interaction whereby two or more individuals coordinate their actions in space and time to bring about a change in the environment. \citep[p.~70]{Sebanz:2006yq}
+\end{quote}
+%
+Although this is offered as a ‘working definition’ and is not supposed to provide deep insight (as it invokes social interaction, which is hardly less difficult to pin down than joint action), it has proven to be useful.
+We suggest its usefulness is due at least in part to it clearly separating the thing to be explained from proposed explanations of it. 
+Opposing groups of researchers adopt the working definition but propose different theories about the mechanisms of joint action. The working definition provides the common ground necessary for evaluating the various proposals and understanding them as broadly compatible attempts to fill in details about the mechanisms which make joint action possible (see \citealp{Knoblich:2010fk} for a review).
+
+The working definition above was not intended to, and does not, distinguish acting jointly from acting in parallel but merely individually. This is no objection to \citeauthor{Sebanz:2006yq}, of course. But it does mean that we cannot use it for our aim of understanding this distinction. This is why we have considered the Collective Goal Account (§\ref{sec:collective-goal-account}). 
+
+The Collective Goal Account can be used in the same way as \citeauthor{Sebanz:2006yq}’s working definition.  That is, we can consider it as one attempt to characterise some aspect of a phenomenon.  Whether we eventually accept this attempt should depend on what we discover about mechanisms underpinning collective goals.  If it turns out that there is at least one mechanism, this will increase our confidence that the Collective Goal Account is correct. 
+
+Indeed, there is already one study which explicitly sets out to establish a mechanism underpinning collective goals \citep{dellagatta:2017_drawn}. These authors conclude that agents’ actions can have collective goals in virtue of motor representations. This is not an isolated finding.  
+Other studies might be interpreted as indirectly supporting the same conclusion about motor representations causing actions agents perform when their actions have collective goals \citep[these include][]{baus:2014_predicting,clarke:2019_joint,kourtis:2014_attention,loehr:2015_sound,Menoret:2013fk,meyer:2013_higher-order,novembre:2013_motor,ramenzoni:2014_scaling,schmitz:2017_corepresentation,sacheli:2018_evidence,sacheli:2021_mechanisms}.  
+Of course, fully defending---or decisively rejecting---the idea that collective goals can be used in distinguishing acting jointly from acting in parallel but merely individually would require careful analysis of these findings, and perhaps further experimental discoveries.  While that is beyond the scope of this paper, we can already say that the Collective Goal Account receives some support from discoveries about mechanisms. 
+
+Should we therefore accept the Collective Goal Account? Not yet. Some may object that some essential feature is missing, such as cooperation \citep{Searle:1990em} or commitment \citep{gilbert:2014_book}. 
+
+How could we discover whether the objections are justified? 
+% Remember to cite this when we revise the trade-off cooperation paper! 
+We need, first, to construct mechanistically neutral accounts of cooperation and commitment; then, second, to discover which states and processes causally explain the actions one or another kind of agent performs when she performs actions which are cooperative or committed in the relevant ways; and, third, to understand whether such states and processes are distinct from, or bound up with, those which enable two or more agents’ actions to have collective goals.
+If a feature such as cooperation or commitment turns out to be enabled by the same states and processes that enable collective goals, then we have grounds for rejecting or revising the Collective Goal Account, and for regarding this feature as an essential feature of (at least one kind of) acting jointly.
+But if such a feature is enabled by clearly dissociable states and processes, we would need alternative grounds for regarding it as an essential feature.
+Given that all this is unknown at present, we cannot accept either the objections or the Collective Goal Account.
+%
+%\footnote{%
+%For what it is worth, our sense from the existing research on mechanisms is that particular forms of both cooperation and commitment will turn out to be essential features.
+%} 
+
+Suppose, hypothetically, that the Collective Goal Account were vindicated against the objections. It would not follow that the account is uniquely correct, nor that notions such as cooperation and commitment have no role in characterising acting jointly.  Other mechanistically neutral characterisations of acting jointly may be equally well supported.  
+In this case we might eventually conclude that there are multiple correct ways of distinguishing  acting jointly from acting in parallel but merely individually.
+This form of pluralism about acting jointly would be unproblematic because it is disciplined. It would be analogous to discovering that dissociable systems map onto different aspects of memory \citep[e.g.][]{jacoby:1991_process}.
+
+The approach we are describing is not limited to defending the Collective Goal Account.  Here is the general idea.
+Start by being maximally permissive in considering any proposed mechanistically neutral account of acting jointly, requiring only that the account is a conceivably successful attempt to capture cases reasonably taken to be
+paradigms of acting jointly.%
+\footnote{%
+In saying that a case is ‘reasonably taken to be’ a paradigm of acting jointly, we mean only that one or more people have taken it to be one and would continue to do so on reflection. We do not mean to imply that it is actually a case of acting jointly.
+And as we intend the phrase to be understood, a ‘conceivably successful attempt’ need not capture every case that is reasonably taken to be paradigmatic: what is required is just that there would appear to be insufficient reason to regard uncaptured cases  as actual cases of acting jointly if the account were true.
+}
+Next attempt to discover which states and processes might enable the features identified by these mechanistically neutral accounts to be exhibited by actual agents.
+Where no such states or processes can be discovered, the mechanistically neutral account may be disregarded.
+Where multiple accounts specify features which are all enabled by the same, or overlapping, states and processes, there is a case for treating those mechanistically neutral accounts as fragments of some larger, unified account.
+And where distinctive states and processes enable features specified by just one mechanistically neutral account, this indicates that the account captures one distinction between acting jointly and acting in parallel but merely individually.
+
+
+
+% NOTE
+% Bratman offers this consideration against Gilbert; Gilbert offers THIS consideration against Bratman
+% If mechanistically neutral, the considerations would be different
+
+
+This way of defending mechanistically neutral accounts may be relevant to a conflict between proponents of leading characterisations of acting jointly. 
+Consider two well-known attempts to specify shared intention and its explanatory relation to action.  
+\citet[p.~10]{gilbert:2014_book} does this in terms of a special kind of mutual obligation which she labels \emph{joint commitment},
+\citet[p.~7]{bratman:2014_book} in terms of interpersonal coordination of planning.
+%\footnote{%
+%\label{fn:gilbert_shared_intention}
+%Contrast \citep[p.~7]{bratman:2014_book} on ‘a plan-theoretic view of our shared agency’
+%with \citet[p.~10]{gilbert:2014_book}: ‘I take [...] acting together to involve collective intentions—understood in terms of joint commitment.’
+%}
+Both present themselves as offering incompatible accounts of a single phenomenon
+(\citealp{gilbert:2014_nature}; \citealp[chapter 5]{bratman:2014_book}).  
+%In one argument against Bratman, \citet[pp.~226--9]{gilbert:2014_nature} claims that people can share an intention to walk up a hill without having any individual intention to do so and without planning to do this.  
+%Against Gilbert, one of Bratman’s arguments is that because mutual obligations can be insincere they do not necessarily motivate action and so cannot ‘play the basic \emph{explanatory} role that … shared intention is to play’ \citep[p.~117; italics in the original]{bratman:2014_book} which includes interpersonal coordination of planning \citep[p.~27]{bratman:2015_shared}.
+
+Suppose we wanted to address this conflict using the above way of defending mechanistically neutral accounts.
+We could use elements from each protagonist to construct a mechanistically neutral adaptation of their account.%
+% On the face of it, the above way of defending mechanistically neutral accounts cannot be applied in relation to this conflict because we have just interpreted Bratman and Gilbert as adopting a mechanistically committed starting point.
+% %\footnote{%
+% %It may seem incorrect to interpret Gilbert as following a mechanistically committed strategy since her concerns are primarily normative; but see footnote \ref{fn:gilbert_mech_committed}. 
+% %But as she sometimes frames her position as giving an account of shared intention (see footnote \ref{fn:gilbert_shared_intention}), and given that mental states can be identified by their normative roles, a mechanistically committed interpretation of Gilbert is available.
+% %}
+% However, we could use elements from each protagonist to construct a mechanistically neutral adaptation of account.%
+\footnote{%
+We characterised mechanistically neutral in terms of acting jointly (in §\ref{sec:alternative_strategy}). As Gilbert and Bratman take the primary explanandum to be cases where two or more agents’ acting jointly is intentional,
+we are relying on a more general notion of \emph{mechanistically neutral} here.
+We discuss intentional cases of acting jointly in §\ref{sec:intentional}.
+%This raises a complication: it may be objected that there is no such notion on the grounds that joint counterparts of acting intentionally ‘should be seen as the result of shared intentions being satisfied’ \citep[p.~12]{ludwig:2015_shared}. Our reply is that mechanistically neutral characterisations are not obviously impossible. For instance, we might draw a parallel with the idea that an intentional action may be characterised, roughly and incompletely, as an action that happens because its agent has certain reasons for bringing an outcome about. 
+% Similarly, intentional cases of acting jointly may be characterised, roughly and incompletely, as actions that happen because their agents have certain reasons for bringing an outcome about as a collective goal of their actions, or at least for attempting to do so.
+} 
+In Gilbert’s case, this would be an account on which, roughly, the directedness of actions to outcomes involves an element of commitment. Where some agents are jointly committed to bringing an outcome about, their actions are directed to this outcome insofar as they are guided by this commitment.  As long as joint commitment is understood in a way that does not involve any particular states of the agents, this could yield a mechanistically neutral characterisation. 
+%
+%\footnote{%
+%Here we ignore a potential obstacle: the difficulty of operationalising joint commitment.  A more detailed (mis)construal of Gilbert as providing a mechanistically neutral account would involve overcoming this potential obstacle.
+%}   
+In Bratman’s case, instead of using ideas about interpersonal coordination of planning to characterise shared intention, we can use them as characterising shared agency directly.  For instance, we might consider
+that shared agency involves two or more agents’ actions being directed to an outcome where the directedness of their action to this outcome consists not only in their actions being coordinated in such a way that would normally facilitate the outcome’s occurrence
+but also in there being a state, structure or situation which plays a role in coordinating their plans and structuring their bargaining and deliberation.  
+
+These mechanistically neutral adaptations may seem barely different from Gilbert’s and Bratman’s original versions. 
+Yet the difference really is substantial because it affects whether the accounts are incompatible and how correct accounts can be singled out.  
+As adapted, there are no immediate grounds to regard Gilbert’s account as incompatible with an account which, like Bratman’s, centers on planning abilities; nor conversely.  
+After all, as in the case of the Collective Goal Account, a mechanistically neutral adaptation of Gilbert would be vindicated (or not) through discovering mechanisms which actually underpin joint commitment and support acting jointly; and likewise for Bratman on interpersonal coordination of planning.
+Any such vindication is consistent, of course, with entirely different accounts also being vindicated. 
+There is a range of possibilities. Mechanisms underpinning joint commitments could coincide with mechanisms underpinning other mechanistically neutral accounts---perhaps, for instance, there is no interpersonal coordination of planning without joint commitments.%
+\footnote{%
+\citet[chapters 4--5]{bratman:2014_book} shows that it is possible in principle to have interpersonal coordination of planning without joint commitment by constructing possible mechanisms. But of course the mechanisms (if any) which actually underpin planning and joint commitment may coincide.
+} 
+This might motivate combining what had initially appeared to be distinct mechanistically neutral accounts. Alternatively, it may be that distinct mechanisms are involved, which would lend support to the view that a mechanistically neutral adaptation of Gilbert or of Bratman identifies one among several forms of acting jointly.%
+\footnote{%
+Things could be more complicated, of course. Multiple dissociable mechanisms may be associated with joint commitment, and some but not all of these may coincide with mechanisms underpinning interpersonal coordination of planning.
+}
+
+% LINKS BACK TO PENULTIMATE PARAGRAPH OF THE INTRO
+Adopting the mechanistically neutral strategy turns diversity in people’s feelings about which cases are paradigms of acting jointly into an advantage.
+It provides a way of answering questions about when two accounts are incompatible attempts to characterise a single phenomenon rather than compatible attempts to characterise different phenomena.
+To single out which accounts of acting jointly succeed, we need to investigate mechanisms underpinning their constructs.
+
+
+% NOT LIKE THIS -- TOO MANY THINGS ALL AT ONCE
+% Something close to the mechanistically neutral perspective can be found in several discussions. Faced with the possibility that his account may be too demanding to capture all cases (as, for example, \citet{Tollefsen:2005vh} argues), \citet[p.~105]{bratman:2015_shared} suggests that ‘certain forms of shared agency’ might involve distinct combinations of elements of his overall account. This position clearly makes sense if we rely on a mechanistically neutral characterisation of shared agency, as this would leave open the question of which states and processes causally explain why the features identified nonmechanistically occur.  And if we do adopt a mechanistically neutral characterisation, there is no theoretical obstacle to using elements from other accounts, such as Gilbert’s. Such a characterisation also allows us to make sense of \citet{Tomasello:2005wx,tomasello:2020_moral} who freely combine elements from Gilbert and Bratman. To avoid the objection that this is incoherent because the accounts conflict \citep[][]{pettit:2020_hard}, Tomasello et al could adopt a mechanistically neutral (mis)construal.
+
+
+
+% In this section we have described a way of defending mechanistically neutral accounts of acting jointly which can be applied not only to the Collective Goal Account but also to mechanistically neutral adaptations of two leading candidates.  We have not argued that adopting a mechanistically neutral perspective is better, overall, than the alternatives, but merely that this perspective alters the kind of arguments needed to single out correct characterisations of acting jointly as well as to detect when two characterisations are incompatible.  
+% We illustrated this by noting that whereas Gilbert and Bratman oppose each other on the basis of how acting jointly is possible in principle, if their accounts were adapted to be mechanistically neutral then whether they are incompatible cannot be decided in advance of discoveries about which (if any) mechanisms actually underpin acting jointly.
+% Difficulties in resolving existing conflicts over acting jointly may motivate further exploring this alternative perspective.
+
+
+
+\section{\textbf{From purposive to intentional}}
+\label{sec:intentional}
+
+As promised in §\ref{sec:alternative_strategy}, our strategy for characterising how acting jointly differs from acting in parallel but merely individually deviates from the standard strategy in two respects.
+Not only is it mechanistically neutral: it is also one which starts by focussing on acting jointly without any prior assumption that this must be understood as a joint counterpart of ordinary, individual intentional action.  This led us to the notion of a collective goal and a corresponding attempt to characterise acting jointly.
+Invoking collective goals is conceivably sufficient for capturing a sense in which acting jointly can be purposive where the purposivity is not, or not only, a matter of each agent’s actions being purposive (or so we argued in §\ref{sec:collective-goal-account}).
+But of course none of this is sufficient to capture what many philosophers take the primary target phenomena to be: cases where two or more agents’ acting jointly is intentional.
+How might we provide a mechanistically neutral characterisation of a joint counterpart of intentional action?
+
+We noted earlier that 
+an intentional action may be characterised, very roughly and incompletely, as an action that happens because its agent has certain reasons for bringing an outcome about, or at least for attempting to do so.
+One striking feature of attempts to characterise intentional action in this way is that they all rely, explicitly or implicitly, on a particular way of individuating actions.
+Actions are individuated by the outcomes to which they are directed.
+The reasons in virtue of which an action is intentional are reasons which an agent has for bringing about the outcome.
+Note that while this approach involves no commitment to the existence of actions which are not intentional, it does involve commitment to the possibility of individuating some actions independently of features in virtue of which they are intentional.
+That is, we are committed to a conceptual %(but not to an ontological) 
+distinction between purposive and intentional action.
+
+A parallel account of acting jointly is possible.
+Intentional cases of acting jointly may be characterised, very roughly and incompletely, as actions that happen because their agents have certain reasons for bringing an outcome about as a collective goal of their actions, or at least for attempting to do so.%
+\footnote{%
+One way of advancing beyond this rough characterisation is suggested by \citet{laurence:2011_anscombian}.
+}
+Given that this is a coherent, and natural, extension of a characterisation of ordinary, individual action, we conclude that it is probably possible to provide at least one mechanistically neutral characterisation of acting jointly where acting jointly is intentional.
+%
+% \footnote{%
+% This depends on the working assumption, which we have not established here, that it is possible to give a mechanistically neutral characterisation of collective goals.  (Recall from §\ref{sec:collective_goals} that we provided a way to identify collective goals but did not attempt to characterise what it is for an outcome to be a collective goal of some agents’ actions.)
+%}
+
+This characterisation of acting jointly contrasts with mechanistically committed characterisations.
+According to  \citet[p.~12]{ludwig:2015_shared}, who is formulating a claim common to a range of views, 
+‘collective intentional activity
+%
+%\footnote{%
+%We interpret Ludwig’s term ‘collective intentional activity’ as one of the many labels philosophers have given to what we are calling joint counterparts of intentional action.
+%} 
+in general should be seen as the result of shared intentions being satisfied’.
+By contrast, on our mechanistically neutral proposal, it should be seen as the result of agents having reasons for bringing an outcome about as a collective goal of their actions.
+Of course, it may turn out that these are extensionally equivalent because no agents have such reasons without having corresponding shared intentions.
+The disagreement concerns not whether shared intentions are necessary but whether they (or any other states of agents) need be invoked in characterising how acting jointly differs from acting in parallel but merely individually.
+
+% TOO DEMANDING for what? Because B’s characterisation of shared intentional agency is mechanistically committed, there is no way that something could be shared intentional agency but not meet these conditions. So there seems to be little prospect of such an objection working.
+
+
+
+
+\section{\textbf{Conclusion}}
+\label{sec:conclusion}
+
+Our question was about which features distinguish acting jointly from acting in parallel but merely individually.
+We observed that twin problems face the standard, mechanistically committed strategy for answering this question.
+These problems are how to determine when two accounts should be regarded as competing attempts to characterise a single phenomenon; and 
+how to single out, from a growing number and increasing diversity of accounts, those which are correct
+(§\ref{sec:intro}).
+Taking these problems to motivate considering an alternative, we set out to introduce and pursue a mechanistically neutral strategy for characterising acting jointly. 
+
+To develop a mechanistically neutral account, we
+invoked uncontroversial parts of a logical distinction between collective and distributive prediction (§\ref{sec:collective_vs_distributive}) 
+and we outlined a mechanistically neutral account of goals (in §\ref{sec:goals}) 
+in order to introduce the notion of a collective goal (§\ref{sec:collective_goals}).
+According to what we call the Collective Goal Account, when the actions of two or more agents have a collective goal, the agents are, in performing those actions, acting jointly (§\ref{sec:collective-goal-account}).
+We also outlined an attempt to capture intentional aspects of acting jointly  (§\ref{sec:intentional}).
+
+Our thesis is not that the Collective Goal Account is correct.  We introduced a method for defending mechanistically neutral accounts borrowed from existing literature (§\ref{sec:objection-evidence}). This method partially vindicates the Collective Goal Account but leaves open the possibility that it is one among several significant ways of distinguishing acting jointly from acting in parallel but merely individually.
+Indeed, we showed that mechanistically neutral adaptations of leading accounts might in principle be vindicated in the same way.
+Further, our vindication allows that the Collective Goal Account may ultimately need to incorporate mechanistically neutral characterisations of cooperation, commitment, coordination and more besides. 
+If this is right, the Collective Goal Account is at best an incomplete first draft (albeit one which is no worse than the leading accounts in handling contrast cases)---but one that provides a platform on which proponents of planning and joint commitment can build. 
+
+Many will reject mechanistically neutral characterisations of acting jointly, not on the grounds that acting jointly necessarily involves some kind of shared intention (this is consistent with a mechanistically neutral characterisation, after all), but on the grounds that, as they see things, there is a conceptual or constitutive connection between the two. (Such a view might be motivated by reflection on \citealp{pacherie:2013_lite}.)
+We have offered no argument against such opponents; nor do we aim to do so.
+The issue should be decided according to which strategy yields most progress in understanding what distinguishes acting jointly. 
+The mechanistically committed strategy has dominated discussion to date but faces twin problems that may be challenging to overcome.
+By contrast, the mechanistically neutral strategy avoids these problems and is, we submit, a promising new contender.%
+\footnote{%
+Heartfelt thanks to our critical and generous anonymous referees for the many ways in which their comments have improved this work and will guide our next steps;
+and to the editor, whose guidance materially improved our work.
+
+We have benefitted from discussion with many people while preparing this work. For extended discussions and their generous support over a long time we would especially like to thank
+Olle Blomberg,
+Chiara Brozzo,
+Naomi Eilan,
+Peter Fossey,
+Mattia Gallotti,
+Bart Geurts,
+Guenther Knoblich,
+Hemdat Lerman,
+Guy Longworth,
+Judith Martens,
+John Michael,
+Elisabeth Pacherie,
+Johannes Roessler,
+Tobias Schlicht,
+Natalie Sebanz,
+Axel Seemann,
+Thomas Smith, 
+Matthew Soteriou,
+Anna Strasser,
+Hong Yu Wong,
+and
+Cordula Vesper. 
+Thank you!
+
+CS was supported by the Department of Philosophy ‘Piero Martinetti’ of the University of Milan with the Project ‘Departments of Excellence 2018-2022’ awarded by the Italian Ministry of Education, University and Research (MIUR) and by the PRIN 2017 project ‘The cognitive neuroscience of interpersonal coordination and cooperation: a motor approach in humans and non-human primates’ (Cod. Prog. 201794KEER).
+}
+
+
+
+\begin{thebibliography}{}
+
+  \bibitem[\protect\citeauthoryear{Alvarez}{Alvarez}{2016}]{alvarez:2016_reasons}
+  Alvarez, M. (2016).
+  \newblock Reasons for {{Action}}: {{Justification}}, {{Motivation}},
+    {{Explanation}}.
+  \newblock In E.~N. Zalta (Ed.), {\em The {{Stanford Encyclopedia}} of
+    {{Philosophy}}}. {Metaphysics Research Lab, Stanford University}.
+  \newblock Last Modified: 2016-04-24.
+  
+  \bibitem[\protect\citeauthoryear{Asarnow}{Asarnow}{2020}]{asarnow:2020_shared}
+  Asarnow, S. (2020).
+  \newblock Shared {{Agency Without Shared Intention}}.
+  \newblock {\em The Philosophical Quarterly}, {\em forthcoming}.
+  
+  \bibitem[\protect\citeauthoryear{Austin \& Vancouver}{Austin \&
+    Vancouver}{1996}]{austin:1996_goal}
+  Austin, J. \& Vancouver, J. (1996).
+  \newblock Goal {{Constructs}} in {{Psychology}}: {{Structure}}, {{Process}},
+    and {{Content}}.
+  \newblock {\em Psychological Bulletin}, {\em 120\/}(3), 338--375.
+  
+  \bibitem[\protect\citeauthoryear{Bach}{Bach}{1978}]{bach:1978_representational}
+  Bach, K. (1978).
+  \newblock A representational theory of action.
+  \newblock {\em Philosophical Studies}, {\em 34\/}(4), 361--379.
+  
+  \bibitem[\protect\citeauthoryear{Baier}{Baier}{1997}]{baier:1997_joint}
+  Baier, A.~C. (1997).
+  \newblock Doing {{Things With Others}}: {{The Mental Commons}}.
+  \newblock In L.~Alanen, S.~Heinamaa, \& T.~Wallgren (Eds.), {\em Commonality
+    and particularity in ethics}  (pp.\ 15--44). Palgrave Macmillan.
+  
+  \bibitem[\protect\citeauthoryear{Baus, Sebanz, Fuente, Branzi, Martin \&
+    Costa}{Baus et~al.}{2014}]{baus:2014_predicting}
+  Baus, C., Sebanz, N., Fuente, V. d.~l., Branzi, F.~M., Martin, C., \& Costa, A.
+    (2014).
+  \newblock {On predicting others' words: Electrophysiological evidence of
+    prediction in speech production}.
+  \newblock {\em {Cognition}}, {\em {133}\/}(2), 395--407.
+  
+  \bibitem[\protect\citeauthoryear{Bennett}{Bennett}{1976}]{Bennett:1976rg}
+  Bennett, J. (1976).
+  \newblock {\em Linguistic Behaviour}.
+  \newblock Cambridge: Cambridge University Press.
+  
+  \bibitem[\protect\citeauthoryear{Blomberg}{Blomberg}{2015}]{blomberg:2015_shared}
+  Blomberg, O. (2015).
+  \newblock Shared {{Goals}} and {{Development}}.
+  \newblock {\em The Philosophical Quarterly}, {\em 65\/}(258), 94--101.
+  
+  \bibitem[\protect\citeauthoryear{{Blomberg}}{{Blomberg}}{2016}]{blomberg:2015_common}
+  {Blomberg}, O. (2016).
+  \newblock Common {{Knowledge}} and {{Reductionism}} about {{Shared Agency}}.
+  \newblock {\em Australasian Journal of Philosophy}, {\em 94\/}(2), 315--326.
+  
+  \bibitem[\protect\citeauthoryear{Brand}{Brand}{1984}]{brand:1984_intending}
+  Brand, M. (1984).
+  \newblock {\em Intending and Acting: Toward a Naturalized Action Theory}.
+  \newblock {Cambridge, Mass.}: {MIT Press}.
+  
+  \bibitem[\protect\citeauthoryear{Bratman}{Bratman}{1987}]{Bratman:1987xw}
+  Bratman, M.~E. (1987).
+  \newblock {\em Intentions, Plans, and Practical Reasoning}.
+  \newblock Cambridge, MA: Harvard University Press.
+  
+  \bibitem[\protect\citeauthoryear{Bratman}{Bratman}{1992}]{Bratman:1992mi}
+  Bratman, M.~E. (1992).
+  \newblock Shared cooperative activity.
+  \newblock {\em The Philosophical Review}, {\em 101\/}(2), 327--341.
+  
+  \bibitem[\protect\citeauthoryear{Bratman}{Bratman}{1997}]{Bratman:1999fr}
+  Bratman, M.~E. (1997).
+  \newblock I intend that we {J}.
+  \newblock In R.~Tuomela \& G.~Holmstrom-Hintikka (Eds.), {\em Contemporary
+    Action Theory, Volume 2: Social Action}. Dordrecht: Kluwer.
+  \newblock Reprinted in Bratman, M.\ (1999) \textit{Faces of Intention}.
+    Cambridge: Cambridge University Press (pp.\ 142-161).
+  
+  \bibitem[\protect\citeauthoryear{Bratman}{Bratman}{2000}]{bratman:2000_valuing}
+  Bratman, M.~E. (2000).
+  \newblock Valuing and the will.
+  \newblock {\em No{\^u}s}, {\em 34\/}(supplement 14), 249--265.
+  \newblock Reprinted in Bratman, M.\ (2007) \textit{Structures of Agency}.
+    Oxford: Oxford University Press (pp.\ 47-67).
+  
+  \bibitem[\protect\citeauthoryear{Bratman}{Bratman}{2014}]{bratman:2014_book}
+  Bratman, M.~E. (2014).
+  \newblock {\em Shared Agency: A Planning Theory of Acting Together}.
+  \newblock Oxford: Oxford University Press.
+  
+  \bibitem[\protect\citeauthoryear{Brooks}{Brooks}{1981}]{brooks_joint_1981}
+  Brooks, D. H.~M. (1981).
+  \newblock Joint action.
+  \newblock {\em Mind}, {\em 90\/}(357), 113--119.
+  
+  \bibitem[\protect\citeauthoryear{Brownell}{Brownell}{2011}]{brownell:2011_early}
+  Brownell, C.~A. (2011).
+  \newblock Early {{Developments}} in {{Joint Action}}.
+  \newblock {\em Review of Philosophy and Psychology}, {\em 2}, 193--211.
+  
+  \bibitem[\protect\citeauthoryear{Butterfill}{Butterfill}{2001}]{Butterfill:2001kc}
+  Butterfill, S.~A. (2001).
+  \newblock Two kinds of purposive action.
+  \newblock {\em European Journal of Philosophy}, {\em 9\/}(2), 141--165.
+  
+  \bibitem[\protect\citeauthoryear{Butterfill \& Sinigaglia}{Butterfill \&
+    Sinigaglia}{2014}]{butterfill:2012_intention}
+  Butterfill, S.~A. \& Sinigaglia, C. (2014).
+  \newblock Intention and motor representation in purposive action.
+  \newblock {\em Philosophy and Phenomenological Research}, {\em 88\/}(1),
+    119--145.
+  
+  \bibitem[\protect\citeauthoryear{Carpenter}{Carpenter}{2009}]{Carpenter:2009wq}
+  Carpenter, M. (2009).
+  \newblock Just how joint is joint action in infancy?
+  \newblock {\em Topics in Cognitive Science}, {\em 1\/}(2), 380--392.
+  
+  \bibitem[\protect\citeauthoryear{Chant}{Chant}{2007}]{chant_unintentional_2007}
+  Chant, S.~R. (2007).
+  \newblock Unintentional collective action.
+  \newblock {\em Philosophical Explorations: An International Journal for the
+    Philosophy of Mind and Action}, {\em 10\/}(3), 245.
+  
+  \bibitem[\protect\citeauthoryear{Clarke, McEllin, Francov{\'a}, Sz{\'e}kely,
+    Butterfill \& Michael}{Clarke et~al.}{2019}]{clarke:2019_joint}
+  Clarke, S., McEllin, L., Francov{\'a}, A., Sz{\'e}kely, M., Butterfill, S.~A.,
+    \& Michael, J. (2019).
+  \newblock Joint action goals reduce visuomotor interference effects from a
+    partner's incongruent actions.
+  \newblock {\em Scientific Reports}, {\em 9\/}(1), 1--9.
+  
+  \bibitem[\protect\citeauthoryear{Csibra \& Gergely}{Csibra \&
+    Gergely}{2007}]{Csibra:2007hm}
+  Csibra, G. \& Gergely, G. (2007).
+  \newblock Obsessed with goals': Functions and mechanisms of teleological
+    interpretation of actions in humans.
+  \newblock {\em Acta Psychologica}, {\em 124\/}(1), 60--78.
+  
+  \bibitem[\protect\citeauthoryear{Davidson}{Davidson}{1971}]{Davidson:1971fz}
+  Davidson, D. (1971).
+  \newblock Agency.
+  \newblock In R.~Binkley, R.~Bronaugh, \& A.~Marras (Eds.), {\em Agent, Action,
+    and Reason,}  (pp.\ 3--25). Toronto: University of Toronto Press.
+  \newblock Reprinted in Davidson, D. (1980) \textit{Essays on Actions and
+    Events}. Oxford: Oxford University Press.
+  
+  \bibitem[\protect\citeauthoryear{{della Gatta}, Garbarini, Rabuffetti,
+    Vigan{\`o}, Butterfill \& Sinigaglia}{{della Gatta}
+    et~al.}{2017}]{dellagatta:2017_drawn}
+  {della Gatta}, F., Garbarini, F., Rabuffetti, M., Vigan{\`o}, L., Butterfill,
+    S.~A., \& Sinigaglia, C. (2017).
+  \newblock Drawn together: {{When}} motor representations ground joint actions.
+  \newblock {\em Cognition}, {\em 165}, 53--60.
+  
+  \bibitem[\protect\citeauthoryear{Dickinson}{Dickinson}{2016}]{dickinson:2016_instrumental}
+  Dickinson, A. (2016).
+  \newblock Instrumental conditioning revisited: {{Updating}} dual-process
+    theory.
+  \newblock In J.~B. Trobalon \& V.~D. Chamizo (Eds.), {\em Associative learning
+    and cognition}, volume~51  (pp.\ 177--195). {Edicions Universitat Barcelona}.
+  
+  \bibitem[\protect\citeauthoryear{Dretske}{Dretske}{1988}]{Dretske:1988sq}
+  Dretske, F. (1988).
+  \newblock {\em Explaining Behavior}.
+  \newblock Cambridge, Mass.: MIT Press.
+  
+  \bibitem[\protect\citeauthoryear{Gallotti \& Frith}{Gallotti \&
+    Frith}{2013}]{gallotti:2013_social}
+  Gallotti, M. \& Frith, C.~D. (2013).
+  \newblock Social cognition in the we-mode.
+  \newblock {\em Trends in Cognitive Sciences}, {\em 17\/}(4), 160--165.
+  
+  \bibitem[\protect\citeauthoryear{Gergely, Nadasky, Csibra \& Biro}{Gergely
+    et~al.}{1995}]{Gergely:1995sq}
+  Gergely, G., Nadasky, Z., Csibra, G., \& Biro, S. (1995).
+  \newblock Taking the intentional stance at 12 months of age.
+  \newblock {\em Cognition}, {\em 56}, 165--193.
+  
+  \bibitem[\protect\citeauthoryear{Gilbert}{Gilbert}{2014}]{gilbert:2014_nature}
+  Gilbert, M. (2014).
+  \newblock The nature of agreements: A solution to some puzzles about
+    claim-rights andjoint intention1.
+  \newblock In M.~Vargas \& G.~Yaffe (Eds.), {\em Rational and Social Agency: The
+    Philosophy of Michael Bratman}  (pp.\ 215--256). {Oxford; New York}: Oxford
+    University Press.
+  
+  \bibitem[\protect\citeauthoryear{Gilbert}{Gilbert}{1990}]{gilbert_walking_1990}
+  Gilbert, M.~P. (1990).
+  \newblock Walking together: A paradigmatic social phenomenon.
+  \newblock {\em Midwest Studies in Philosophy}, {\em 15}, 1--14.
+  
+  \bibitem[\protect\citeauthoryear{Gilbert}{Gilbert}{1992}]{Gilbert:1992rs}
+  Gilbert, M.~P. (1992).
+  \newblock {\em On Social Facts}.
+  \newblock Princeton, NJ: Princeton University Press.
+  
+  \bibitem[\protect\citeauthoryear{Gilbert}{Gilbert}{2010}]{Gilbert:2010fk}
+  Gilbert, M.~P. (2010).
+  \newblock Collective action.
+  \newblock In T.~O'Connor \& C.~Sandis (Eds.), {\em A Companion to the
+    Philosophy of Action}  (pp.\ 67--73). Oxford: Blackwell.
+  
+  \bibitem[\protect\citeauthoryear{Gilbert}{Gilbert}{2013}]{gilbert:2014_book}
+  Gilbert, M.~P. (2013).
+  \newblock {\em Joint Commitment: How We Make the Social World}.
+  \newblock Oxford: Oxford University Press.
+  
+  \bibitem[\protect\citeauthoryear{Ginet}{Ginet}{1990}]{ginet:1990_action}
+  Ginet, C. (1990).
+  \newblock {\em On {{Action}}}.
+  \newblock {Cambridge University Press}.
+  
+  \bibitem[\protect\citeauthoryear{Gold \& Sugden}{Gold \&
+    Sugden}{2007}]{Gold:2007zd}
+  Gold, N. \& Sugden, R. (2007).
+  \newblock Collective intentions and team agency.
+  \newblock {\em Journal of Philosophy}, {\em 104\/}(3), 109--137.
+  
+  \bibitem[\protect\citeauthoryear{Helm}{Helm}{2008}]{helm_plural_2008}
+  Helm, B.~W. (2008).
+  \newblock Plural agents.
+  \newblock {\em Nous}, {\em 42\/}(1), 17--49.
+  
+  \bibitem[\protect\citeauthoryear{Jackson \& Cross}{Jackson \&
+    Cross}{2011}]{jackson:2011_spider}
+  Jackson, R.~R. \& Cross, F.~R. (2011).
+  \newblock Spider {{Cognition}}.
+  \newblock In J.~Casas (Ed.), {\em Advances in {{Insect Physiology}}}, volume~41
+    of {\em Spider {{Physiology}} and {{Behaviour}}}  (pp.\ 115--174). {Academic
+    Press}.
+  
+  \bibitem[\protect\citeauthoryear{Jacoby}{Jacoby}{1991}]{jacoby:1991_process}
+  Jacoby, L.~L. (1991).
+  \newblock A process dissociation framework: {{Separating}} automatic from
+    intentional uses of memory.
+  \newblock {\em Journal of Memory and Language}, {\em 30\/}(5), 513--541.
+  
+  \bibitem[\protect\citeauthoryear{Knoblich, Butterfill \& Sebanz}{Knoblich
+    et~al.}{2011}]{Knoblich:2010fk}
+  Knoblich, G., Butterfill, S.~A., \& Sebanz, N. (2011).
+  \newblock Psychological research on joint action: Theory and data.
+  \newblock In B.~Ross (Ed.), {\em Psychology of Learning and Motivation},
+    volume~51  (pp.\ 59--101). San Diego, CA: Academic Press.
+  
+  \bibitem[\protect\citeauthoryear{Kourtis, Knoblich, Wo\'{z}niak \&
+    Sebanz}{Kourtis et~al.}{2014}]{kourtis:2014_attention}
+  Kourtis, D., Knoblich, G., Wo\'{z}niak, M., \& Sebanz, N. (2014).
+  \newblock {Attention Allocation and Task Representation during Joint Action
+    Planning}.
+  \newblock {\em {Journal of Cognitive Neuroscience}}, {\em 26\/}(10),
+    2275--2286.
+  
+  \bibitem[\protect\citeauthoryear{Kutz}{Kutz}{2000}]{Kutz:2000si}
+  Kutz, C. (2000).
+  \newblock Acting together.
+  \newblock {\em Philosophy and Phenomenological Research}, {\em 61\/}(1), 1--31.
+  
+  \bibitem[\protect\citeauthoryear{Laurence}{Laurence}{2011}]{laurence:2011_anscombian}
+  Laurence, B. (2011).
+  \newblock An anscombian approach to collective action.
+  \newblock In {\em Essays on Anscombe's Intention}. Cambridge, MA: Harvard
+    University Press.
+  
+  \bibitem[\protect\citeauthoryear{Leadbeater \& Chittka}{Leadbeater \&
+    Chittka}{2005}]{leadbeater:2005new}
+  Leadbeater, E. \& Chittka, L. (2005).
+  \newblock A new mode of information transfer in foraging bumblebees?
+  \newblock {\em Current Biology}, {\em 15\/}(12), R447--R448.
+  
+  \bibitem[\protect\citeauthoryear{Linnebo}{Linnebo}{2005}]{Linnebo:2005ig}
+  Linnebo, {\O}. (2005).
+  \newblock Plural quantification.
+  \newblock In E.~N. Zalta (Ed.), {\em The Stanford Encyclopedia of Philosophy
+    (Spring 2005 Edition)}. Stanford, CA: Metaphysics Research Lab, Stanford
+    University.
+  
+  \bibitem[\protect\citeauthoryear{Loehr \& Vesper}{Loehr \&
+    Vesper}{2015}]{loehr:2015_sound}
+  Loehr, J.~D. \& Vesper, C. (2015).
+  \newblock The sound of you and me: Novices represent shared goals in joint
+    action.
+  \newblock {\em The Quarterly Journal of Experimental Psychology}, {\em
+    0\/}(ja), 1--30.
+  
+  \bibitem[\protect\citeauthoryear{Longworth}{Longworth}{2019}]{longworth:2019_sharing}
+  Longworth, G. (2019).
+  \newblock Sharing non-observational knowledge.
+  \newblock {\em Inquiry}, {\em 0\/}(0), 1--21.
+  \newblock \_eprint: https://doi.org/10.1080/0020174X.2019.1680430.
+  
+  \bibitem[\protect\citeauthoryear{Ludwig}{Ludwig}{2007}]{ludwig_collective_2007}
+  Ludwig, K. (2007).
+  \newblock Collective intentional behavior from the standpoint of semantics.
+  \newblock {\em Nous}, {\em 41\/}(3), 355--393.
+  
+  \bibitem[\protect\citeauthoryear{Ludwig}{Ludwig}{2015}]{ludwig:2015_shared}
+  Ludwig, K. (2015).
+  \newblock Shared agency in modest sociality.
+  \newblock {\em Journal of Social Ontology}, {\em 1\/}(1), 7--15.
+  
+  \bibitem[\protect\citeauthoryear{Ludwig}{Ludwig}{2016}]{ludwig:2016_individual}
+  Ludwig, K. (2016).
+  \newblock {\em From {{Individual}} to {{Plural Agency}}: {{Collective
+    Action}}}.
+  \newblock {Oxford University Press}.
+  
+  \bibitem[\protect\citeauthoryear{M{\'e}noret, Varnet, Fargier, Cheylus, Curie,
+    des Portes, Nazir \& Paulignan}{M{\'e}noret et~al.}{2014}]{Menoret:2013fk}
+  M{\'e}noret, M., Varnet, L., Fargier, R., Cheylus, A., Curie, A., des Portes,
+    V., Nazir, T., \& Paulignan, Y. (2014).
+  \newblock Neural correlates of non-verbal social interactions: A dual-eeg
+    study.
+  \newblock {\em Neuropsychologia}, {\em 55}, 75--97.
+  
+  \bibitem[\protect\citeauthoryear{Meyer, van~der Wel \& Hunnius}{Meyer
+    et~al.}{2013}]{meyer:2013_higher-order}
+  Meyer, M., van~der Wel, R. P. R.~D., \& Hunnius, S. (2013).
+  \newblock Higher-order action planning for individual and joint object
+    manipulations.
+  \newblock {\em Experimental Brain Research}, {\em 225\/}(4), 579--588.
+  
+  \bibitem[\protect\citeauthoryear{Novembre, Ticini, Schutz-Bosbach \&
+    Keller}{Novembre et~al.}{2014}]{novembre:2013_motor}
+  Novembre, G., Ticini, L.~F., Schutz-Bosbach, S., \& Keller, P.~E. (2014).
+  \newblock Motor simulation and the coordination of self and other in real-time
+    joint action.
+  \newblock {\em Social Cognitive and Affective Neuroscience}, {\em 9\/}(8),
+    1062--1068.
+  
+  \bibitem[\protect\citeauthoryear{Pacherie}{Pacherie}{2010}]{Pacherie:2010fk}
+  Pacherie, E. (2010).
+  \newblock The phenomenology of joint action: Self-agency vs. joint-agency.
+  \newblock In A.~Seemann (Ed.), {\em Joint Action}. MIT Press.
+  
+  \bibitem[\protect\citeauthoryear{Pacherie}{Pacherie}{2012}]{pacherie:2013_lite}
+  Pacherie, E. (2012).
+  \newblock Intentional joint agency: Shared intention lite.
+  \newblock {\em Synthese}, {\em forthcoming}.
+  
+  \bibitem[\protect\citeauthoryear{Pacherie}{Pacherie}{2013}]{pacherie:2013_lite}
+  Pacherie, E. (2013).
+  \newblock Intentional joint agency: shared intention lite.
+  \newblock {\em Synthese}, {\em 190\/}(10), 1817--1839.
+  
+  \bibitem[\protect\citeauthoryear{Pears}{Pears}{1971}]{Pears:1971fk}
+  Pears, D. (1971).
+  \newblock Two problems about reasons for actions.
+  \newblock In A.~M. R.~Binkley, R.~Bronaugh (Ed.), {\em Agent, Action and
+    Reason}  (pp.\ 128--153). Oxford: Oxford University Press.
+  
+  \bibitem[\protect\citeauthoryear{Petersson}{Petersson}{2007}]{petersson_collectivity_2007}
+  Petersson, B. (2007).
+  \newblock Collectivity and circularity.
+  \newblock {\em Journal of Philosophy}, {\em 104\/}(3), 138--156.
+  
+  \bibitem[\protect\citeauthoryear{Pettit \& {Schweikard}}{Pettit \&
+    {Schweikard}}{2006}]{pettit:2006_joint}
+  Pettit, P. \& {Schweikard}, D. (2006).
+  \newblock Joint {Actions} and {Group} {Agents}.
+  \newblock {\em Philosophy of the {Social} {Sciences}}, {\em 36\/}(1), 18 --39.
+  
+  \bibitem[\protect\citeauthoryear{Ramenzoni, Sebanz \& Knoblich}{Ramenzoni
+    et~al.}{2014}]{ramenzoni:2014_scaling}
+  Ramenzoni, V.~C., Sebanz, N., \& Knoblich, G. (2014).
+  \newblock Scaling up perception{\textendash}action links: Evidence from
+    synchronization with individual and joint action.
+  \newblock {\em Journal of Experimental Psychology: Human Perception and
+    Performance}, {\em 40\/}(4), 1551--1565.
+  
+  \bibitem[\protect\citeauthoryear{Roth}{Roth}{2004}]{Roth:2004ki}
+  Roth, A.~S. (2004).
+  \newblock Shared agency and contralateral commitments.
+  \newblock {\em The Philosophical Review}, {\em 113\/}(3), 359--410.
+  
+  \bibitem[\protect\citeauthoryear{Sacheli, Arcangeli \& Paulesu}{Sacheli
+    et~al.}{2018}]{sacheli:2018_evidence}
+  Sacheli, L.~M., Arcangeli, E., \& Paulesu, E. (2018).
+  \newblock Evidence for a dyadic motor plan in joint action.
+  \newblock {\em Scientific Reports}, {\em 8\/}(1), 5027.
+  
+  \bibitem[\protect\citeauthoryear{Sacheli, Musco, Zazzera \& Paulesu}{Sacheli
+    et~al.}{2021}]{sacheli:2021_mechanisms}
+  Sacheli, L.~M., Musco, M.~A., Zazzera, E., \& Paulesu, E. (2021).
+  \newblock Mechanisms for mutual support in motor interactions.
+  \newblock {\em Scientific Reports}, {\em 11\/}(1), 3060.
+  
+  \bibitem[\protect\citeauthoryear{Schlosser}{Schlosser}{2019}]{schlosser:2019_agency}
+  Schlosser, M. (2019).
+  \newblock Agency.
+  \newblock In E.~N. Zalta (Ed.), {\em The {{Stanford Encyclopedia}} of
+    {{Philosophy}}\/} (Winter 2019 ed.). {Metaphysics Research Lab, Stanford
+    University}.
+  
+  \bibitem[\protect\citeauthoryear{Schmid}{Schmid}{2008}]{Schmid:2008}
+  Schmid, H.~B. (2008).
+  \newblock Plural action.
+  \newblock {\em {Philosophy of the Social Sciences}}, {\em 38\/}(1), 25--54.
+  
+  \bibitem[\protect\citeauthoryear{Schmitz, Vesper, Sebanz \& Knoblich}{Schmitz
+    et~al.}{2017}]{schmitz:2017_corepresentation}
+  Schmitz, L., Vesper, C., Sebanz, N., \& Knoblich, G. (2017).
+  \newblock Co-representation of others' task constraints in joint action.
+  \newblock {\em Journal of Experimental Psychology. Human Perception and
+    Performance}, {\em 43\/}(8), 1480--1493.
+  
+  \bibitem[\protect\citeauthoryear{Scott, Budsberg, Suen, Wixon, Balser \&
+    Currie}{Scott et~al.}{2010}]{scott:2010_microbial}
+  Scott, J.~J., Budsberg, K.~J., Suen, G., Wixon, D.~L., Balser, T.~C., \&
+    Currie, C.~R. (2010).
+  \newblock Microbial {{Community Structure}} of {{Leaf}}-{{Cutter Ant Fungus
+    Gardens}} and {{Refuse Dumps}}.
+  \newblock {\em PLOS ONE}, {\em 5\/}(3), e9922.
+  
+  \bibitem[\protect\citeauthoryear{Searle}{Searle}{1990}]{Searle:1990em}
+  Searle, J.~R. (1990).
+  \newblock Collective intentions and actions.
+  \newblock In P.~Cohen, J.~Morgan, \& M.~Pollack (Eds.), {\em Intentions in
+    Communication}  (pp.\ 90--105). Cambridge: Cambridge University Press.
+  \newblock Reprinted in Searle, J.\ R.\ (2002) \textit{Consciousness and
+    Language}. Cambridge: Cambridge University Press (pp. 90--105).
+  
+  \bibitem[\protect\citeauthoryear{Sebanz, Bekkering \& Knoblich}{Sebanz
+    et~al.}{2006}]{Sebanz:2006yq}
+  Sebanz, N., Bekkering, H., \& Knoblich, G. (2006).
+  \newblock Joint action: Bodies and mind moving together.
+  \newblock {\em Trends in Cognitive Sciences}, {\em 10\/}(2), 70--76.
+  
+  \bibitem[\protect\citeauthoryear{Tollefsen}{Tollefsen}{2005}]{Tollefsen:2005vh}
+  Tollefsen, D. (2005).
+  \newblock Let's pretend: Children and joint action.
+  \newblock {\em Philosophy of the Social Sciences}, {\em 35\/}(75), 74--97.
+  
+  \bibitem[\protect\citeauthoryear{Tuomela}{Tuomela}{2000}]{tuomela:2000_cooperation}
+  Tuomela, R. (2000).
+  \newblock {\em Cooperation: {{A Philosophical Study}}}.
+  \newblock Dordrecht: Springer.
+  
+  \bibitem[\protect\citeauthoryear{Tuomela \& Miller}{Tuomela \&
+    Miller}{1985}]{tuomela:1985_weintentions}
+  Tuomela, R. \& Miller, K. (1985).
+  \newblock We-{{Intentions}} and {{Social Action}}.
+  \newblock {\em Analyse \& Kritik}, {\em 7\/}(1), 26--43.
+  
+  \bibitem[\protect\citeauthoryear{Tuomela \& Miller}{Tuomela \&
+    Miller}{1988}]{tuomela_we-intentions_1988}
+  Tuomela, R. \& Miller, K. (1988).
+  \newblock We-intentions.
+  \newblock {\em Philosophical Studies}, {\em 53\/}(3), 367--389.
+  
+  \bibitem[\protect\citeauthoryear{Velleman}{Velleman}{1997}]{Velleman:1997oo}
+  Velleman, D. (1997).
+  \newblock How to share an intention.
+  \newblock {\em Philosophy and Phenomenological Research}, {\em 57\/}(1),
+    29--50.
+  
+  \bibitem[\protect\citeauthoryear{Wilson, Shpall \&
+    Pi{\=n}eros~Glasscock}{Wilson et~al.}{2016}]{wilson:2016_action}
+  Wilson, G., Shpall, S., \& Pi{\=n}eros~Glasscock, J.~S. (2016).
+  \newblock Action.
+  \newblock In E.~N. Zalta (Ed.), {\em The {{Stanford Encyclopedia}} of
+    {{Philosophy}}\/} (Winter 2016 ed.). {Metaphysics Research Lab, Stanford
+    University}.
+  
+  \bibitem[\protect\citeauthoryear{Wright}{Wright}{1976}]{Wright:1976ls}
+  Wright, L. (1976).
+  \newblock {\em Teleological Explanations}.
+  \newblock Berkeley: University of California Press.
+  
+  \end{thebibliography}
+\end{document}
+

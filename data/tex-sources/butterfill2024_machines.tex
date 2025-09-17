@@ -1,0 +1,540 @@
+%!TEX TS-program = xelatex
+%!TEX encoding = UTF-8 Unicode
+
+%\def \papersize {a5paper}
+\def \papersize {a4paper}
+%\def \papersize {letterpaper}
+
+%\documentclass[14pt,\papersize]{extarticle}
+\documentclass[12pt,\papersize]{extarticle}
+% extarticle is like article but can handle 8pt, 9pt, 10pt, 11pt, 12pt, 14pt, 17pt, and 20pt text
+
+\def \ititle { What Mindreading Reveals about the Mental Lives of Machines  }
+\def \isubtitle {}
+\def \iauthor {  }
+\def \iemail{  }
+
+
+
+
+% \setcounter{secnumdepth}{0}
+
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{etoolbox}
+
+
+% required by pandoc for shaded areas:
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+
+
+
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+% --- figures and footnotes
+% thank you https://tex.stackexchange.com/questions/147350/how-to-test-if-im-currently-in-a-footnote-or-not?noredirect=1&lq=1
+\newif\iffoot
+\footfalse
+
+\let\origfootnote\footnote
+\renewcommand{\footnote}[1]{\foottrue\origfootnote{#1}\footfalse} 
+
+\newcommand{\fig}[3]{
+\iffoot
+\label{fig:#3}#2 \emph{Source}:#1\includegraphics[width=0.7\textwidth]{img/#3}
+\else
+  \begin{figure}
+    \begin{center}
+    \includegraphics[width=0.7\textwidth]{img/#3}
+    \caption{
+      \label{fig:#3}
+      #2 \emph{Source}:#1
+    }
+    \end{center}
+    \end{figure}
+\fi
+}
+% ---
+
+
+
+\usepackage{microtype}
+
+
+
+
+% \input{./preamble_steve_paper5}
+% ACTUALLY JUST PASTE THAT PREAMBLE HERE 
+
+% === preamble_steve_paper5
+
+\title{\ititle\\\isubtitle}
+\author{\iauthor\\<{\iemail}>}
+
+\usepackage[\papersize]{geometry} % see geometry.pdf
+\geometry{twoside=false}
+\geometry{headsep=2em} %keep running header away from text
+\geometry{footskip=1cm} %keep page numbers away from text
+\geometry{top=3cm} %increase to 3.5 if use header
+\geometry{left=4cm} %increase to 3.5 if use header
+\geometry{right=4cm} %increase to 3.5 if use header
+\geometry{textheight=22cm}
+
+%non-xelatex
+%\usepackage[T1]{fontenc}
+%\usepackage{tgpagella}
+
+\usepackage{microtype}
+
+%for underline
+\usepackage[normalem]{ulem}
+
+%get the font here:
+% http://scripts.sil.org/CharisSILfont
+
+\usepackage{fontspec,xunicode}
+%nb do not explicitly use package xltxtra because this introduces bugs with footnote superscripting  -- perhaps because fontspec is supposed to include it anyway.
+%UPDATE:  "You need to use the no-sscript option in xltxtra: \usepackage[no-sscript]{xltxtra}, this is explained in the documentation of xltxtra.  The issue is that Sabon does not contain true superscript glyphs for every character and the no-sscript option will instead use scaled regular glyphs, which is typographically inferior, but there is no other option available when using Sabon." --- http://groups.google.com/group/comp.text.tex/browse_thread/thread/19de95be2daacade
+\defaultfontfeatures{Mapping=tex-text}
+%\setromanfont[Mapping=tex-text]{Charis SIL} %i.e. palatino
+%\setromanfont[Mapping=tex-text]{Sabon LT Std} 
+%\setromanfont[Mapping=tex-text]{Dante MT Std} 
+%\setromanfont[Mapping=tex-text,Ligatures={Common}]{Hoefler Text} %comes with osx
+\setromanfont[Mapping=tex-text]{Linux Libertine O}  %OTF version is Linux Libertine O but this stopped working on my machine!
+\setsansfont[Mapping=tex-text]{Linux Biolinum O} 
+\setmonofont[Scale=MatchLowercase]{Andale Mono}
+
+
+
+
+%handles references to labels (e.g. sections) nicely
+\usepackage{varioref}
+
+%hyperlinks and pdf metadata
+%TODO avoid duplication of title & author
+\usepackage{hyperref}
+\hypersetup{pdfborder={0 0 0}}
+\hypersetup{pdfauthor={\iauthor}}
+\hypersetup{pdftitle={\ititle\isubtitle}}
+
+%handles references to labels (e.g. sections) nicely
+\usepackage{cleveref}
+\crefname{figure}{figure}{figures}
+\crefname{chapter}{Chapter}{Chapters}
+
+%line spacing
+\usepackage{setspace}
+%\onehalfspacing
+%\doublespacing
+\singlespacing
+
+
+\usepackage{natbib}
+%\usepackage[longnamesfirst]{natbib}
+\setcitestyle{aysep={}}  %philosophy style: no comma between author & year
+
+%% for urls in bibliography
+%% http://www.kronto.org/thesis/tips/url-formatting.html
+\usepackage{url}
+%% Define a new 'leo' style for the package that will use a smaller font.
+\makeatletter
+\def\url@leostyle{%
+  \@ifundefined{selectfont}{\def\UrlFont{\sf}}{\def\UrlFont{\small\ttfamily}}}
+\makeatother
+%% Now actually use the newly defined style.
+\urlstyle{leo}
+
+
+%enable notes in right margin, defaults to ugly orange boxes TODO fix
+%\usepackage[textwidth=5cm]{todonotes}
+
+%for comments
+\usepackage{verbatim}
+
+%footnotes
+\usepackage[hang,bottom,stable]{footmisc}
+% no space between multiple paragraphs  in footnote
+\renewcommand{\hangfootparskip}{0em}
+% multiple paragraphs  in footnote are indented by 1em
+\renewcommand{\hangfootparindent}{1em}
+\setlength{\footnotemargin}{1em}
+\setlength{\footnotesep}{1em}
+\footnotesep 2em
+
+%tables
+\usepackage{booktabs}
+\usepackage{ctable}
+\usepackage{array} %allows m columns in tables (paragraph, vertically centered)
+\usepackage{tabu}
+
+%section headings
+\usepackage[rm]{titlesec} %sf for sans, rm for roman
+%\titlespacing*{\section}{0pt}{*3}{*0.5} %reduce vertical space after header
+%large headings:
+%\titleformat{\section}{\LARGE\sffamily}{\thesection.}{1em}{} 
+\titlelabel{\thetitle.\quad} %make dot after section number
+
+%captions
+\usepackage[font={small,rm}, margin=0.75cm]{caption}
+
+%lists
+\usepackage{enumitem}
+\newenvironment{idescription}
+{ 	
+	% begin code
+	\begin{description}[
+		labelindent=1.5\parindent,
+		leftmargin=2.5\parindent
+	]
+}
+{ 
+	%end code
+	\end{description}
+}
+
+
+%title
+\usepackage{titling}
+\pretitle{
+	\begin{center}
+	%\sffamily %for sans title
+	\LARGE % \Huge
+} 
+\posttitle{
+	\par
+	\end{center}
+	\vskip 0.5em
+} 
+\preauthor{
+	\begin{center}
+	\normalsize
+	\lineskip 0.5em
+	\begin{tabular}[t]{c}
+} 
+\postauthor{
+	\end{tabular}
+	\par
+	\end{center}
+}
+\predate{
+	\begin{center}
+	\normalsize
+} 
+\postdate{
+	\par
+	\end{center}
+}
+
+
+% ===
+
+
+
+
+% \defaultfontfeatures{Ligatures=TeX,Numbers=OldStyle}
+
+%for e reader version: small margins
+% (remove all for paper!)
+%\geometry{headsep=2em} %keep running header away from text
+%\geometry{footskip=1.5cm} %keep page numbers away from text
+%\geometry{top=1cm} %increase to 3.5 if use header
+%\geometry{bottom=2cm} %increase to 3.5 if use header
+%\geometry{left=1cm} %increase to 3.5 if use header
+%\geometry{right=1cm} %increase to 3.5 if use header
+
+
+%avoid overhang
+\tolerance=5000
+
+
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{\footnotesize }
+%\lhead{\footnotesize \sc}
+\rhead{\footnotesize  \emph{ What Mindreading Reveals about the Mental Lives of Machines}}
+
+
+% do not indent paragraphs, increase space between them.
+% \setlength{\parindent}{0cm}
+% \setlength{\parskip}{5.5pt}
+\usepackage{parskip}
+
+
+\begin{document}
+
+\setlength\footnotesep{1em}
+
+%screws up word count for some reason:
+\bibliographystyle{/Users/eleven/latex_imports/mynewapa.bst}
+
+\date{ Friday, 22nd December 2023 } 
+\maketitle
+
+
+
+
+
+
+
+\hypertarget{introduction}{\section{Introduction}\label{introduction}}
+
+Suppose you want to know whether some novel system possesses mental states like knowledge, belief or desire; whether it has powers to imagine, remember episodes or mentally simulate counterfactual scenarios; and whether it is an agent, or even whether it is a person. A natural first step would be to consider how such things are standardly operationalized and then attempt to adapt the standard, widely accepted operationalization to the novel system. Just here you hit a problem. There is no such operationalization: we lack a tool with which to measure mental states. You therefore take a step back. Your new plan is to take the standard, widely accepted theory of mental states, agents and persons and derive operationalizations from this. This plan also immediately runs into a problem. There are no standard, widely accepted theories. In this contribution I will explore why these obstacles exist and what strategies we might instead adopt to understand novel systems.
+
+Start by framing the problem more carefully. A \emph{novel system} is one that humans have encountered only in their recent history, perhaps because it is a recent creation, or a visitor from another planet, or just something that has escaped their attention until now. We take for granted that you can identify the novel systems' responses to particular stimuli. Our questions are whether the pattern of responses identified are those of an agent, or a person, and whether they are a consequence of mental states like belief, desire, pride, shame, knowledge, intention and the rest. In short, we seek a framework for understanding the mental lives, if any, of novel systems.
+
+The search for such a framework matters for a variety of projects. We might be concerned about ethical responsibility towards a novel system, or with its legal status. These issues are surely bound up with questions about what, if anything, the system thinks, feels and wants. Or perhaps we are curious about the kind of relationship humans can, or should, have with novel systems. More prosaically, we may want to know how to interpret the results of psychological experiments in which novel systems are treated as participants. To take one illustration, consider experiments designed to test at what age children first understand their own and others' minds (more on which later). Suppose a novel system performs as an adult would: should we conclude for the novel system what we would conclude for the child, namely that it has an adult-like understanding of minds? That depends, of course, on whether the novel system understands the questions posed and gives answers which reflect its opinion or knowledge. So a framework for understanding the mental lives of novel systems will matter for questions about ethics, relationships and competence.
+
+I want to make assumptions which exclude two sets of theoretical positions right at the start. First, you do not have any power to observe mental states or personhood directly.\footnote{See \citet{Cassam:2007uq} for an opposing view.} These must be inferred from observing the systems' responses and its physical properties. (There is no in-principle restriction on taking it apart and studying its parts.) Second, mental states are things which explain patterns of behaviour, as are powers of imagination, episodic recall and being an agent. Consequently, for any pattern of responses which might, in principle, be explained by attributing mental states and powers, there will, in principle, always be an incompatible alternative hypothesis about its explanation.\footnote{For an opposing view see \citet{Dennett:1991hr} on the view that patterns just are mental states.} As fictional encounters with alien life suggest, it is possible for novel systems to give the appearance of thinking and acting in human-like ways while not actually doing so \citep{sagan:2019_contact}. The challenge we face is not about how a novel system appears to one or another of us: it is about the things which explain its behaviours.
+
+There are at least three sources we can look to for an understanding of the mental lives of novel systems: common sense; philosophy; and science, including cognitive neuroscience, developmental and comparative psychology. In what follows, we will explore each source in turn, asking how it might be used and what problems we might face. For each of the sources, I will introduce one or more as yet unsolved problems. These problems are obstacles to understanding the mental lives of novel systems. Although not insoluble in principle, each problem is a significant challenge.
+
+Why focus on problems? I think the challenges of understanding the mental lives of novel systems are underappreciated. The sooner we all acknowledge that we do not yet have a shared, well supported framework for understanding the mental lives of novel systems, and that we may never have one at all, the better placed we will be to deal with increasingly urgent questions about ethics, relationships and competence.
+
+Of the three potential sources of understanding, I want to start with common sense. Although probably the least reputable source, understanding the limits of common sense will help us in evaluating other potential sources.
+
+\hypertarget{common-sense-intuitions}{\section{Common Sense Intuitions}\label{common-sense-intuitions}}
+
+Everyday life often involves ascribing mental states and powers. On a train you alert the departing passenger to her bag up on the rack because you take her to have forgotten it and assume she wants to have it with her. She excuses her lapse by remarking that she has a lot on her mind. You suspect, rightly, that this excuse not only avoids blame but enables her to avoid facing up to a more revealing and quite awkward reason for her to have walked off the train leaving that particular bag behind.
+
+As this story illustrates, many of us humans are experts in ascribing mental states. A tempting idea is therefore that we can use this mundane expertise to understand the mental lives of novel systems, either by applying it directly to particular novel systems or else, less directly, by extracting principles and notions and using these to construct a framework.
+
+\hypertarget{using-mundane-expertise-directly}{\subsection{Using Mundane Expertise Directly}\label{using-mundane-expertise-directly}}
+
+An attempt to use mundane expertise directly faces two problems. One is that expertise may differ from person to person in important ways, perhaps because they are at different points on the autistic spectrum or perhaps because of cultural differences between them (see, for example, \citealp{dixson:2018_scaling}). Relying directly on mundane expertise could not yield consensus on what systems do, think or feel; nor even on which systems are agents, persons or thinkers. This is the \emph{Diversity Problem (I)}: Different people have different models of minds and actions; and one person may operate with more than one model.
+
+A deeper problem arises from the observation that humans are notoriously free in ascribing mental states and powers. \citet{Heider:1944ts}'s study of people's responses to the movements of simple geometric shapes is the canonical illustration of this: people ascribe intention and character traits to moving patches of light which, as they know, are not even physical objects let alone agents or thinkers. It is also common for people to talk about mobile phones trying to do things (most frequently, but not only, trying to kill them), as well as wanting, hating, liking, thinking and pretending.
+
+One response to this problem might be to dismiss such cases as merely unserious extensions, comparable to talk of table legs or cabbage heads. This is a reasonable response but it leads to a further problem. For we must ask where the line should be drawn between serious and unserious attributions of mental states. And that seems to take us in the wrong direction. We have replaced the task of drawing a line between thinkers and non-thinkers with the task of drawing a line between serious and unserious talk about thinkers. The latter problem seems no easier to solve.\footnote{See \citet{strasser:2023_aistance} for one attempt to address this problem within a broadly Dennettian framework. Those authors propose a way to distinguish attributions of mental states which do, and do not, have implications for the target's mental life. One difference with the present approach is that I have assumed, contra their Dennettian framework, that mental states are things which explain patterns of responses.} Worse, adult humans might benefit from over- or under-attributing mental states and powers. Over-attribution can be therapeutic (pets' mental lives are maybe not always as rich as they seem to their owners) and useful when a system is otherwise hard to predict. Under-attribution may enable the dominant to benefit from oppression while maintaining a positive view of themselves as morally upstanding. In general, then, whether we humans attribute mental states is partly a matter of whether doing so brings benefits (an instrumental factor) and so not entirely a matter of how things are with the target of attribution (an ontological factor). The possible combination of instrumental and ontological factors implies that we cannot be justified in supposing that any line demarcating serious from unserious talk will correspond to the line separating thinkers from thoughtless systems.
+
+This, then, is the second obstacle to using mundane expertise directly to characterise novel systems' mental lives. Call it the \emph{Overinterpretation Problem}: It may be beneficial for humans to attribute mental states, agency and personhood even when there are no ontological grounds for doing so; and conversely.
+
+\hypertarget{principles-implicit-in-mundane-expertise}{\subsection{Principles Implicit in Mundane Expertise}\label{principles-implicit-in-mundane-expertise}}
+
+If, as just argued, we cannot use mundane expertise directly, could we instead extract from it principles and notions and use these to construct a framework? This is an approach suggested by David Lewis (a philosopher famous, among other things, for his argument that possible worlds all exist). \citet{lewis:1972_psychophysical} postulates that there is a set of platitudes concerning mental states which are common knowledge among us all. He also claims that if we assembled these platitudes, we could use them to define mental state terms like `intention' and `knowledge'. If this were true it would mean that we can, after all, rely on our everyday expertise to work out whether a novel system has a mental life.\footnote{Lewis' idea has a parallel in ethics. The idea is, in effect, to do for our mundane expertise in understanding each other what \citet{rawls:1999_theory} attempts for ethical expertise with his notion of reflective equilibrium.}
+
+Instead of exercising mundane abilities directly, the idea is to reflect on them and extract a set of principles about minds and actions. We would then to use those principles to understand the mental lives of novel systems. To illustrate how his view about extracting principles works, Lewis imagines platitudes having this form:
+
+\begin{quote}
+`When someone is in so-and-so combination of mental states and receives sensory stimuli of so-and-so kind, he tends with so-and-so probability to be caused thereby to go into so-and-so mental states and produce so-and-so motor responses.' \citep[p.~256]{lewis:1972_psychophysical}
+\end{quote}
+
+But what are these platitudes that are supposed to be common knowledge? Neither Lewis nor other philosophers have provided the details.
+
+In search of the details we turn to Austrian psychologis Fritz Heider (whose main work is, bizarrely, almost unknown to philosophers, although it has inspired a vast body of work on principles which guide people in attributing the causes of observed behaviour\footnote{\citet{jones:1972_attribution} is an old but perhaps still relevant collection of work.}). \citet[p.~12]{heider:1958_psychology} offered what is probably still, more than half a century later, the most sustained, carefully developed attempt to `make explicit the system of concepts that underlies interpersonal behavior.'
+
+A sense of the range of ideas Heider covers can be conveyed with some examples. On perception, Heider notes that `for good perception, the distance should be optimal, which means a greater distance for larger objects' (p.~65) and that `Perception aids control over the part of the environment that becomes clarified by it' \citep[p.~71]{heider:1958_psychology}. He considers how shyness and embarrassment are influenced by the potency of another person (p.~75), and explores how familiarity and liking influence each other \citep[p.~191ff]{heider:1958_psychology}. Heider suggests that notions of opportunity and luck serve as tools to distinguish temporary conditions from conditions likely to recur in stable patterns, on which learning should focus \citep[p.~91]{heider:1958_psychology}. There is also discussion of the contrast between acting with a purpose and merely being `a part of the sequence of events' (p.~100), and an analysis of necessary and sufficient conditions for action in terms of powers, environmental factors, intention and exertion \citep[Chapter 4]{heider:1958_psychology}.
+
+It is striking that not very much of Heider's construction could plausibly be regarded as common knowledge among ordinary mindreaders. Heider relies on a mix of experimental discovery, informal observation (from a wide range of sources, including Lord Chesterfield's observations on people being presented to the King of England), imagination, guesswork as well as philosophers' ideas (Ryle and Satre, for example). Rather than sharing Lewis' assumption about being able to rely on common knowledge of platitudes alone, on Heider's view,
+
+\begin{quote}
+`If people were asked about these conditions they probably would not be able to make a complete list of them. Nevertheless, these assumptions are a necessary part of interpersonal relations; if we probe the events of everyday behavior, they can be brought to the surface and formulated in more precise terms' \citep[p.~60]{heider:1958_psychology}.
+\end{quote}
+
+We should regard the principles Heider identifies not as articulating an understanding that we all share but rather as an imaginative take on one possible way to systematize, and perhaps justify, social interactions.\footnote{It would be coherent, and perhaps even constructive, to misinterpret Heider as offering a philosophical theory rather than an attempt to elucidate principles implicit in mundane expertise. We could then disregard the problems of this section but would instead need to solve the problem facing the use of philosophy for understanding the mental lives of novel systems discussed below.}
+
+Heider's work is extraordinarily broad and full of interesting ideas. Yet no part of it would allow us to define mental states like intention or knowledge in the way Lewis envisages. If Lewis were right that common knowledge of platitudes anchors mental state terms, these principles would provide a starting point for understanding whether novel systems have mental lives. But the discovery of any such principles appears to be at least as far away now as it was when Lewis was writing around 1972. We should ask why, after more than fifty years, we appear to be no closer to finding those principles. My guess is that the principles have yet to be found because they do not exist.
+
+This is the \emph{Existence Problem}: There may be not be a single, consistent set of principles implicit in mundane expertise; or, if there is, those principles may fail to provide a functional characterisation of mental states and powers.
+
+Not everyone will find the Existence Problem a significant challenge: some are likely to take an optimistic view about the possibility of finding principles implicit in mundane expertise. Let us therefore imagine that the Existence Problem has been solved. For the sake of argument, assume Lewis was right and that humans really do have common knowledge of platitudes anchoring mental state terms. Suppose further that these platitudes had all been written down. Could we use them?
+
+Just here we face a further problem. In applying mundane expertise, truth is not your only concern. You have limited time and limited cognitive resources, so it is necessary to strike a balance between accuracy and speed. Further, some kinds of accuracy are more important than others. If you are going to gain speed at the risk of being inaccurate, you probably want the risk of inaccuracy to be biased towards situations you are less likely to encounter and which are low stakes: better to be accurate in frequently encountered situations and those where accuracy has the most significant consequences. We should therefore expect that whatever principles are implicit in mundane expertise are reliable in what were, until now, frequently encountered, high stakes situations; and that they are not reliable in what have previously been rarely encountered, low stakes situations.
+
+This point is nicely illustrated by mundane physical expertise. Humans are equipped with abilities to predict physical objects' movements and interactions, and can do so rapidly enough to act on the world. This expertise is based on principles that approximate those of impetus mechanics \citep{hubbard:2022_possibility}. These principles gain simplicity by combining factors like friction and air resistance into a single quantity, impetus, and by ignoring the possibility of changes in factors like gravity. This allows allow fast and accurate predictions in a wide range of familiar situations, but it also generates inaccurate predictions in unusual situations---for instance, when objects are moving vertically rather than horizontally, or when air resistance or gravity vary. The rough and ready physical principles implicit in your mundane expertise will serve you well when putting up a fence or shelter, but not when landing a robot on a comet.
+
+If there are principles implicit in mundane expertise, we should expect them to work well enough in familiar situations while being prone to fail spectacularly in new situations. Attempting to apply such principles to understand the mental lives (if any) of novel systems is therefore a mistake. This is the \emph{Reliability Problem}: The principles implicit in mundane expertise, if any, cannot reliably be extended to unfamiliar situations such as those involving novel systems.
+
+Ignoring the Reliability Problem would be a mistake akin to using mundane physical intuitions to land a robot on a comet. The principles implicit in mundane thinking are simply not designed to work in these novel circumstances where factors like gravity are variable. But there is a difference. We would likely be able to know the robot had failed to land.
+
+\hypertarget{philosophy}{\section{Philosophy}\label{philosophy}}
+
+The problems facing the idea that we can use mundane expertise to understand the mental lives (if any) of novel systems motivate considering other potential sources of understanding. One such source is philosophical theorizing.
+
+\hypertarget{davidsons-theory}{\subsection{Davidson's Theory}\label{davidsons-theory}}
+
+One useful function of philosophers is that they sometimes force everyone to take seriously ideas which, initially at least, seem entirely implausible to some people. To illustrate this, we will take some ideas from the philosopher Donald Davidson. Although he was a great thinker and remains highly influential among philosophers, he wrote for a narrowly philosophical audience and so remains relatively obscure.
+
+Imagine you are having a conversation with a friendly two-year-old. This might involve asking and answering questions about what someone is doing, or what a tool is for. It might well be natural to describe the child as wanting a biscuit, surprised by a magic trick or unexpectedly knowledgeable about monkeys for one so young (say). And yet there is at least one theoretically coherent view on which typical two- and three-year-olds are entirely incapable of these things. In fact, on this view---Donald Davidson's---they cannot even act and are not agents at all. Even more peculiarly, despite the conversation you seem to have imagined, such young children cannot actually communicate with language at all.
+
+However strange it may seem (though perhaps not to everyone), Davidson's position is motivated by some useful insights. One is that being able to think about certain things---to believe that they are one way, to wish they were another way, and so on---involves more than merely being able to discriminate those things from others (\citealp[p.~25]{Davidson:1997wj}; \citealp[p.~8]{Davidson:1999ju}). A second insight is that believing things to be one way involves the possibility of being wrong, since beliefs may turn out to be false \citep[p.~211]{Davidson:1995lk}. And the third useful insight is that there is a difference between you and I regarding a system as in error relative to our own standards of correctness which we impose on the system versus us being justified in attributing an error from the system's own point of view (\citealp[p.~25]{Davidson:1997wj}).
+
+These insights motivate Davidson's view of two- and three-year-olds. To be justified in attributing an error from the system's own point of view requires that the system itself can appreciate `the contrast between true belief and false' \citep[p.~209]{Davidson:2001sm}. Since typical two- and three-year-olds cannot do this,\footnote{See \citet{Wimmer:1983dz,rakoczy:2022_foundations}. Here I am ignoring an interesting issue about the abilities of infants, perhaps from around 7 months of age, to track differences between true and false beliefs \citep{baillargeon:2015_psychologicala}. In my view there is evidence that these abilities do not involve appreciating the contrast between true belief and false belief \citep{butterfill:2020_developing}.} they lack beliefs altogether. But, on Davidson's view, knowledge, intention, desire and all forms of thought depend on belief \citep[pp.~210–1]{Davidson:1995lk}. The children therefore lack these too. And because actions are held to require intentions \citep{Davidson:1971fz}, lacking intention means that they cannot act either. Finally, since communication with language also requires intention \citep{Davidson:1994ol}, that conversation you imagined with a small child could not actually have been a conversation.
+
+Davidson's view is extreme in one way: it implies that only a relatively narrow range of humans are agents and have mental lives. But it is not an uncommon view. R. G. Collingwood, a philosopher working in a different tradition and more than half a century before Davidson, held that thinking and acting `is performed in the consciousness that it is being performed, and is constituted what it is by that consciousness' \citep[p.~308]{Collingwood:1946qn}.\footnote{Collingwood accommodates infants and other case by postulating that not all thoughts and actions are reflective: he nevertheless regards unreflective thoughts and actions as different in kind from their reflective counterparts.} For another example, take Richard Moran. He is a contemporary figure who appears very far from Davidson since he draws heavily on the philosopher Elizabeth Anscombe, whose work laid the foundations for the main alternatives to Davidson's approach. Yet he defends a position on which `self-knowledge \ldots{} appears to be not just a capacity we happen to have, whose absence would leave the rest of one's mental life unaltered. Rather, it seems that the capacity for specifically first-person awareness of one's state of mind is necessarily tied up with being a subject of mental states in the first place' \citep[p.~108]{Moran:2001hr}. Each of these views also entails, together with some discoveries from developmental psychology and background assumptions, that even apparently chatty two-year-olds can neither think nor communicate with language.
+
+Like many philosophical views, Davidson's becomes elusive when you attempt to operationalise it. If Davidson's view were simply correct (more on why it may not be below), the difficulty of working out whether a system is an agent or person with any kind of mental life would be the difficulty of working out whether it has a point of view of its own from which it is possible to distinguish between true beliefs and false beliefs. On first glance, this seems to simplify matters in a way that should assist operationalisation. Indeed, the theory (if true) does enable us to show that some systems lack any kind of mental lives. But it remains much harder to derive tests which would allow us to conclude, positively, that a system does have a mental life. The difficulty is to discover what having such a point of view would amount to. To my knowledge there is no way to pin this down except by going in circles in ways that do not help with operationalisation (as \citet[p.~27]{Davidson:1997wj} acknowledges).
+
+For our purposes, Davidson's position is interesting as a theory of mental states and actions which is theoretically coherent and has been extensively developed over several decades. Further, there is no known refutation of the theory in print. But Davidson's is just one among many theories of mental states and actions with these qualities.
+
+\hypertarget{the-diversity-problem-ii}{\subsection{The Diversity Problem (II)}\label{the-diversity-problem-ii}}
+
+Consider states like knowing or intending. These seem straightforward enough in simple cases---knowing that the weather will be mixed tomorrow, we might intend to walk in the forest rather than risk a coast walk. But if we ask some basic questions, things rapidly unravel.
+
+Does our intending to walk in the forest entail that we believe we will do so? Many philosophers have well considered views that imply answers to this question, and often enough their answers will be incompatible. To illustrate with just two that I happen to have at hand, \citet{harman:1976_practical} says yes, \citet{levy:2018_why} no. Similarly for knowing that the weather will be mixed: some hold that it entails believing this (\citealp{rose:2013_knowledge}, for example) while others hold the contrary \citep{radford:1966_knowledge}. Is intention a form of belief? \citet{Velleman:1989go} says yes, \citet{Bratman:1987xw} no. Likewise for knowledge. On \citet{sosa:2007_virtue}'s view, knowledge is a form of belief, while on \citet{Williamson:2000xz}'s view, it is not. Is there one kind of intention or several? \citet{Searle:1983tx} says several, but \citet{brozzo:2021_distinctiona} argues that there is just one. Is intention even a mental state? Many follow \citet{Davidson:1978hy} in regarding it as such, but there is a well-developed position on which the answer is no \citep{thompson:2008_life}. And of course there are theories on which knowledge is not a mental state either \citep{Hyman:1999fk}.
+
+For almost any pattern of answers to a set of basic questions like those above there will be a theoretically coherent and extensively developed theory to which there is no known refutation. If not already published, it would be possible to construct such a theory with sufficient ingenuity (perhaps as a PhD thesis). This tells us that, insofar as we rely on philosophical theories, we do not know the answers to these basic questions.
+
+The problem is not specific to knowledge and intention, although philosophers have focussed on these states. Nor are the disputes confined to questions about particular mental states. They disagree about which agents act, and which communicate with language. And if we ask about the nature of mental states generally, we find similarly striking diversity.\footnote{To illustrate, philosophers divide over what distinguishes mental from non-mental states. They disagree about whether mental states are all representations, and about what representations are. Some but not all consider that the subjects of mental states can be plural (so you and I can have one intention in the same sense that siblings have one parent); and some but not all theories imply that what a mental state is about is determined holistically, that is, in a way which depends on relations to all other mental states.}
+
+It is possible to imagine that this is a temporary problem which will be fixed by doing a bit more philosophy. This seems optimistic, however. To date, more philosophy has generally led to more diversity, not less.
+
+This, then, is the \emph{Diversity Problem (II)} for philosophical theories. It is possible to construct many incompatible philosophical theories, each theoretically coherent and for which there is no known refutation. This is an obstacle to using philosophical theories to understand the mental lives of novel systems. Their incompatibility on even basic questions makes it difficult (or perhaps impossible) to rely on multiple philosophical theories simultaneously, but picking one of the many incompatible theories would be unjustified.
+
+How might we overcome this Diversity Problem? Whereas some philosophers are explicitly inspired by commonsense intuitions and draw on mundane expertise,\footnote{Compare \citet[p.~510]{nagel:2012_intuitionsa}: `epistemic case intuitions are generated by the natural capacity responsible for our everyday attributions of states of knowledge, belief and desire. This capacity has been given various labels, including 'folk psychology', `mindreading', and `theory of mind'' \citep[p.~510]{nagel:2012_intuitionsa}.} others are attempting to identify core scientific ideas about mental lives implicit in well-supported scientific theories.\footnote{To give just one example, \citet[p.~1]{block:2023_border} aims to explore questions about the difference between seeing and thinking `not mainly by appeals to ``intuitions,'' as is common in philosophy of perception, but by appeal to empirical evidence, including experiments in neuroscience and psychology.'} (Some see these as complementary rather than opposing projects.) Given the diversity of mundane expertise, it is perhaps unsurprising that there is diversity in philosophical theories. But we could reasonably limit consideration to attempts to identify core scientific ideas about mental lives implicit in well-supported scientific theories. While imposing this limit would leave us with plenty of diversity, there might just be grounds to suppose that only one idea about mental lives is implicit in any well-supported scientific theories and therefore that the Diversity Problem (II) will eventually be resolved.
+
+If basing theories on discoveries about how minds work, rather than on mundane expertise, is the right way forward, we need not wait for the development of philosophical theories as a more direct approach is available.
+
+\hypertarget{machine-psychology}{\section{Machine Psychology}\label{machine-psychology}}
+
+In searching for a framework for understanding the mental lives of novel systems, we have considered common sense and philosophical theories as potential sources. Both face problems. Although the problems do not decisively rule either source out, they do present substantial challenges. This motivates exploring a third source.
+
+In machine psychology, the researcher treats the system (or `machine') as a participant in psychological experiments. Our interest is in one of several applications of machine psychology: here the aim is to infer from performance on psychological experiments whether the system has a mental life and, if so, what kind of mental life it has.\footnote{Another common application of machine psychology has the aim of understanding processes in humans and other animals (\citealp{hagendorff:2023_machine} and \citealp{aru:2023_mind} apply machine psychology in this way, for instance). In this application, the machine serves as a model for some aspect of a psychological process. This application of machine psychology need make no assumption at all about whether the machine has any mental life at all. What is required is only that some processes in the machine can serve as a model for some processes in the humans and other animals. Accordingly, the successes of this application of machine psychology are, by design, not informative about the mental lives of the machines themselves.}
+
+A paradigm case of machine psychology, and my focus here, involves false belief tasks. These are tasks intended to measure whether participants can identify another's false beliefs. To illustrate, participants may be presented with a story in which Maxi opens the green cupboard, places his chocolate inside, closes the cupboard and goes out. While he is absent, his mother moves the chocolate to the red cupboard. Maxi now returns. He wants to retrieve his chocolate. Participants are then asked where Maxi will look for his chocolate: in the green cupboard or the red cupboard \citep{Wimmer:1983dz}. False belief tasks have been extensively used in developmental and comparative research with notable successes (\citealp{krachun:2010_new}, for example).
+
+I focus on false belief tasks partly for personal reasons (I find them intrinsically fascinating and have been lucky enough to work on projects involving them with a wonderful range of scientific collaborators), but mainly because there is now a rapidly growing body of careful and subtle research on how machines perform on false belief tasks.
+
+\hypertarget{the-presupposition-problem}{\subsection{The Presupposition Problem}\label{the-presupposition-problem}}
+
+The interpretation of performance on false belief tasks requires a series of presuppositions, including that participants are capable of thought and reasoning generally.
+
+Confirming required presuppositions is often the purpose of control conditions. We want to be sure that participants understand the stimuli in the way intended. This is nicely put by \citet[p.~8]{gandhi:2023_understanding} in presenting their work on machines responding to false belief tasks:
+
+\begin{quote}
+`in order to test whether a model can reason about latent beliefs for a given common-sense situation, we must first know that the model understands the (non-mental) situation.'
+\end{quote}
+
+The difficulty is how we can know this. In experiments with human subjects, it is common to use control questions about nonmental aspects of the situation. In some cases, for example with very young children and nonhumans, such controls are harder to implement because it is impossible to ask the subjects questions: in such cases it is necessary to test for correct understanding using alternative control conditions (for example, by creating alternative versions of the stimuli which do not involve false belief and should be easy to comprehend---as, for example, \citealp{krachun:2009_competitive} did). It is also possible to strengthen confidence by combining control conditions with secondary validation, which involves gaining commentaries on the stimuli from adult humans (for example, \citealp{low:2018_curious}; \citealp{gandhi:2023_understanding}). These methods of controlling for understanding are useful when we are presupposing that the participants have mental lives and are capable of thought and reasoning generally. In such cases, it is often reasonable to take success on control tasks to be a consequence of understanding. But when our concern is whether a novel system has a mental life at all, none of these methods appear suitable.
+
+The problem we face arises from the assumption (mentioned at the start) that mental states explain why behaviours happen. It follows that when a pattern of behaviour could in principle be explained by attributing mental states, there will, in principle, always be incompatible alternative hypotheses about its explanation. If we start from the presupposition that participants have mental lives, there will be cases in which we are justified in considering only hypotheses about mental states. But where our questions include whether a novel system has a mental life at all, it would be a mistake to interpret findings on the presupposition that it does.
+
+This, then, is the \emph{Presupposition Problem} for attempts to use machine psychology to discover facts about the mental lives of novel systems. Interpreting tests for a particular ability in mindreading or reasoning (such as the ability to ascribe false beliefs) generally requires a presupposition that the subjects of the experiment are capable of thinking, knowing and reasoning to some extent; that they are agents with mental lives of their own. Those tests cannot therefore be used to establish this.
+
+The Presupposition Problem is neatly illustrated by the careful way \citet{trott:2023_large} frame their research question, which is neutral on whether their participants have thoughts or reason:
+
+\begin{quote}
+`We ask whether LLMs' considerable sensitivity to distributional patterns allows them to systematically assign higher probabilities to word sequences that describe plausible belief attribution---a behavior which is thought to result from reasoning about the beliefs of others in humans.' \citep[p.~2]{trott:2023_large}
+\end{quote}
+
+Sensitivity to distributional patterns is widespread in systems which few, if any, would regard as having any mental lives at all. But sensitivity to distributional patterns would in principle enable a system to appear to pass control conditions and to give correct answers to control questions. We cannot therefore use such control conditions to support the hypothesis that a novel system's performance is based on understanding a situation. As those authors note \citep[p.~12]{trott:2023_large}, a novel system's performance on false belief tasks does not determine whether they understand false beliefs. This depends, perhaps among other things, on the question of whether they have a mental life at all.
+
+\hypertarget{not-all-applications-of-machine-psychology-face-the-presupposition-problem}{\subsection{Not All Applications of Machine Psychology Face the Presupposition Problem}\label{not-all-applications-of-machine-psychology-face-the-presupposition-problem}}
+
+It can be hard to see that the Presupposition Problem is a genuine problem (although it is genuine). This is because there are different aims we might have in studying the performance of a novel system on false belief tasks. If our aim is to understand the novel system's own mental life, then we do encounter the Presupposition Problem. But there are other aims we could have. We might be studying the performance of a novel system on false belief tasks in order to better understand processes by which \emph{humans} can solve false belief tasks. To illustrate, \citet{aru:2023_mind} envisage studying how depriving a deep learning model of linguistic input affects its false belief performance in order to draw conclusions about how, in humans, linguistic input matters for understanding other minds. Were that our aim, the Presupposition Problem would not arise. We would not, after all, be attempting to understand things from the novel systems' point of view. Whether from its point of view it is performing a false belief task or (say) crunching distributional patterns---or even whether it has a point of view---would matter not at all. What would matter instead is just that the dependence of the novel system on linguistic input bears some resemblance to the same dependence in the humans.
+
+There is a difference between studying a novel system's performance in attempting to understand the mental life, if any, of that novel system, and studying its performance to investigate how a human (or other system) might work. The Presupposition Presupposition problem only arises because we are pursuing the first aim.
+
+To illustrate the difference, compare the mental with a physical case. The UK-based psychologist Robert Ward and US-based computer scientist Ronnie Ward made a groundbreaking discovery about inhibition in a simple catching task with an artificial system \citep{ward:2008_selective}. Their experiments involved no actual catching, only a virtual model of a simplified form of catching. Indeed, their artificial system needed no body at all. This is optimal from the point of view of understanding how other humans catch. But of course it would make no sense to imagine we could use their study to investigate whether the artificial system that Ward and Ward used as a model actually catches things.
+
+\hypertarget{extraneous-factors}{\subsection{Extraneous Factors}\label{extraneous-factors}}
+
+A further issue in machine psychology involves extraneous factors. In some sets of false belief stories, there are extraneous features which distinguish those where the protagonist has a false belief from those where the protagonist has a true belief. Whereas humans might not be expected to identify those factors because of limited processing power, it is incautious to make the same assumption about a large language model.
+
+This issue has been addressed through a variety of measures:
+
+\begin{quote}
+`to decrease the amount of information that can be predicted from any given event, we add the following random distractors during data generation: actions of unrelated agents to decorrelate actions from answers, distractor statements about locations and objects to make the number of mentions less informative, randomization of the order of exit/move/re-entry actions, and randomization of the agent whose beliefs are being queried.' \citep[p.~3]{le:2019_revisiting}
+\end{quote}
+
+While it is not possible in principle to completely exclude the possibility that participants in a false belief task could rely on extraneous factors,\footnote{See \citet[p.~26]{lurz:2011_mindreading}: `since mental state attribution in {[}nonhuman{]} animals will (if extant) be based on observable features of other agents' behaviors and environment \ldots{} every mindreading hypothesis has \ldots{} a complementary behavior-reading hypothesis. Such a hypothesis proposes that the animal relies upon certain behavioral/environmental cues to predict {[}\ldots{} the behaviour which{]}, on the mindreading hypothesis, the animal is hypothesized to use as its observable grounds for attributing the mental state in question' (also \citealp[p.~453]{lurz:2011_how}).} it seems plausible that such measures as these can exclude practically relevant hypotheses about participants' performance depending on extraneous factors.
+
+I mention the issue of extraneous factors for two reasons: to highlight a problem that, although difficult, is readily solvable, and to distinguish it from the Presupposition Problem. The issue of extraneous factors is about \emph{tracking} false beliefs: how closely do a system's responses depend only on what a protagonist believes rather than on extraneous factors? By contrast, the Presupposition Problem is about \emph{understanding} false beliefs: to what extent are the system's tracking abilities a consequence of knowledge about the protagonist's beliefs?
+
+Running vast numbers of different false belief tasks with novel systems is useful for dealing with the issue of extraneous factors but cannot solve the Presupposition Problem.
+
+\hypertarget{a-response-to-the-presupposition-problem}{\subsection{A Response to the Presupposition Problem}\label{a-response-to-the-presupposition-problem}}
+
+One response to the Presupposition Problem would be to reject the assumption that gives rise to it, namely that mental states explain why behaviours happen. A signature claim of the philosopher Daniel Dennett is that this assumption is false. As he sees things, mental states do not \emph{explain} why behaviours happen because mental states \emph{just are} patterns of behaviour \citep{Dennett:1991hr}. In his more recent work he offers an even bolder, more general claim:
+
+\begin{quote}
+`The time has come to reconsider the slogan competence without comprehension. {[}\ldots{]} cognitive competence is often assumed to be an effect of comprehension {[}but{]} this familiar assumption is pretty much backward {[}\ldots{]} Comprehension is not the source of competence {[}\ldots{]}; comprehension is composed of competences.' \citep[p.~94]{dennett:2017_bacteria}
+\end{quote}
+
+The Presupposition Problem is about whether a novel system's competence on false belief tasks is a consequence of the system's understanding a story, knowing the answer to a question and intending to answer that question accordingly, or whether it is a consequence of something else---perhaps, for instance, it might be a consequence of a form of sensitivity to distributional patterns which does not amount to understanding, knowing and intending. On Dennett's view, it would make no sense to ask this question at all.
+
+Why hold this view? Dennett explains:
+
+\begin{quote}
+`The idea of comprehension or understanding as a separate, stand-alone, mental marvel is ancient but obsolete. {[}\ldots{]} {[}it is an{]} illusion that understanding is some additional, separable mental phenomenon. {[}\ldots{]} This well-nigh magical concept of comprehension has no utility, no application in the real world.' \citep[p.~95]{dennett:2017_bacteria}
+\end{quote}
+
+One response to the several problems we have encountered in searching for a framework to understand the mental lives of novel systems might indeed be to agree with Dennett on this point. But if we did respond in that way, we would need additional grounds for taking the further step of adopting Dennett's attempt to (as he puts it) `salvage' notions of comprehension, understanding and the rest. There are plenty of obsolete notions in the nonmental domain---the impetus of a body in motion, or the vital force of an animal, for example. Given the that salvaging these nonmental notions seems neither useful nor viable, it is worth asking why things are different when it comes to salvaging mental notions.
+
+Perhaps, though, there are good answers to that question. (This is certainly Dennett's own view.) But now the salvage operation runs headlong into an already familiar challenge, namely the twin Diversity Problems (I) and (II). For the envisaged salvage operation requires something to anchor a shared understanding of notions like comprehension, knowledge and the rest. We can invoke either common sense or philosophical theories. But, as we have seen, whichever we choose, there will be a wide range of incompatible options. Their incompatibility prevents them from being combined, but picking one would be unjustified.
+
+Overall, then, the Dennett-inspired response to the Presupposition Problem would provide a coherent way of denying that the problem is genuine but is immediately confronted by the twin Diversity Problems.
+
+\hypertarget{conclusion}{\section{Conclusion}\label{conclusion}}
+
+I have explored a set of problems facing attempts to understand the mental lives of novel systems. These problems face attempts based on common sense, on philosophy, and on machine psychology. None of the problems are insoluble in principle. One response, therefore, would be to attempt to solve some of the problems. Perhaps, for example, there is some yet-to-be-uncovered deep structure implicit in mundane psychological expertise that is universal and can be reliably extended to novel systems. Or maybe there is an undiscovered justification for philosophers to converge on a single theory about the nature of the mental.
+
+The problems are significant challenges; success in taking them head-on appears remote.\footnote{\citet[p.~3]{mitchell:2023_debate} offer a review covering related problems which is also not optimistic. They conclude that `the cognitive science--based methods currently available for gaining insight into understanding are inadequate for answering such questions about LLMs.'} An alternative response would be to abandon all attempts to understand the mental lives of novel systems. Perhaps we should acknowledge, in the face of the Existence, Reliability and twin Diversity Problems that we, as researchers, lack a shared understanding of notions like belief, knowledge and intention. And while useful enough in mundane situations, there is no robust anchor for the contrast between things with and without mental lives. Perhaps asking about novel systems' mental lives is like searching for their vital force or their humours, or studying a comet's impetus.
+
+In one respect, taking this alternative response to the problems seriously would be cathartic. In comparing humans and artificial systems, there are detailed questions about the similarities and differences in processes used respond to tasks (as have seen in passing). These are important and tractable. Relative to these, questions about understanding or knowledge appear distracting and superficial. But there is a catch. Our question about the mental lives of novel systems is inextricably bound up with questions about their actions, what they are responsible for, and what, if anything, they are owed. These are questions whose answers have practical consequences and which we cannot therefore simply choose to set aside \citep{strasser:inbetweenism_book}. This, then, is a final problem: as things stand, we lack any good response to the problems that must be confronted in asking about the mental lives of novel systems. Even recognizing that the question appears to be misguided in the way that asking about vital forces or humours would be, and so apparently avoiding the main problems altogether, would seem to leave us unable to answer practical questions about the rights and wrongs of our interactions with novel systems.
+
+My titular question was, What does mindreading reveal about the mental lives of machines? The answer is simple. Nothing yet, and we do not yet know whether it ever will.
+
+
+
+
+
+
+
+
+
+
+
+%does latex not find bibliography file? Use `export "BIBINPUTS=~"`
+\bibliography{ /Users/eleven/endnote/phd_biblio.bib }
+\end{document}
+
+
