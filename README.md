@@ -19,6 +19,12 @@ These are CLI tools created for use by agents (codex, rovodev, ...).
 ## `instructions.md`
 This file is for the agent. It instructs the agent on how to use each tool.
 
+New: agents can now read source files directly
+- Use `cat-sources` to print contents of files under `$PAPERS_DIR`.
+- Discovery tools support one-shot reading:
+  - `fd-sources --cat <pattern>` streams matched files.
+  - `rg-sources --cat <pattern>` streams content of files matching the search.
+
 ## Install (for developers)
 - Ensure `jq` is installed (required for `find-bib`)
 - Ensure the `$BIB_FILE` and `$PAPERS_DIR` exist on the host (defaults to where you’d expect them to be; if they are not there, export these env vars)
@@ -28,6 +34,9 @@ This file is for the agent. It instructs the agent on how to use each tool.
 - Run individual test scripts in `tests/` directly:
   - `bash tests/find-bib.csljson.test.sh`
   - `bash tests/path2key.test.sh`
+  - `bash tests/cat-sources.test.sh`
+  - `bash tests/fd-sources-cat.e2e.test.sh`
+  - `bash tests/rg-sources-cat.e2e.test.sh`
 - Tests rely on local scripts in this directory being executable (no `./` prefix is required if installed on PATH, but tests call them via `./`).
 - The `find-bib` tests use a small CSL‑JSON fixture at `tests/fixtures/phd_biblio.json` and a small BibTeX fixture at `tests/fixtures/sample.bib` for `--cat` integration with `cite2bib`.
 

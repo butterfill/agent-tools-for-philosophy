@@ -13,6 +13,7 @@ set -euo pipefail
 #   Markdown filtering is not applied.
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 print_help() {
   cat <<'EOF'
@@ -20,10 +21,12 @@ rg-sources — ripgrep scoped to fulltext of available academic sources
 
 Usage:
   rg-sources [rg-flags...] [--] [pattern] [paths...]
+  rg-sources [rg-flags...] --cat [pattern]
 
 Examples:
   rg-sources -n "bayesian prior"
   rg-sources -i -C1 "causal"
+  rg-sources -i "causal effect" --cat
 EOF
 }
 
@@ -39,6 +42,7 @@ fi
 
 # Detect whether caller has supplied their own type/glob filters. If not, we add defaults.
 add_default_types=true
+do_cat=false
 
 # Track whether the next token is a value for an option that takes an argument.
 expect_value_for=""
@@ -88,6 +92,11 @@ for arg in "$@"; do
   if [[ "$arg" == -* ]]; then
     # Option flags. Detect those that imply custom type/glob filtering
     case "$arg" in
+      --cat)
+        do_cat=true
+        # do not pass --cat to rg
+        continue
+        ;;
       -t|--type)
         add_default_types=false; expect_value_for="$arg" ;;
       -T|--type-not)
@@ -133,5 +142,17 @@ fi
 # Change into PAPERS_DIR to scope search and keep output paths relative
 cd "$PAPERS_DIR"
 
-exec "${CMD[@]}" "${ARGS[@]}"
-
+if $do_cat; then
+  set -o pipefail
+  cs_bin=$(command -v cat-sources 2>/dev/null || true)
+  if [[ -z "${cs_bin:-}" && -x "$SCRIPT_DIR/cat-sources" ]]; then
+    cs_bin="$SCRIPT_DIR/cat-sources"
+  fi
+  if [[ -z "${cs_bin:-}" ]]; then
+    echo "rg-sources: cat-sources not found on PATH or alongside script" >&2
+    exit 2
+  fi
+  "${CMD[@]}" -l "${ARGS[@]}" | sort -u | "$cs_bin"
+else
+  exec "${CMD[@]}" "${ARGS[@]}"
+fi

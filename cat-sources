@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# cat-sources — safely read source files from PAPERS_DIR
+#
+# Usage:
+#   cat-sources [--headers] [-n|--number] [paths...]
+#   cat-sources                 # read newline-delimited paths from stdin
+#
+# Notes:
+# - Only reads files under PAPERS_DIR (default: $HOME/papers).
+# - Rejects absolute or parent-directory paths.
+# - Treats inputs literally; no glob expansion.
+
+PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+
+print_help() {
+  cat <<'EOF'
+cat-sources — print contents of source files under PAPERS_DIR
+
+Usage:
+  cat-sources [--headers] [-n|--number] [paths...]
+  cat-sources               # read newline-delimited paths from stdin
+
+Examples:
+  fd-sources vesper2012_jumping | cat-sources
+  rg-sources -l 'bayesian prior' | cat-sources --headers
+  cite2md vesper:2012_jumping | cat-sources
+EOF
+}
+
+headers=false
+number=false
+
+declare -a PATHS
+PATHS=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    --headers)
+      headers=true
+      shift
+      ;;
+    -n|--number)
+      number=true
+      shift
+      ;;
+    --)
+      shift
+      while [[ $# -gt 0 ]]; do
+        PATHS+=("$1")
+        shift
+      done
+      ;;
+    -*)
+      echo "cat-sources: unknown option: $1" >&2
+      exit 2
+      ;;
+    *)
+      PATHS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+if [[ ! -d "$PAPERS_DIR" ]]; then
+  echo "cat-sources: PAPERS_DIR not found: $PAPERS_DIR" >&2
+  exit 2
+fi
+
+read_stdin=false
+if [[ ${#PATHS[@]} -eq 0 ]]; then
+  read_stdin=true
+fi
+
+if $read_stdin; then
+  while IFS= read -r line; do
+    # skip blanks and comments
+    [[ -z "$line" ]] && continue
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    PATHS+=("$line")
+  done
+fi
+
+# validate paths for safety
+safe_paths=()
+for p in "${PATHS[@]}"; do
+  # absolute path
+  if [[ "$p" == /* ]]; then
+    echo "cat-sources: absolute paths not allowed: $p" >&2
+    exit 2
+  fi
+  # parent-directory traversal
+  if [[ "$p" == ../* || "$p" == */../* || "$p" == */.. || "$p" == ./../* || "$p" == ".." ]]; then
+    echo "cat-sources: parent-directory paths not allowed: $p" >&2
+    exit 2
+  fi
+  safe_paths+=("$p")
+done
+
+cd "$PAPERS_DIR"
+
+printed_any=false
+missing_count=0
+
+files_count=${#safe_paths[@]}
+
+for rel in "${safe_paths[@]}"; do
+  if [[ ! -f "$rel" ]]; then
+    echo "cat-sources: not found: $rel" >&2
+    missing_count=$((missing_count+1))
+    continue
+  fi
+  if $headers && [[ $files_count -gt 1 ]]; then
+    echo "==> $rel <=="
+  fi
+  if $number; then
+    if command -v nl >/dev/null 2>&1; then
+      nl -ba -v1 -- "$rel"
+    else
+      awk '{printf "%6d  %s\n", NR, $0}' -- "$rel"
+    fi
+  else
+    cat -- "$rel"
+  fi
+  printed_any=true
+  # print a trailing newline between files when headers used
+  if $headers && [[ $files_count -gt 1 ]]; then
+    echo
+  fi
+done
+
+if ! $printed_any; then
+  exit 1
+fi
+exit 0

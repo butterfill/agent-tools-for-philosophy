@@ -2,12 +2,13 @@
 Use these CLI tools to locate sources, read full text, and fetch citations. Tools are on your PATH; call them directly (no `./` required). Inputs can be LaTeX-style citations (e.g., `\citet{key}`) or bare BibTeX keys (e.g., `author:year_title`).
 
 ### Core Tools
+- cat-sources — print contents of source files under `PAPERS_DIR`
 - cite2md — print a Markdown fulltext path or content for a citation/key
 - cite2bib — print the corresponding BibTeX entry for a citation/key
 - path2key — infer the BibTeX key from a filename or path
 - find-bib — search the bibliography by fields; output keys, JSON, or BibTeX
-- rg-sources — ripgrep search across Markdown fulltext of available sources
-- fd-sources — filename search across Markdown sources
+- rg-sources — ripgrep search across Markdown fulltext of available sources (use `--cat` to stream content)
+- fd-sources — filename search across Markdown sources (use `--cat` to stream content)
 
 ### Common Tasks
 - Read full text for a citation
@@ -27,9 +28,16 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 - Search within all fulltext sources
   - `rg-sources -n "bayesian prior"`
   - `rg-sources -i -C2 "causal effect"`
+  - Stream matching files: `rg-sources -i "causal effect" --cat`
 - Locate files by filename
   - `fd-sources vesper2012_jumping`
   - `fd-sources -i 'butterfill.*2019'`
+  - Stream matched files: `fd-sources vesper2012_jumping --cat`
+
+- Read files found by other tools
+  - From `fd-sources`: `fd-sources vesper2012_jumping | cat-sources`
+  - From `rg-sources`: `rg-sources -l 'bayesian prior' | cat-sources`
+  - From a citation/key: `cite2md vesper:2012_jumping | cat-sources`
 
 ### Notes
 - Prefer `cite2md`/`cite2bib` to move between citations/keys and fulltext/BibTeX quickly when reviewing drafts.

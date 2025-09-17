@@ -4,6 +4,7 @@ set -euo pipefail
 # fd-sources — fd scoped to Markdown sources in PAPERS_DIR (search by filename)
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 print_help() {
   cat <<'EOF'
@@ -11,16 +12,19 @@ fd-sources — filename search scoped to fulltext sources
 
 Usage:
   fd-sources [fd-flags...] [--] [pattern] [paths...]
+  fd-sources [fd-flags...] --cat [pattern]
 
 Notes:
   - Runs inside PAPERS_DIR (default $HOME/papers)
   - Rejects absolute or parent-directory paths to keep scope tight
   - Adds default extensions (.md, .mdx) unless you pass your own -e/--extension
+  - --cat streams matched files through cat-sources
 
 Examples:
   fd-sources vesper2012_jumping
   fd-sources -i 'vesper.*jump'
   fd-sources -e md -e mdx butterfill
+  fd-sources vesper2012_jumping --cat
 EOF
 }
 
@@ -37,6 +41,7 @@ if [[ ! -d "$PAPERS_DIR" ]]; then
 fi
 
 add_default_exts=true
+do_cat=false
 
 declare -a ARGS
 
@@ -54,6 +59,7 @@ for arg in "$@"; do
 
   # Track explicit extension options to avoid adding defaults
   case "$arg" in
+    --cat) do_cat=true; continue ;;
     -e|--extension|--extension=*) add_default_exts=false ;;
   esac
 
@@ -69,5 +75,18 @@ if $add_default_exts; then
   CMD+=("--extension" "md" "--extension" "mdx")
 fi
 
-exec "${CMD[@]}" "${ARGS[@]}"
-
+if $do_cat; then
+  # Stream results into cat-sources
+  set -o pipefail
+  cs_bin=$(command -v cat-sources 2>/dev/null || true)
+  if [[ -z "${cs_bin:-}" && -x "$SCRIPT_DIR/cat-sources" ]]; then
+    cs_bin="$SCRIPT_DIR/cat-sources"
+  fi
+  if [[ -z "${cs_bin:-}" ]]; then
+    echo "fd-sources: cat-sources not found on PATH or alongside script" >&2
+    exit 2
+  fi
+  "${CMD[@]}" "${ARGS[@]}" | "$cs_bin"
+else
+  exec "${CMD[@]}" "${ARGS[@]}"
+fi
