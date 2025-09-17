@@ -1,6 +1,6 @@
 # cite2md — Resolve a citation/key to a Markdown fulltext path
 
-Resolves a LaTeX-style citation or BibTeX key to the corresponding Markdown file in the local papers directory. Optionally prints the file contents or just the first sentence.
+Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markdown files in the local papers directory. Supports multiple inputs via positional args or stdin. Optionally prints file contents.
 
 ## Name & Purpose
 - Command: `cite2md`
@@ -16,7 +16,7 @@ Resolves a LaTeX-style citation or BibTeX key to the corresponding Markdown file
 - Flags:
   - `--cat` — print file contents instead of path
   - `-h|--help` — help text
-- Positional: `citation-or-key`
+- Positional: one or more `citation-or-key` tokens; if none provided, read newline-delimited tokens from stdin (blank lines and lines starting with `#` are ignored)
   - LaTeX style: e.g., `"\citet{vesper:2012_jumping}"` (extracts inner `{…}`)
   - Key with colons: e.g., `vesper:2012_jumping`
   - Normalized key: e.g., `vesper2012_jumping`
@@ -32,16 +32,21 @@ Resolves a LaTeX-style citation or BibTeX key to the corresponding Markdown file
 4) If no file is found, exit non‑zero with a concise error including both forms of the key.
 
 ## Output Modes
-- Default (no flag): print absolute file path only.
-- `--cat`: print the entire file to stdout.
+- Default (no flag): print absolute file path(s), one per resolved input.
+- `--cat`: print the entire file(s) to stdout, concatenated.
 
 ## Exit Codes
-- 0: success
-- 1: not found
-- 2: usage error (e.g., missing input)
+- 0: at least one input resolved and emitted
+- 1: none resolved (all missing)
+- 2: usage error (e.g., no input keys provided)
 
 ## Dependencies
 - Required: `fd`, `jq`, `sed`, `awk`
+
+## Missing Key Handling
+- For any input that cannot be resolved, prints a standardized message to stderr:
+  - `MISSING cite2md: <key> (normalized: <normkey>) in <PAPERS_DIR>`
+- Also appends the missing key (verbatim) to a local file `missing-keys.txt` in the current working directory (one key per line).
 
 ## Examples
 - Path from LaTeX citation:

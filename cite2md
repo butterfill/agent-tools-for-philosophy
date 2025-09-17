@@ -9,10 +9,11 @@ INDEX_FILE="$PAPERS_DIR/bibtex-index.jsonl"
 
 print_help() {
   cat <<'EOF'
-cite2md — resolve citation/key to Markdown fulltext path
+cite2md — resolve citation/key(s) to Markdown fulltext path(s)
 
 Usage:
-  cite2md [--cat] <citation-or-key>
+  cite2md [--cat] [citation-or-key ...]
+  cite2md [--cat]               # read newline-delimited keys from stdin
 
 Inputs accepted:
   - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
@@ -20,8 +21,8 @@ Inputs accepted:
   - Normalized key (colons removed), e.g. vesper2012_jumping
 
 Output modes (default: path):
-  - path (default): absolute file path to the Markdown fulltext
-  - --cat: print the entire Markdown file to stdout
+  - path (default): absolute file path to the Markdown fulltext (one per resolved key)
+  - --cat: print the entire Markdown file(s) to stdout (concatenated)
 
 Resolution strategy:
   1) Search $PAPERS_DIR for files ending with <normalized-key>.md
@@ -41,14 +42,18 @@ Dependencies:
 
 Examples:
   cite2md "\citet{vesper:2012_jumping}"
-  cite2md -c vesper:2012_jumping | sed -n '1,5p'
+  cite2md --cat vesper:2012_jumping | sed -n '1,5p'
+  printf '%s\n' vesper:2012_jumping butterfill:2019_goals | cite2md --cat
   rg -n "joint outcome" "$(cite2md vesper2012_jumping)"
 EOF
 }
 
 if [ $# -lt 1 ]; then
-  print_help >&2
-  exit 2
+  # no args: may be stdin mode or help
+  if [ -t 0 ]; then
+    print_help >&2
+    exit 2
+  fi
 fi
 
 # Parse flags
@@ -68,57 +73,71 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ $# -lt 1 ]; then
-  echo "Missing citation or key" >&2; exit 2
-fi
-
-input="$1"
-
-# Extract bibkey if LaTeX citation; otherwise use input as key
-if [[ "$input" =~ \{[^}]+\} ]]; then
-  bibkey=$(printf '%s\n' "$input" | sed -n 's/.*{\([^}]*\)}.*/\1/p')
+# Collect inputs: remaining args or stdin if none
+declare -a INPUTS
+if [[ $# -gt 0 ]]; then
+  while [[ $# -gt 0 ]]; do
+    INPUTS+=("$1"); shift
+  done
 else
-  bibkey="$input"
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    INPUTS+=("$line")
+  done
 fi
 
-if [ -z "$bibkey" ]; then
-  echo "Could not parse a key from input: $input" >&2
+if [[ ${#INPUTS[@]} -eq 0 ]]; then
+  echo "cite2md: no input keys provided" >&2
   exit 2
 fi
 
-# Normalize by removing colons for filename convention
-normkey=$(printf '%s' "$bibkey" | tr -d ':')
+resolved_any=false
+missing_log_file="missing-keys.txt"
 
-# Prefer files whose names end with <normkey>.md
-file=$(fd -a -t f --regex "${normkey}\\.md$" "$PAPERS_DIR" | head -n1 || true)
-
-# Fallback: look up mapping in JSONL index using original key (with colons)
-if [ -z "$file" ] && [ -f "$INDEX_FILE" ]; then
-  # First try exact bibkey match (with colons)
-  rel=$(jq -r --arg k "$bibkey" 'select(.key==$k) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
-  # If not found and input lacked colons, match on normalized key against normalized .key
-  if [ -z "${rel:-}" ] || [ "$rel" = "null" ]; then
-    rel=$(jq -r --arg nk "$normkey" 'select((.key|gsub(":";""))==$nk) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
+resolve_one() {
+  local input="$1"; local bibkey normkey file rel
+  # Extract bibkey if LaTeX citation; otherwise use input as key
+  if [[ "$input" =~ \{[^}]+\} ]]; then
+    bibkey=$(printf '%s\n' "$input" | sed -n 's/.*{\([^}]*\)}.*/\1/p')
+  else
+    bibkey="$input"
   fi
-  if [ -n "${rel:-}" ] && [ "$rel" != "null" ]; then
-    # If rel is already an absolute or contains slashes, respect it; else assume file in root
-    if [[ "$rel" = /* || "$rel" == */* ]]; then
-      file="$PAPERS_DIR/$rel"
-    else
+  if [ -z "$bibkey" ]; then
+    echo "cite2md: could not parse a key from input: $input" >&2
+    return 1
+  fi
+  normkey=$(printf '%s' "$bibkey" | tr -d ':')
+  file=$(fd -a -t f --regex "${normkey}\\.md$" "$PAPERS_DIR" | head -n1 || true)
+  if [ -z "$file" ] && [ -f "$INDEX_FILE" ]; then
+    rel=$(jq -r --arg k "$bibkey" 'select(.key==$k) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
+    if [ -z "${rel:-}" ] || [ "$rel" = "null" ]; then
+      rel=$(jq -r --arg nk "$normkey" 'select((.key|gsub(":";""))==$nk) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
+    fi
+    if [ -n "${rel:-}" ] && [ "$rel" != "null" ]; then
       file="$PAPERS_DIR/$rel"
     fi
   fi
-fi
+  if [ -z "$file" ] || [ ! -f "$file" ]; then
+    echo "MISSING cite2md: $bibkey (normalized: $normkey) in $PAPERS_DIR" >&2
+    printf '%s\n' "$bibkey" >> "$missing_log_file"
+    return 1
+  fi
+  case "$MODE" in
+    path)
+      printf '%s\n' "$file" ;;
+    cat)
+      cat "$file" ;;
+  esac
+  return 0
+}
 
-if [ -z "$file" ] || [ ! -f "$file" ]; then
-  echo "Not found: $bibkey (normalized: $normkey) in $PAPERS_DIR" >&2
-  exit 1
-fi
+rc_overall=1
+for token in "${INPUTS[@]}"; do
+  if resolve_one "$token"; then
+    resolved_any=true
+  fi
+done
 
-case "$MODE" in
-  path)
-    # Print absolute path only
-    printf '%s\n' "$file" ;;
-  cat)
-    cat "$file" ;;
-esac
+if $resolved_any; then rc_overall=0; fi
+exit $rc_overall

@@ -77,5 +77,27 @@ it "latex citation form resolves and contains header when --cat" \
   has_line_matching '^# Are You Ready to Jump\?' \
   PAPERS_DIR="$PAPERS_ROOT" "$TOOL" --cat "\\citet{$KEY_WITH_COLON}"
 
+reads_from_stdin_single() {
+  local path
+  if ! path=$(printf '%s\n' "$KEY_WITH_COLON" | PAPERS_DIR="$PAPERS_ROOT" "$TOOL" 2>/dev/null); then
+    return 1
+  fi
+  [[ -n "$path" && -f "$path" ]]
+}
+
+it "reads path from stdin for a single key" reads_from_stdin_single
+
+writes_missing_keys_log() {
+  local missing="no:such_key_zzzz"
+  rm -f missing-keys.txt
+  set +e
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "$missing" >/dev/null 2>err.txt
+  rc=$?
+  set -e
+  test $rc -eq 1 && rg -q "^$missing$" missing-keys.txt
+}
+
+it "appends missing keys to missing-keys.txt in cwd" writes_missing_keys_log
+
 echo "RESULT: $pass passed, $fail failed"
 [[ "$fail" -eq 0 ]]
