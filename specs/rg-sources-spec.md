@@ -16,10 +16,8 @@ A thin wrapper around ripgrep that confines searches to the local papers directo
 - Help: `-h|--help`
 
 ### Defaults & Pass‑through
-- Passes all unknown flags and arguments through to `rg`.
-- Applies Markdown type filtering unless caller supplies their own type/glob options:
-  - Injected when no explicit type/glob options are detected: `--type-add mdx:*.mdx -t md -t mdx`.
-  - If any of `-t/--type`, `-T/--type-not`, `--type-add`, `--type-clear`, `--type-list`, `-g/--glob/--iglob` are present (including `--foo=...` forms), defaults are not added.
+- Passes flags and arguments through to `rg` except for type/glob controls.
+- Always applies Markdown type filtering: injects `--type-add mdx:*.mdx -t md -t mdx` and does not allow overrides via `-t/-T/--type-*/--glob`.
 
 ### Safety & Scoping
 - Rejects absolute paths and parent-directory traversals in positional `paths` and in option values for flags that take a path argument (e.g., `-f FILE`).
@@ -52,4 +50,3 @@ A thin wrapper around ripgrep that confines searches to the local papers directo
   - `rg-sources -i "joint action" --cat`
 - Provide your own types (disables default md/mdx types):
   - `rg-sources -t markdown "predictive processing"`
-

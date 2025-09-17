@@ -27,6 +27,7 @@ Examples:
   rg-sources -n "bayesian prior"
   rg-sources -i -C1 "causal"
   rg-sources -i "causal effect" --cat
+  Note: file types are fixed to Markdown; type/glob overrides are not supported here.
 EOF
 }
 
@@ -40,8 +41,6 @@ if [[ ! -d "$PAPERS_DIR" ]]; then
   exit 2
 fi
 
-# Detect whether caller has supplied their own type/glob filters. If not, we add defaults.
-add_default_types=true
 do_cat=false
 
 # Track whether the next token is a value for an option that takes an argument.
@@ -97,21 +96,12 @@ for arg in "$@"; do
         # do not pass --cat to rg
         continue
         ;;
-      -t|--type)
-        add_default_types=false; expect_value_for="$arg" ;;
-      -T|--type-not)
-        add_default_types=false; expect_value_for="$arg" ;;
-      --type-add|--type-clear)
-        add_default_types=false; expect_value_for="$arg" ;;
-      --type-list)
-        add_default_types=false ;;
-      -g|--glob|--iglob)
-        add_default_types=false; expect_value_for="$arg" ;;
+      -t|--type|-T|--type-not|--type-add|--type-clear|--type-list|-g|--glob|--iglob|--type-add=*|--type-clear=*|--glob=*|--iglob=*)
+        echo "rg-sources: file type/glob overrides are not supported; use rg directly for non-Markdown" >&2
+        exit 2 ;;
       # Options that take a value but don't affect types; ensure we skip path checks on their values
       -e|--regexp|-f|--file|-C|--context|-A|--after-context|-B|--before-context|--max-columns|--max-count|-m|--max-depth|--threads|-j|--ignore-file|--path-separator|--encoding)
         expect_value_for="$arg" ;;
-      --glob=*|--iglob=*|--type-add=*|--type-clear=*)
-        add_default_types=false ;;
     esac
     ARGS+=("$arg")
     continue
@@ -135,9 +125,7 @@ done
 declare -a CMD
 CMD=(rg)
 
-if $add_default_types; then
-  CMD+=("--type-add" "mdx:*.mdx" "-t" "md" "-t" "mdx")
-fi
+CMD+=("--type-add" "mdx:*.mdx" "-t" "md" "-t" "mdx")
 
 # Change into PAPERS_DIR to scope search and keep output paths relative
 cd "$PAPERS_DIR"

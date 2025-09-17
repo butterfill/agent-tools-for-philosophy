@@ -17,7 +17,7 @@ Usage:
 Notes:
   - Runs inside PAPERS_DIR (default $HOME/papers)
   - Rejects absolute or parent-directory paths to keep scope tight
-  - Adds default extensions (.md, .mdx) unless you pass your own -e/--extension
+  - Always restricts to Markdown extensions (.md, .mdx); cannot be overridden
   - --cat streams matched files through cat-sources
 
 Examples:
@@ -40,7 +40,6 @@ if [[ ! -d "$PAPERS_DIR" ]]; then
   exit 2
 fi
 
-add_default_exts=true
 do_cat=false
 
 declare -a ARGS
@@ -57,10 +56,11 @@ for arg in "$@"; do
     exit 2
   fi
 
-  # Track explicit extension options to avoid adding defaults
   case "$arg" in
     --cat) do_cat=true; continue ;;
-    -e|--extension|--extension=*) add_default_exts=false ;;
+    -e|--extension|--extension=*)
+      echo "fd-sources: file type overrides are not supported; use fd directly for non-Markdown" >&2
+      exit 2 ;;
   esac
 
   ARGS+=("$arg")
@@ -71,9 +71,7 @@ cd "$PAPERS_DIR"
 declare -a CMD
 CMD=(fd)
 
-if $add_default_exts; then
-  CMD+=("--extension" "md" "--extension" "mdx")
-fi
+CMD+=("--extension" "md" "--extension" "mdx")
 
 if $do_cat; then
   # Stream results into cat-sources

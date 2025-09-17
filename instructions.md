@@ -9,6 +9,7 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 - find-bib — search the bibliography by fields; output keys or BibTeX
 - rg-sources — ripgrep search across Markdown fulltext of available sources (use `--cat` to stream content)
 - fd-sources — filename search across Markdown sources (use `--cat` to stream content)
+  Note: both are Markdown-only by design; use plain `rg`/`fd` for other file types.
 
 ### Common Tasks
 - Read full text for a citation
