@@ -1,9 +1,8 @@
-## Quick Reference for Agents
+## Tools for Searching, Reading and Citing Sources
 Use these CLI tools to locate sources, read full text, and fetch citations. Tools are on your PATH; call them directly (no `./` required). Inputs can be LaTeX-style citations (e.g., `\citet{key}`) or bare BibTeX keys (e.g., `author:year_title`).
 
-### Core Tools
+### The Tools
 - cite2md — print a Markdown fulltext path or content for a citation/key
-  - Prefer listing keys first, then resolve and read one key at a time.
   - Use `--cat` to stream content for a single key.
 - draft2keys — extract keys from a draft (prints unique keys)
 - cite2bib — print the corresponding BibTeX entry for a citation/key
@@ -43,6 +42,7 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
   - From `rg-sources`: `rg-sources -l 'bayesian prior' | cat-sources`
   - From a citation/key: `cite2md vesper:2012_jumping | cat-sources`
   - From a draft: `draft2keys draft.md | cite2md --cat`
+
 ### Missing fulltext
 - When `cite2md` cannot resolve a key, it prints a standardized message to stderr and appends the key to `missing-fulltext.txt` in the current working directory (one key per line) for follow‑up.
 
