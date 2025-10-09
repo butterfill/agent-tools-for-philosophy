@@ -15,24 +15,64 @@ set -euo pipefail
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
-rg-sources — ripgrep scoped to fulltext of available academic sources
+rg-sources — ripgrep scoped to Markdown fulltext
 
 Usage:
   rg-sources [rg-flags...] [--] [pattern] [paths...]
 
-Examples (list → then read one):
-  rg-sources -n "bayesian prior"
-  rg-sources -i -C1 "causal"
-  rg-sources -l -i "causal effect" > hits.txt
-  p=$(sed -n '1p' hits.txt); cat-sources "$p"
-  Note: file types are fixed to Markdown; type/glob overrides are not supported here. Use `rg-sources -l ... | cat-sources` to stream content.
+Behavior:
+  - Enforces Markdown-only search within PAPERS_DIR
+  - Rejects absolute or parent-directory paths
 EOF
 }
 
-if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
-  print_help
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Environment:
+  - PAPERS_DIR (default: ${PAPERS_DIR})
+
+Dependencies:
+  - rg
+
+Notes:
+  - Blocks rg type/glob overrides (-t/-T/--glob/etc.) to keep scope safe.
+  - After --, positional paths must remain relative to PAPERS_DIR.
+
+Workflow tips:
+  - Combine with cat-sources to read the matching Markdown files.
+  - Use -l to output relative paths that fd-sources or cite2md can consume.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "rg-sources: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
   exit 0
 fi
 

@@ -14,30 +14,70 @@ set -euo pipefail
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
-cat-sources — print fulltext contents of one or more files from filename
+cat-sources — print Markdown fulltext for paths under PAPERS_DIR
 
 Usage:
   cat-sources [paths...]
   cat-sources               # read newline-delimited paths from stdin
 
-Examples (list → then read one):
-  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
-  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
-  cite2md --cat vesper:2012_jumping
+Behavior:
+  - Rejects absolute or parent-directory paths
+  - Exits 1 if nothing was printed; exits 2 on invalid input
 EOF
 }
+
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Environment:
+  - PAPERS_DIR (default: ${PAPERS_DIR})
+
+Workflow tips:
+  - Pair with fd-sources or rg-sources to discover relative paths.
+  - Use comments (# ...) in stdin lists to temporarily disable entries.
+
+Notes:
+  - Only streams files that live under PAPERS_DIR.
+  - Preserves relative paths, so run from repo root to share lists.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "cat-sources: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
+  exit 0
+fi
 
 declare -a PATHS
 PATHS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    -h|--help)
-      print_help
-      exit 0
-      ;;
     --)
       shift
       while [[ $# -gt 0 ]]; do

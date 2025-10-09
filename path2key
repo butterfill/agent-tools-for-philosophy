@@ -17,30 +17,73 @@ set -euo pipefail
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 INDEX_FILE=${INDEX_FILE:-"$PAPERS_DIR/bibtex-index.jsonl"}
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
 path2key — resolve a file path to a BibTeX key
 
 Usage:
   path2key <path>
 
-Input may be absolute, relative, or just a basename. The tool:
-  1) infers a key from the last word of the filename (colon reinserted before year),
-  2) falls back to $PAPERS_DIR/bibtex-index.jsonl if available.
-
-Never prints a key unless cite2bib can resolve it.
-
-Exit codes: 0 success; 1 not found; 2 usage/config error
+Behavior:
+  - Accepts absolute, relative, or basename inputs
+  - Exit codes: 0 success, 1 not found, 2 usage/config error
 EOF
 }
 
-if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
-  print_help
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Environment:
+  - PAPERS_DIR (default: ${PAPERS_DIR})
+  - INDEX_FILE (default: ${INDEX_FILE})
+  - BIB_FILE (consumed by cite2bib validation)
+
+Resolution strategy:
+  1) Reinsert colon before a 4-digit year in the filename stem.
+  2) Try normalized last token of the filename.
+  3) Fall back to bibtex-index.jsonl via jq, matching filename or .path basename.
+  4) Validate every candidate through cite2bib before printing.
+
+Dependencies:
+  - cite2bib, jq (for index fallback), awk/sed
+
+Workflow tips:
+  - Use after fd-sources or rg-sources to move from filenames back to keys.
+  - Helpful when a Markdown or PDF path is known but the BibTeX key is needed.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "path2key: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
   exit 0
 fi
 
 if [[ $# -lt 1 ]]; then
-  print_help >&2
+  print_core_help >&2
   exit 2
 fi
 

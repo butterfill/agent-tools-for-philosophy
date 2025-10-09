@@ -6,26 +6,64 @@ set -euo pipefail
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
 fd-sources — filename search scoped to fulltext sources
 
 Usage:
   fd-sources [fd-flags...] [--] [pattern] [paths...]
 
-Notes:
-  - Use the cat-sources tool to stream the Markdown fulltext of a filename discovered with fd-sources (via a pipe).
-
-Examples (list → then read one):
-  fd-sources vesper2012_jumping
-  fd-sources -i 'vesper.*jump'
-  fd-sources -i 'butterfill.*2019'
-  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
+Behavior:
+  - Restricts search to Markdown files under PAPERS_DIR
+  - Exits 2 if absolute or parent-directory paths are provided
 EOF
 }
 
-if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
-  print_help
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Environment:
+  - PAPERS_DIR (default: ${PAPERS_DIR})
+
+Dependencies:
+  - fd
+
+Workflow tips:
+  - Pipe into cat-sources to stream content once you have a relative path.
+  - Combine with rg-sources for content search, then fd-sources for filename refinement.
+
+Notes:
+  - File type overrides (-e/--extension) are blocked to prevent leaving Markdown scope.
+  - To search other formats, run fd directly with your own globbing.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "fd-sources: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
   exit 0
 fi
 

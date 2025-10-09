@@ -5,41 +5,80 @@ set -euo pipefail
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
 cite2pdf — resolve citation/key(s) to PDF fulltext path(s)
 
 Usage:
-  cite2pdf [--open|--reveal] [citation-or-key ...]
-  cite2pdf [--open|--reveal]           # read newline-delimited keys from stdin
+  cite2pdf [citation-or-key ...]
+  cite2pdf                     # read newline-delimited keys from stdin
 
-Inputs accepted:
-  - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
-  - BibTeX key with colons, e.g. vesper:2012_jumping
-  - Normalized key (colons removed), e.g. vesper2012_jumping
-
-Resolution strategy:
-  1) Search $PAPERS_DIR for files ending with <normalized-key>.pdf
-  2) Fallback to cite2md for a Markdown path and try the corresponding .pdf
-
-Output:
-  - Default: absolute path to the resolved PDF (one per key)
-  - --open : open the PDF in the system viewer (still prints the path)
-  - --reveal: reveal the PDF in Finder (macOS) or open its directory (Linux)
-
-Exit codes:
-  - 0: at least one key resolved
-  - 1: none resolved
-  - 2: usage error
-
-Dependencies:
-  - fd, cite2md, system opener (open / xdg-open / start)
+Behavior:
+  - Prints absolute PDF paths (one per resolved key)
+  - Exit codes: 0 success, 1 nothing resolved, 2 usage error
 EOF
 }
 
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Inputs:
+  - LaTeX-style citation (e.g. \\citet{vesper:2012_jumping})
+  - BibTeX key with colons (e.g. vesper:2012_jumping)
+  - Normalized key without colons (e.g. vesper2012_jumping)
+
+Environment:
+  - PAPERS_DIR (default: ${PAPERS_DIR})
+
+Resolution strategy:
+  1) fd search for <normalized-key>.pdf under PAPERS_DIR
+  2) Fallback: cite2md lookup, then swap .md → .pdf if present
+
+Dependencies:
+  - fd, cite2md, sed, jq (transitive via cite2md), system opener (open / xdg-open / start)
+
+Human actions:
+  --open    Print the path and launch it with the desktop PDF viewer
+  --reveal  Print the path and reveal it in Finder or open containing directory
+
+Workflow tips:
+  - Combine with draft2keys or cite2md to move from draft citations to PDFs.
+  - Use rg or fd inside PAPERS_DIR if a PDF is missing to locate nearby files.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "cite2pdf: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
+  exit 0
+fi
+
 if [[ $# -lt 1 ]]; then
   if [[ -t 0 ]]; then
-    print_help >&2
+    print_core_help >&2
     exit 2
   fi
 fi
@@ -66,10 +105,6 @@ while [[ $# -gt 0 ]]; do
       ACTION="reveal"
       ACTION_FLAG="--reveal"
       shift
-      ;;
-    -h|--help)
-      print_help
-      exit 0
       ;;
     --)
       shift

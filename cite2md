@@ -7,7 +7,7 @@ set -euo pipefail
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 INDEX_FILE="$PAPERS_DIR/bibtex-index.jsonl"
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
 cite2md — resolve citation/key(s) to Markdown fulltext path(s)
 
@@ -15,47 +15,75 @@ Usage:
   cite2md [--cat] [citation-or-key ...]
   cite2md [--cat]               # read newline-delimited keys from stdin
 
-Inputs accepted:
-  - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
-  - BibTeX key with colons, e.g. vesper:2012_jumping
-  - Normalized key (colons removed), e.g. vesper2012_jumping
+Flags:
+  --cat   Print Markdown contents instead of the file path
+EOF
+}
 
-Output modes (default: path):
-  - path (default): absolute file path to the Markdown fulltext (one per resolved key)
-  - --cat: print the entire Markdown file(s) to stdout (concatenated)
+print_human_help() {
+  print_core_help
+  cat <<EOF
 
-Resolution strategy:
-  1) Search $PAPERS_DIR for files ending with <normalized-key>.md
-  2) Fallback to $PAPERS_DIR/bibtex-index.jsonl, matching .key (with colons)
-     or normalized .key (colons removed), using .path or .filename
+Inputs:
+  - LaTeX-style citation (e.g. \\citet{vesper:2012_jumping})
+  - BibTeX key with colons (e.g. vesper:2012_jumping)
+  - Normalized key without colons (e.g. vesper2012_jumping)
 
 Environment:
-  - PAPERS_DIR: override papers root (default: $HOME/papers)
+  - PAPERS_DIR (default: ${PAPERS_DIR})
+  - INDEX_FILE (default: ${INDEX_FILE})
+  - missing-fulltext.txt is appended in the current working directory when lookups fail
 
-Exit codes:
-  - 0: success
-  - 1: not found
-  - 2: usage error / missing input
+Resolution strategy:
+  1) Search PAPERS_DIR for files ending with <normalized-key>.md
+  2) Fall back to bibtex-index.jsonl (matches .key and colon-stripped variants)
 
 Dependencies:
   - fd, jq, sed, awk
 
-Examples (list → then read one):
-  # From a draft → keys → read first key
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2md --cat "$key"
-  
-  # Path-only, then search in that file
-  p=$(cite2md vesper:2012_jumping)
-  rg -n "joint outcome" "$p"
+Human shortcuts:
+  --vs       Print the path then open in VS Code
+  --vsi      Print the path then open in VS Code Insiders
+  --reveal   Reveal the path in Finder (macOS) or xdg-open the directory (Linux)
+
+Workflow tips:
+  - Combine with draft2keys to resolve citations from drafts.
+  - Pipe through rg once you have the Markdown path for in-document search.
 EOF
 }
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "cite2md: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
+  exit 0
+fi
 
 if [ $# -lt 1 ]; then
   # no args: may be stdin mode or help
   if [ -t 0 ]; then
-    print_help >&2
+    print_core_help >&2
     exit 2
   fi
 fi
@@ -72,8 +100,6 @@ while [[ $# -gt 0 ]]; do
         exit 2
       fi
       MODE="cat"; shift ;;
-    -h|--help)
-      print_help; exit 0 ;;
     --vs)
       if [[ "$MODE" == "cat" ]]; then
         echo "cite2md: --vs cannot be combined with --cat" >&2

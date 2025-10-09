@@ -6,37 +6,64 @@ set -euo pipefail
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-print_help() {
+print_core_help() {
   cat <<'EOF'
 draft2keys — extract BibTeX keys from a draft
 
 Usage:
   draft2keys <draft-file>
 
-Citation forms parsed:
-  - LaTeX: \cite...{key1,key2} with optional * and up to two [..] args
-  - Pandoc: @key and [@key]
-
-Output:
-  - unique keys (in first-occurrence order), one per line
-
-Suggested workflow:
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2md --cat "$key"
-
-Exit codes:
-  0: success (printed at least one key)
-  1: no citations found
-  2: usage/config error (e.g., missing draft)
-
-Dependencies:
-  - rg (ripgrep), sed/awk
+Behavior:
+  - Prints unique keys in first-occurrence order
+  - Exit codes: 0 success, 1 no citations, 2 usage error
 EOF
 }
 
-if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
-  print_help
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Parsers:
+  - LaTeX \\cite...{key1,key2} (handles *, up to two optional [..] args)
+  - Pandoc inline citations (@key, [@key])
+
+Environment:
+  - PAPERS_DIR (default: ${PAPERS_DIR}) — used by downstream tools like cite2md
+
+Dependencies:
+  - rg, sed, awk
+
+Workflow tips:
+  - draft2keys draft.md > keys.txt then feed keys into cite2md or cite2pdf.
+  - Combine with cat-sources or rg-sources once you have the Markdown paths.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "draft2keys: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
   exit 0
 fi
 
@@ -51,7 +78,7 @@ if [[ ${1:-} == --* ]]; then
 fi
 
 if [[ $# -lt 1 ]]; then
-  echo "draft2keys: missing draft file" >&2
+  print_core_help >&2
   exit 2
 fi
 

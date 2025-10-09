@@ -5,43 +5,74 @@ set -euo pipefail
 
 BIB_JSON=${BIB_JSON:-"$HOME/endnote/phd_biblio.json"}
 
-print_help() {
-  cat <<'EOH'
+print_core_help() {
+  cat <<'EOF'
 find-bib — search entries in Pandoc CSL-JSON
 
 Usage:
   find-bib [filters...] [--cat]
 
 Filters (repeatable; case-insensitive substrings):
-  --author TXT     Match author field
-  --year YYYY      Match derived year (string compare)
-  --doi TXT        Match DOI field
-  --title TXT      Match title field
-  --abstract TXT   Match abstract field
+  --author TXT
+  --year YYYY
+  --doi TXT
+  --title TXT
+  --abstract TXT
 
 Output:
   - default: print matching keys (one per line)
-  - --cat: for each key, print full BibTeX via cite2bib
+  - --cat: print each match as BibTeX via cite2bib
 
-Suggested workflow (list → then read one):
-  find-bib --author vesper --year 2013 --title jump > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2bib "$key"
-  # Or: p=$(cite2md "$key")
-
-Environment:
-  - BIB_JSON: path to CSL-JSON file (default: $HOME/endnote/phd_biblio.json)
-  - BIB_FILE: used by cite2bib when --cat is provided
-
-Exit codes:
-  0: success (printed at least one result)
-  1: no matches
-  2: usage/config error (e.g., missing jq or BIB_JSON, missing cite2bib for --cat)
-EOH
+Exit codes: 0 success, 1 no matches, 2 usage/config error
+EOF
 }
 
-if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
-  print_help
+print_human_help() {
+  print_core_help
+  cat <<EOF
+
+Environment:
+  - BIB_JSON (default: ${BIB_JSON})
+  - BIB_FILE (used by cite2bib when --cat is active)
+
+Dependencies:
+  - jq, cite2bib (required when using --cat)
+
+Resolution details:
+  - Normalizes author names and abstracts for substring search.
+  - Derives year from CSL date-parts or literal strings.
+
+Workflow tips:
+  - Pipe into cite2md or cite2pdf after narrowing results to a small list.
+  - Use --cat to validate keys against your BibTeX library before exporting.
+EOF
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "find-bib: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
   exit 0
 fi
 
@@ -63,7 +94,6 @@ while [[ $# -gt 0 ]]; do
     --title) shift; titles+=("${1:-}"); shift || true ;;
     --abstract) shift; abstracts+=("${1:-}"); shift || true ;;
     --cat) mode="cat"; shift ;;
-    -h|--help) print_help; exit 0 ;;
     -*) echo "find-bib: unknown flag: $1" >&2; exit 2 ;;
     *) echo "find-bib: unexpected positional argument: $1" >&2; exit 2 ;;
   esac
