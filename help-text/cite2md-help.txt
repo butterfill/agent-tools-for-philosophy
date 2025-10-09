@@ -1,0 +1,33 @@
+cite2md — resolve citations/keys to Markdown fulltext
+
+Usage:
+  cite2md [--cat] [citation-or-key ...]
+  cite2md [--cat]               # read newline-delimited keys from stdin
+
+Inputs accepted:
+  - LaTeX-style citations (e.g. \citet{vesper:2012_jumping})
+  - BibTeX keys with colons (e.g. vesper:2012_jumping)
+  - Normalized keys without colons (e.g. vesper2012_jumping)
+
+Output:
+  - default: print an absolute Markdown path for each resolved key
+  - --cat: stream the Markdown contents to stdout, concatenated
+
+Exit codes:
+  - 0 at least one key resolved
+  - 1 inputs processed but nothing resolved
+  - 2 usage error (e.g. missing input, invalid flag)
+
+Examples (list → then read one):
+  # From a draft → keys → read first key
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
+  
+  # Path-only, then search in that file
+  p=$(cite2md vesper:2012_jumping)
+  rg -n "joint outcome" "$p"
+
+Notes:
+  - Accepts newline-delimited keys on stdin when called without arguments.
+  - Logs unresolved keys to missing-fulltext.txt in the current working directory.

@@ -1,0 +1,26 @@
+rg-sources — run ripgrep against Markdown fulltext
+
+Usage:
+  rg-sources [rg-flags...] [--] [pattern] [paths...]
+
+Environment:
+  - PAPERS_DIR (default: $HOME/papers) — search root
+
+Behavior:
+  - Forces Markdown scope by injecting ripgrep type filters for .md/.mdx
+  - Rejects absolute or parent-directory paths (before and after --)
+  - Disallows ripgrep type/glob overrides to keep searches within Markdown sources
+
+Dependencies:
+  - ripgrep (rg)
+
+Workflow tips:
+  - Capture relative matches with -l, then pipe to cat-sources for reading.
+  - Store hits in a file and inspect the first one: rg-sources -l ... > hits.txt; sed -n '1p' hits.txt | cat-sources
+  - Combine with cite2md when you need both context and file locations for specific citations.
+
+Examples (list → then read one):
+  rg-sources -n "bayesian prior"
+  rg-sources -i -C1 "causal"
+  rg-sources -l -i "causal effect" > hits.txt
+  p=$(sed -n '1p' hits.txt); cat-sources "$p"

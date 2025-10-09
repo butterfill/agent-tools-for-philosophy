@@ -1,0 +1,28 @@
+path2key — infer a BibTeX key from a file path
+
+Usage:
+  path2key <path>
+
+Inputs:
+  - Accepts absolute paths, relative paths, or bare filenames
+
+Environment:
+  - PAPERS_DIR (default: $HOME/papers) — used when checking the index
+  - INDEX_FILE (default: $PAPERS_DIR/bibtex-index.jsonl) — optional filename → key map
+  - BIB_FILE (used indirectly by cite2bib for verification)
+
+Resolution strategy:
+  1) Extract the last token of the filename, reinserting a colon before a four-digit year.
+  2) Validate the candidate key by calling cite2bib.
+  3) If validation fails, consult INDEX_FILE (matching .filename or basename(.path)) and re-validate.
+
+Output:
+  - Print the canonical BibTeX key, verified via cite2bib
+
+Dependencies:
+  - cite2bib, jq, sed, awk
+
+Workflow tips:
+  - Use when a collaborator sends only a filename and you need the matching key.
+  - Combine with cite2md or cite2pdf after recovering the key.
+  - Helpful for cleaning drive folders where Markdown/PDF names have drifted.

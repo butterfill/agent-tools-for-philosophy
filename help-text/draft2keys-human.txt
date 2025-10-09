@@ -1,0 +1,27 @@
+draft2keys — extract BibTeX keys from a draft
+
+Usage:
+  draft2keys <draft-file>
+
+Parsers:
+  - LaTeX \cite commands, including starred forms and up to two optional [..] arguments
+  - Pandoc inline citations @key and [@key]
+
+Environment:
+  - PAPERS_DIR (default: $HOME/papers) — used only to align with downstream tools
+
+Output:
+  - Print unique keys, preserving first appearance order (one per line)
+
+Dependencies:
+  - ripgrep (rg), sed, awk
+
+Workflow tips:
+  - Run draft2keys draft.md > keys.txt, then feed the list into cite2md or cite2pdf.
+  - Combine with cite2bib to grab the exact BibTeX entries for cited works.
+  - Add comments (# ...) to keys.txt to temporarily disable individual citations before piping.
+
+Examples:
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"

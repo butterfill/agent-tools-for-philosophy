@@ -1,0 +1,27 @@
+cite2bib — resolve citations/keys to BibTeX entries
+
+Usage:
+  cite2bib <citation-or-key>
+
+Inputs accepted:
+  - LaTeX-style citations (e.g. \citet{vesper:2012_jumping})
+  - BibTeX keys with colons (vesper:2012_jumping)
+  - Normalized keys without colons (vesper2012_jumping)
+
+Output:
+  - Print the matching BibTeX entry to stdout with no extra logging on success
+
+Exit codes:
+  - 0 key resolved and entry printed
+  - 1 key not found or BibTeX file missing
+  - 2 usage error (e.g. missing input)
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key" | rg '^@'
+  cite2bib vesper2012_jumping > vesper.bib
+
+Notes:
+  - Strips colons from inputs when the exact key is not found, then retries.
+  - Logs unresolved keys to missing-keys.txt in the current working directory.

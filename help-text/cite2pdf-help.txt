@@ -1,0 +1,31 @@
+cite2pdf — resolve citations/keys to PDF fulltext
+
+Usage:
+  cite2pdf [citation-or-key ...]
+  cite2pdf                     # read newline-delimited keys from stdin
+
+Inputs accepted:
+  - LaTeX-style citations (e.g. \citet{vesper:2012_jumping})
+  - BibTeX keys with colons (vesper:2012_jumping)
+  - Normalized keys without colons (vesper2012_jumping)
+
+Output:
+  - default: print absolute PDF paths for each resolved key (one per line)
+  - --open / --reveal: also launch the system viewer or reveal the file after printing
+
+Exit codes:
+  - 0 at least one PDF resolved (even if an opener action failed)
+  - 1 inputs processed but no PDFs resolved
+  - 2 usage error (e.g. invalid flag, missing input)
+
+Examples (list → then read one):
+  # From a draft → keys → open the first PDF
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2pdf --open "$key"
+  
+  # Path-only, keep for later
+  cite2pdf vesper:2012_jumping > vesper.pdf.path
+
+Notes:
+  - Accepts newline-delimited keys on stdin when called without arguments.

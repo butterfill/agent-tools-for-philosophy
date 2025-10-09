@@ -1,0 +1,33 @@
+find-bib — search a CSL-JSON bibliography for matching entries
+
+Usage:
+  find-bib [filters...] [--cat]
+
+Filters (repeatable; case-insensitive substrings):
+  --author TXT     Match author field text
+  --year YYYY      Match derived publication year
+  --doi TXT        Match DOI value
+  --title TXT      Match title text
+  --abstract TXT   Match abstract text
+
+Environment:
+  - BIB_JSON (default: $HOME/endnote/phd_biblio.json) — CSL-JSON library
+  - BIB_FILE (used indirectly by cite2bib when --cat is present)
+
+Output:
+  - default: print matching keys (one per line)
+  - --cat: pipe each key through cite2bib and emit full BibTeX entries
+
+Dependencies:
+  - jq, cite2bib (required when --cat is specified)
+
+Workflow tips:
+  - Chain multiple filters to zero in on specific works (e.g. author + title keyword).
+  - Store keys in a file, then feed them into cite2md or cite2pdf for fulltext.
+  - Use --cat when exporting a quick BibTeX bundle from filtered results.
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key"
+  # Or: p=$(cite2md "$key")

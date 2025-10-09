@@ -1,0 +1,34 @@
+cite2bib — resolve citations/keys to BibTeX entries
+
+Usage:
+  cite2bib <citation-or-key>
+
+Inputs:
+  - LaTeX citations such as \citet{key}
+  - BibTeX keys with colons (author:year_topic)
+  - Normalized keys with colons removed (author2020_topic)
+
+Environment:
+  - BIB_FILE (default: $HOME/endnote/phd_biblio.bib) — BibTeX library consulted on lookup
+  - missing-keys.txt is appended in the current working directory when lookups fail
+
+Resolution strategy:
+  1) ripgrep for an exact key match (^@type{key,) in BIB_FILE.
+  2) Strip colons from the requested key and rescan with awk/gawk for normalized matches.
+
+Output:
+  - Print the matched BibTeX entry to stdout on success
+
+Dependencies:
+  - ripgrep (rg), awk/gawk, sed
+
+Workflow tips:
+  - Use find-bib to shortlist candidate keys before calling cite2bib.
+  - Pipe cite2bib output into rg '^@' to confirm the entry header quickly.
+  - Redirect the output to create ad-hoc .bib snippets for sharing.
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key" | rg '^@'
+  cite2bib vesper2012_jumping > vesper.bib

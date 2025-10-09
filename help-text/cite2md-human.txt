@@ -1,0 +1,45 @@
+cite2md — resolve citations/keys to Markdown fulltext
+
+Usage:
+  cite2md [--cat] [citation-or-key ...]
+  cite2md [--cat]               # read newline-delimited keys from stdin
+
+Inputs:
+  - LaTeX citations such as \citet{key}, \citep{key}, etc.
+  - BibTeX keys with colons (author:year_topic)
+  - Normalized keys with colons stripped (author2020_topic)
+
+Environment:
+  - PAPERS_DIR (default: $HOME/papers) — root directory for Markdown fulltext
+  - INDEX_FILE (default: $PAPERS_DIR/bibtex-index.jsonl) — optional lookup index
+  - missing-fulltext.txt is appended in the current working directory on misses
+
+Resolution strategy:
+  1) Locate <normalized-key>.md under PAPERS_DIR via fd.
+  2) Fall back to INDEX_FILE (matching .key or colon-stripped variants) to recover the relative path.
+
+Output modes:
+  - default: print absolute Markdown paths (one per resolved key)
+  - --cat: stream Markdown contents to stdout (keys concatenated in order)
+
+Dependencies:
+  - fd, jq, sed, awk
+
+Human shortcuts:
+  --vs / --vsi   Open the resolved path in VS Code / VS Code Insiders
+  --reveal       Reveal the resolved path in Finder (macOS) or open the directory via xdg-open
+
+Workflow tips:
+  - Use draft2keys to pull citation keys from a draft, then pipe into cite2md.
+  - Pipe cite2md output into rg-sources or cat-sources for focused reading.
+  - Combine with cite2pdf when you need both Markdown and PDF versions of a source.
+
+Examples (list → then read one):
+  # From a draft → keys → read first key
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
+  
+  # Path-only, then search in that file
+  p=$(cite2md vesper:2012_jumping)
+  rg -n "joint outcome" "$p"

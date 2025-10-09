@@ -1,0 +1,25 @@
+draft2keys — extract BibTeX keys from a draft
+
+Usage:
+  draft2keys <draft-file>
+
+Citation forms parsed:
+  - LaTeX commands \cite...{key1,key2} with optional * and up to two bracket arguments
+  - Pandoc inline citations @key and [@key]
+
+Output:
+  - Unique keys in first-occurrence order, one per line
+
+Exit codes:
+  - 0 at least one key printed
+  - 1 no citations found
+  - 2 usage or configuration error (e.g. missing draft, missing rg)
+
+Examples:
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
+
+Notes:
+  - Skips blank lines and # comments when reading from stdin.
+  - Works best on Markdown or LaTeX drafts where citations follow standard forms.

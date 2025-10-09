@@ -1,0 +1,26 @@
+fd-sources — run fd against Markdown source filenames
+
+Usage:
+  fd-sources [fd-flags...] [--] [pattern] [paths...]
+
+Environment:
+  - PAPERS_DIR (default: $HOME/papers) — search root
+
+Behavior:
+  - Forces fd to limit results to Markdown (.md, .mdx) under PAPERS_DIR
+  - Rejects absolute paths and parent-directory references to keep scope safe
+  - Blocks extension overrides (-e/--extension) so users stay within Markdown
+
+Dependencies:
+  - fd
+
+Workflow tips:
+  - Pipe results directly into cat-sources: fd-sources key | cat-sources
+  - Combine with rg-sources when toggling between filename- and content-based searches.
+  - Capture the first hit for follow-up: p=$(fd-sources pattern | sed -n '1p'); cite2md "$p"
+
+Examples (list → then read one):
+  fd-sources vesper2012_jumping
+  fd-sources -i 'vesper.*jump'
+  fd-sources -i 'butterfill.*2019'
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"

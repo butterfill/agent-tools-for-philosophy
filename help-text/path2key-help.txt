@@ -1,0 +1,19 @@
+path2key — infer a BibTeX key from a file path
+
+Usage:
+  path2key <path>
+
+Inputs accepted:
+  - Absolute paths, relative paths, or bare filenames
+
+Output:
+  - Print the canonical BibTeX key when the file can be resolved
+
+Exit codes:
+  - 0 key resolved and printed
+  - 1 path processed but no key identified
+  - 2 usage or configuration error (e.g. missing cite2bib)
+
+Notes:
+  - Reconstructs keys by reinserting colons before a four-digit year.
+  - Verifies each candidate key with cite2bib before printing.

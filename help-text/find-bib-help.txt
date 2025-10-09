@@ -1,0 +1,30 @@
+find-bib — search a CSL-JSON bibliography for matching entries
+
+Usage:
+  find-bib [filters...] [--cat]
+
+Filters (repeatable; case-insensitive substrings):
+  --author TXT
+  --year YYYY
+  --doi TXT
+  --title TXT
+  --abstract TXT
+
+Output:
+  - default: print matching keys (one per line)
+  - --cat: print each match as BibTeX via cite2bib
+
+Exit codes:
+  - 0 at least one match emitted
+  - 1 no matches
+  - 2 usage or configuration error (e.g. missing jq, bad flag)
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key"
+  # Or: p=$(cite2md "$key")
+
+Notes:
+  - Supports multiple filters of the same type to narrow long lists.
+  - Pair with cite2md or cite2pdf to inspect fulltext once a key is selected.

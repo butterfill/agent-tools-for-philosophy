@@ -1,0 +1,39 @@
+cite2pdf — resolve citations/keys to PDF fulltext
+
+Usage:
+  cite2pdf [citation-or-key ...]
+  cite2pdf                     # read newline-delimited keys from stdin
+
+Inputs:
+  - LaTeX citations (e.g. \citet{key})
+  - BibTeX keys with colons (author:year_topic)
+  - Normalized keys without colons (author2020_topic)
+
+Environment:
+  - PAPERS_DIR (default: $HOME/papers) — root directory for stored PDFs
+
+Resolution strategy:
+  1) Use fd to locate <normalized-key>.pdf under PAPERS_DIR.
+  2) If no PDF is found, call cite2md to resolve the Markdown path and swap the extension to .pdf when present.
+
+Output:
+  - default: print absolute PDF paths, one per resolved key
+  - --open: print and launch the system PDF viewer (xdg-open, open, start)
+  - --reveal: print and reveal the containing directory (Finder or xdg-open)
+
+Dependencies:
+  - fd, cite2md, sed, jq (via cite2md), xdg-open/open/start for viewer actions
+
+Workflow tips:
+  - Pair with draft2keys when fact-checking a draft that cites multiple papers.
+  - Pipe the output into xargs open/xdg-open when you want to review several PDFs manually.
+  - Coordinate with cite2md to verify that Markdown and PDF copies stay in sync.
+
+Examples (list → then read one):
+  # From a draft → keys → open the first PDF
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2pdf --open "$key"
+  
+  # Path-only, keep for later
+  cite2pdf vesper:2012_jumping > vesper.pdf.path

@@ -1,0 +1,19 @@
+cat-sources — print Markdown fulltext for selected paths
+
+Usage:
+  cat-sources [paths...]
+  cat-sources               # read newline-delimited paths from stdin
+
+Behavior:
+  - Reads relative paths under PAPERS_DIR; rejects absolute or parent-directory inputs
+  - Reads from stdin when no positional paths are supplied (skips blank lines and comments)
+  - Exits 1 if nothing was printed; exits 2 on invalid input
+
+Examples (list → then read one):
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
+  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
+  cite2md --cat vesper:2012_jumping
+
+Notes:
+  - Ideal for streaming files discovered via fd-sources or rg-sources.
+  - Keeps stdout free of extra logging, making it safe to pipe into viewers.
