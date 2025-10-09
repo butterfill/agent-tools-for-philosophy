@@ -1,0 +1,249 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# cite2pdf — resolve citation/key(s) to PDF fulltext path(s)
+
+PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+
+print_help() {
+  cat <<'EOF'
+cite2pdf — resolve citation/key(s) to PDF fulltext path(s)
+
+Usage:
+  cite2pdf [--open|--reveal] [citation-or-key ...]
+  cite2pdf [--open|--reveal]           # read newline-delimited keys from stdin
+
+Inputs accepted:
+  - LaTeX-style citation, e.g. "\citet{vesper:2012_jumping}"
+  - BibTeX key with colons, e.g. vesper:2012_jumping
+  - Normalized key (colons removed), e.g. vesper2012_jumping
+
+Resolution strategy:
+  1) Search $PAPERS_DIR for files ending with <normalized-key>.pdf
+  2) Fallback to cite2md for a Markdown path and try the corresponding .pdf
+
+Output:
+  - Default: absolute path to the resolved PDF (one per key)
+  - --open : open the PDF in the system viewer (still prints the path)
+  - --reveal: reveal the PDF in Finder (macOS) or open its directory (Linux)
+
+Exit codes:
+  - 0: at least one key resolved
+  - 1: none resolved
+  - 2: usage error
+
+Dependencies:
+  - fd, cite2md, system opener (open / xdg-open / start)
+EOF
+}
+
+if [[ $# -lt 1 ]]; then
+  if [[ -t 0 ]]; then
+    print_help >&2
+    exit 2
+  fi
+fi
+
+ACTION=""
+ACTION_FLAG=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o|--open)
+      if [[ -n "$ACTION" ]]; then
+        echo "cite2pdf: --open cannot be combined with $ACTION_FLAG" >&2
+        exit 2
+      fi
+      ACTION="open"
+      ACTION_FLAG="--open"
+      shift
+      ;;
+    -r|--reveal)
+      if [[ -n "$ACTION" ]]; then
+        echo "cite2pdf: --reveal cannot be combined with $ACTION_FLAG" >&2
+        exit 2
+      fi
+      ACTION="reveal"
+      ACTION_FLAG="--reveal"
+      shift
+      ;;
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "cite2pdf: unknown flag: $1" >&2
+      exit 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+declare -a INPUTS=()
+if [[ $# -gt 0 ]]; then
+  while [[ $# -gt 0 ]]; do
+    INPUTS+=("$1")
+    shift
+  done
+else
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    INPUTS+=("$line")
+  done
+fi
+
+if [[ ${#INPUTS[@]} -eq 0 ]]; then
+  echo "cite2pdf: no input keys provided" >&2
+  exit 2
+fi
+
+resolved_any=false
+action_failed=false
+
+extract_key() {
+  local token="$1"
+  local key=""
+  if [[ "$token" =~ \{[^}]+\} ]]; then
+    key=$(printf '%s\n' "$token" | sed -n 's/.*{\([^}]*\)}.*/\1/p')
+  else
+    key="$token"
+  fi
+  printf '%s' "$key"
+}
+
+find_pdf_via_fd() {
+  local normkey="$1"
+  if ! command -v fd >/dev/null 2>&1; then
+    return 1
+  fi
+  local path
+  path=$(fd -a -t f --regex "${normkey}\\.pdf$" "$PAPERS_DIR" | head -n1 || true)
+  if [[ -n "$path" && -f "$path" ]]; then
+    printf '%s' "$path"
+    return 0
+  fi
+  return 1
+}
+
+fallback_via_cite2md() {
+  local bibkey="$1"
+  if ! command -v cite2md >/dev/null 2>&1; then
+    return 1
+  fi
+  local md_path pdf_path
+  md_path=$(cite2md "$bibkey" 2>/dev/null | head -n1 || true)
+  if [[ -z "$md_path" ]]; then
+    return 1
+  fi
+  if [[ "$md_path" != *.md ]]; then
+    return 1
+  fi
+  pdf_path="${md_path%.md}.pdf"
+  if [[ -f "$pdf_path" ]]; then
+    printf '%s' "$pdf_path"
+    return 0
+  fi
+  return 1
+}
+
+open_in_viewer() {
+  local pdf_path="$1"
+  if command -v xdg-open >/dev/null 2>&1; then
+    if ! xdg-open "$pdf_path" >/dev/null 2>&1; then
+      echo "cite2pdf: failed to open $pdf_path with xdg-open" >&2
+      return 1
+    fi
+  elif command -v open >/dev/null 2>&1; then
+    if ! open "$pdf_path"; then
+      echo "cite2pdf: failed to open $pdf_path with open" >&2
+      return 1
+    fi
+  elif command -v start >/dev/null 2>&1; then
+    if ! start "" "$pdf_path"; then
+      echo "cite2pdf: failed to open $pdf_path with start" >&2
+      return 1
+    fi
+  else
+    echo "cite2pdf: no supported opener found (expected xdg-open, open, or start)" >&2
+    return 1
+  fi
+  return 0
+}
+
+reveal_in_finder() {
+  local pdf_path="$1"
+  if command -v open >/dev/null 2>&1; then
+    if ! open -R "$pdf_path"; then
+      echo "cite2pdf: failed to reveal $pdf_path with open -R" >&2
+      return 1
+    fi
+    return 0
+  fi
+  if command -v xdg-open >/dev/null 2>&1; then
+    local dir
+    dir=$(dirname "$pdf_path")
+    if ! xdg-open "$dir" >/dev/null 2>&1; then
+      echo "cite2pdf: failed to open directory $dir with xdg-open" >&2
+      return 1
+    fi
+    return 0
+  fi
+  echo "cite2pdf: reveal requires 'open' (macOS) or 'xdg-open' (Linux)" >&2
+  return 1
+}
+
+resolve_one() {
+  local input="$1"
+  local bibkey normkey pdf_path
+  bibkey=$(extract_key "$input")
+  if [[ -z "$bibkey" ]]; then
+    echo "cite2pdf: could not parse a key from input: $input" >&2
+    return 1
+  fi
+  normkey=$(printf '%s' "$bibkey" | tr -d ':')
+
+  pdf_path=$(find_pdf_via_fd "$normkey") || true
+  if [[ -z "$pdf_path" ]]; then
+    pdf_path=$(fallback_via_cite2md "$bibkey") || true
+  fi
+
+  if [[ -z "$pdf_path" ]]; then
+    echo "MISSING cite2pdf: $bibkey (normalized: $normkey) in $PAPERS_DIR" >&2
+    return 1
+  fi
+
+  printf '%s\n' "$pdf_path"
+
+  case "$ACTION" in
+    open)
+      if ! open_in_viewer "$pdf_path"; then
+        action_failed=true
+      fi
+      ;;
+    reveal)
+      if ! reveal_in_finder "$pdf_path"; then
+        action_failed=true
+      fi
+      ;;
+  esac
+
+  return 0
+}
+
+rc=1
+for token in "${INPUTS[@]}"; do
+  if resolve_one "$token"; then
+    resolved_any=true
+  fi
+done
+
+if $resolved_any; then rc=0; fi
+if $action_failed; then rc=1; fi
+exit $rc
