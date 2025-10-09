@@ -16,6 +16,11 @@ Usage:
 Behavior:
   - Prints unique keys in first-occurrence order
   - Exit codes: 0 success, 1 no citations, 2 usage error
+
+Examples:
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
 EOF
 }
 
@@ -36,6 +41,11 @@ Dependencies:
 Workflow tips:
   - draft2keys draft.md > keys.txt then feed keys into cite2md or cite2pdf.
   - Combine with cat-sources or rg-sources once you have the Markdown paths.
+
+Examples:
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
 EOF
 }
 

@@ -25,6 +25,11 @@ Usage:
 Behavior:
   - Rejects absolute or parent-directory paths
   - Exits 1 if nothing was printed; exits 2 on invalid input
+
+Examples (list → then read one):
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
+  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
+  cite2md --cat vesper:2012_jumping
 EOF
 }
 
@@ -42,6 +47,11 @@ Workflow tips:
 Notes:
   - Only streams files that live under PAPERS_DIR.
   - Preserves relative paths, so run from repo root to share lists.
+
+Examples (list → then read one):
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
+  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
+  cite2md --cat vesper:2012_jumping
 EOF
 }
 

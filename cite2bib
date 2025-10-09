@@ -16,6 +16,12 @@ Usage:
 Behavior:
   - Prints the matching BibTeX entry to stdout
   - Exit codes: 0 success, 1 not found, 2 usage error
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key" | rg '^@'
+  cite2bib vesper2012_jumping > vesper.bib
 EOF
 }
 
@@ -42,6 +48,12 @@ Dependencies:
 Workflow tips:
   - Combine with find-bib to shortlist keys before fetching entries.
   - Use cite2bib <key> | rg '^@' to confirm the key resolves.
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key" | rg '^@'
+  cite2bib vesper2012_jumping > vesper.bib
 EOF
 }
 

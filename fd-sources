@@ -16,6 +16,12 @@ Usage:
 Behavior:
   - Restricts search to Markdown files under PAPERS_DIR
   - Exits 2 if absolute or parent-directory paths are provided
+
+Examples (list → then read one):
+  fd-sources vesper2012_jumping
+  fd-sources -i 'vesper.*jump'
+  fd-sources -i 'butterfill.*2019'
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
 EOF
 }
 
@@ -36,6 +42,12 @@ Workflow tips:
 Notes:
   - File type overrides (-e/--extension) are blocked to prevent leaving Markdown scope.
   - To search other formats, run fd directly with your own globbing.
+
+Examples (list → then read one):
+  fd-sources vesper2012_jumping
+  fd-sources -i 'vesper.*jump'
+  fd-sources -i 'butterfill.*2019'
+  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
 EOF
 }
 

@@ -24,6 +24,12 @@ Output:
   - --cat: print each match as BibTeX via cite2bib
 
 Exit codes: 0 success, 1 no matches, 2 usage/config error
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key"
+  # Or: p=$(cite2md "$key")
 EOF
 }
 
@@ -45,6 +51,12 @@ Resolution details:
 Workflow tips:
   - Pipe into cite2md or cite2pdf after narrowing results to a small list.
   - Use --cat to validate keys against your BibTeX library before exporting.
+
+Examples (list → then read one):
+  find-bib --author vesper --year 2013 --title jump > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2bib "$key"
+  # Or: p=$(cite2md "$key")
 EOF
 }
 

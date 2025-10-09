@@ -16,6 +16,15 @@ Usage:
 Behavior:
   - Prints absolute PDF paths (one per resolved key)
   - Exit codes: 0 success, 1 nothing resolved, 2 usage error
+
+Examples (list → then read one):
+  # From a draft → keys → open the first PDF
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2pdf --open "$key"
+  
+  # Path-only, keep for later
+  cite2pdf vesper:2012_jumping > vesper.pdf.path
 EOF
 }
 
@@ -45,6 +54,15 @@ Human actions:
 Workflow tips:
   - Combine with draft2keys or cite2md to move from draft citations to PDFs.
   - Use rg or fd inside PAPERS_DIR if a PDF is missing to locate nearby files.
+
+Examples (list → then read one):
+  # From a draft → keys → open the first PDF
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2pdf --open "$key"
+  
+  # Path-only, keep for later
+  cite2pdf vesper:2012_jumping > vesper.pdf.path
 EOF
 }
 

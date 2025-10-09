@@ -17,6 +17,16 @@ Usage:
 
 Flags:
   --cat   Print Markdown contents instead of the file path
+
+Examples (list → then read one):
+  # From a draft → keys → read first key
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
+  
+  # Path-only, then search in that file
+  p=$(cite2md vesper:2012_jumping)
+  rg -n "joint outcome" "$p"
 EOF
 }
 
@@ -49,6 +59,16 @@ Human shortcuts:
 Workflow tips:
   - Combine with draft2keys to resolve citations from drafts.
   - Pipe through rg once you have the Markdown path for in-document search.
+
+Examples (list → then read one):
+  # From a draft → keys → read first key
+  draft2keys draft.md > keys.txt
+  key=$(sed -n '1p' keys.txt)
+  cite2md --cat "$key"
+  
+  # Path-only, then search in that file
+  p=$(cite2md vesper:2012_jumping)
+  rg -n "joint outcome" "$p"
 EOF
 }
 
