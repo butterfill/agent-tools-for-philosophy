@@ -25,10 +25,10 @@ declare -a TMP_DIRS=()
 declare -a TMP_FILES=()
 
 cleanup() {
-  for f in "${TMP_FILES[@]}"; do
+  for f in ${TMP_FILES[@]:-}; do
     [[ -f "$f" ]] && rm -f "$f"
   done
-  for d in "${TMP_DIRS[@]}"; do
+  for d in ${TMP_DIRS[@]:-}; do
     [[ -d "$d" ]] && rm -rf "$d"
   done
 }
@@ -70,7 +70,7 @@ direct_match_resolves_pdf() {
   out=$(PAPERS_DIR="$papers" "$TOOL" "vesper:2012_jumping")
   rc=$?
   set -e
-  [[ $rc -eq 0 ]] && [[ "$out" == "$pdf" ]]
+  [[ $rc -eq 0 ]] && [[ "$out" -ef "$pdf" ]]
 }
 
 stdin_ignores_comments_and_blank_lines() {
@@ -83,7 +83,7 @@ stdin_ignores_comments_and_blank_lines() {
   out=$(printf '\n# ignore me\n\\citet{borg:2024_acting}\n' | PAPERS_DIR="$papers" "$TOOL")
   rc=$?
   set -e
-  [[ $rc -eq 0 ]] && [[ "$out" == "$pdf" ]]
+  [[ $rc -eq 0 ]] && [[ "$out" -ef "$pdf" ]]
 }
 
 fallback_uses_cite2md_when_fd_finds_nothing() {
@@ -144,7 +144,7 @@ EOF
   out=$(PATH="$stub_bin:$PATH" CITE2PDF_XDG_OPEN_LOG="$log" PAPERS_DIR="$papers" "$TOOL" --open "vesper:2012_jumping")
   rc=$?
   set -e
-  [[ $rc -eq 0 ]] && [[ "$out" == "$pdf" ]] && grep -Fq "$pdf" "$log"
+  [[ $rc -eq 0 ]] && [[ "$out" -ef "$pdf" ]] && { last=$(tail -n1 "$log"); [[ "$last" -ef "$pdf" ]]; }
 }
 
 missing_key_reports_standard_message() {
