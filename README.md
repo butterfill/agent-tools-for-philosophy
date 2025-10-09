@@ -3,6 +3,7 @@ These are CLI tools created for use by AI coding/analysis agents (codex, Claude 
 ## Goals
 - Keep mental model simple: discover → read → quote/cite.
 - Reduce friction in common scenarios
+- Include human-only extensions which are invisible to AI agents (not mentioned in `--help` and documented in `agent-tool-instructions-FOR-HUMANS-ONLY.md`).
 
 ## Scenarios
 - an agent is reviewing a draft which contains BibTeX citations. The agent’s task is to check that the draft provides an accurate, insightful and fair characterisation of the sources it cites.
