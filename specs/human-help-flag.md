@@ -18,9 +18,10 @@ We need a consistent way to expose richer, human-only guidance without surfacing
 ## Requirements
 
 ### `--help`
-- Retain short description, canonical usage line(s), and agent-safe flags.
+- Retain short description, canonical usage line(s), agent-safe flags and all examples.
+- Keep the full fidelity of the examples (including multi-step shell sequences such as the `cite2md` draft-to-key-to-path example).
 - DO NOT mention the existence of `--human` so agents do not accidentally discover it.
-- Exclude sections currently labeled as implementation details, resolution strategies, environment variables, dependency lists, or hidden features.
+- Exclude sections currently labeled as implementation details, resolution strategies, environment variables, or dependency lists.
 - Continue to exit with status 0.
 
 ### `--human`
@@ -32,6 +33,7 @@ We need a consistent way to expose richer, human-only guidance without surfacing
   - Dependency/tooling requirements.
   - Human-only flags (`--vs`, `--vsi`, `--reveal`, etc.).
   - Recommended workflows, troubleshooting guidance, or productivity tips.
+- Preserve all existing human-facing examples, workflows, or tips that previously lived under `--help`; 
 - If multiple human-only sections exist, order them logically (e.g., Usage → Environment → Resolution → Dependencies → Human-only shortcuts).
 - Should exit with status 0 and suppress normal tool execution (i.e., no additional positional arguments allowed when `--human` is present).
 
