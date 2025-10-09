@@ -62,12 +62,54 @@ fi
 
 # Parse flags
 MODE="path" # default: print file path
+HUMAN_ACTION=""
+HUMAN_ACTION_FLAG=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --cat)
+      if [[ -n "$HUMAN_ACTION" ]]; then
+        echo "cite2md: --cat cannot be combined with $HUMAN_ACTION_FLAG" >&2
+        exit 2
+      fi
       MODE="cat"; shift ;;
     -h|--help)
       print_help; exit 0 ;;
+    --vs)
+      if [[ "$MODE" == "cat" ]]; then
+        echo "cite2md: --vs cannot be combined with --cat" >&2
+        exit 2
+      fi
+      if [[ -n "$HUMAN_ACTION" && "$HUMAN_ACTION" != "code" ]]; then
+        echo "cite2md: --vs cannot be combined with $HUMAN_ACTION_FLAG" >&2
+        exit 2
+      fi
+      HUMAN_ACTION="code"
+      HUMAN_ACTION_FLAG="--vs"
+      shift ;;
+    --vsi)
+      if [[ "$MODE" == "cat" ]]; then
+        echo "cite2md: --vsi cannot be combined with --cat" >&2
+        exit 2
+      fi
+      if [[ -n "$HUMAN_ACTION" && "$HUMAN_ACTION" != "code_insiders" ]]; then
+        echo "cite2md: --vsi cannot be combined with $HUMAN_ACTION_FLAG" >&2
+        exit 2
+      fi
+      HUMAN_ACTION="code_insiders"
+      HUMAN_ACTION_FLAG="--vsi"
+      shift ;;
+    -r|--reveal)
+      if [[ "$MODE" == "cat" ]]; then
+        echo "cite2md: --reveal cannot be combined with --cat" >&2
+        exit 2
+      fi
+      if [[ -n "$HUMAN_ACTION" && "$HUMAN_ACTION" != "reveal" ]]; then
+        echo "cite2md: --reveal cannot be combined with $HUMAN_ACTION_FLAG" >&2
+        exit 2
+      fi
+      HUMAN_ACTION="reveal"
+      HUMAN_ACTION_FLAG="--reveal"
+      shift ;;
     --)
       shift; break ;;
     -*)
@@ -98,6 +140,7 @@ fi
 
 resolved_any=false
 missing_log_file="missing-fulltext.txt"
+action_failed=false
 
 resolve_one() {
   local input="$1"; local bibkey normkey file rel
@@ -129,7 +172,43 @@ resolve_one() {
   fi
   case "$MODE" in
     path)
-      printf '%s\n' "$file" ;;
+      case "$HUMAN_ACTION" in
+        "")
+          printf '%s\n' "$file"
+          ;;
+        code)
+          printf '%s\n' "$file"
+          if ! command -v code >/dev/null 2>&1; then
+            echo "cite2md: VS Code command 'code' not found on PATH" >&2
+            action_failed=true
+          elif ! code "$file"; then
+            echo "cite2md: failed to open $file in VS Code" >&2
+            action_failed=true
+          fi
+          ;;
+        code_insiders)
+          printf '%s\n' "$file"
+          if ! command -v code-insiders >/dev/null 2>&1; then
+            echo "cite2md: VS Code Insiders command 'code-insiders' not found on PATH" >&2
+            action_failed=true
+          elif ! code-insiders "$file"; then
+            echo "cite2md: failed to open $file in VS Code Insiders" >&2
+            action_failed=true
+          fi
+          ;;
+        reveal)
+          if ! command -v open >/dev/null 2>&1; then
+            echo "cite2md: Finder reveal requires the 'open' command" >&2
+            printf '%s\n' "$file"
+            action_failed=true
+          elif ! open -R "$file"; then
+            echo "cite2md: failed to reveal $file via open -R" >&2
+            printf '%s\n' "$file"
+            action_failed=true
+          fi
+          ;;
+      esac
+      ;;
     cat)
       cat "$file" ;;
   esac
@@ -144,4 +223,5 @@ for token in "${INPUTS[@]}"; do
 done
 
 if $resolved_any; then rc_overall=0; fi
+if $action_failed; then rc_overall=1; fi
 exit $rc_overall

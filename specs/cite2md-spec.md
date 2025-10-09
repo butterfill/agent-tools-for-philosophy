@@ -16,6 +16,9 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
 - Flags:
   - `--cat` — print file contents instead of path
   - `-h|--help` — help text
+  - `--vs` — **human-only**: open the resolved file in Visual Studio Code (runs `code <path>`); mutually exclusive with other output flags and hidden from `--help`
+  - `--vsi` — **human-only**: open the resolved file in Visual Studio Code Insiders (runs `code-insiders <path>`); mutually exclusive with other output flags and hidden from `--help`
+  - `-r|--reveal` — **human-only**: reveal the resolved file in Finder (runs `open -R <path>`); mutually exclusive with other output flags and hidden from `--help`
 - Positional: one or more `citation-or-key` tokens; if none provided, read newline-delimited tokens from stdin (blank lines and lines starting with `#` are ignored)
   - LaTeX style: e.g., `"\citet{vesper:2012_jumping}"` (extracts inner `{…}`)
   - Key with colons: e.g., `vesper:2012_jumping`
@@ -34,6 +37,9 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
 ## Output Modes
 - Default (no flag): print absolute file path(s), one per resolved input.
 - `--cat`: print the entire file(s) to stdout, concatenated.
+- `--vs`: open the resolved file in VS Code; still writes the resolved path to stdout for chaining.
+- `--vsi`: open the resolved file in VS Code Insiders; still writes the resolved path to stdout for chaining.
+- `-r|--reveal`: reveal the resolved file in Finder via `open -R`; does not emit the path if the reveal succeeds.
 
 ## Exit Codes
 - 0: at least one input resolved and emitted
@@ -46,12 +52,14 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
 ## Missing Key Handling
 - For any input that cannot be resolved, prints a standardized message to stderr:
   - `MISSING cite2md: <key> (normalized: <normkey>) in <PAPERS_DIR>`
-- Also appends the missing key (verbatim) to a local file `missing-keys.txt` in the current working directory (one key per line).
+- Also appends the missing key (verbatim) to a local file `missing-fulltext.txt` in the current working directory (one key per line). The file is created if it does not exist.
 
 ## Examples
 - Path from LaTeX citation:
   - `cite2md "\citet{vesper:2012_jumping}"`
 - Print file contents:
-  - `cite2md -c vesper:2012_jumping | sed -n '1,10p'`
-- Print the first sentence:
-  - `cite2md -1 vesper2012_jumping`
+  - `cite2md --cat vesper:2012_jumping | sed -n '1,10p'`
+- Open directly in VS Code (hidden human-only flag):
+  - `cite2md --vs vesper2012_jumping`
+- Reveal the file in Finder to move or inspect it:
+  - `cite2md --reveal vesper:2012_jumping`
