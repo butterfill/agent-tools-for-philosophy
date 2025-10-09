@@ -63,6 +63,11 @@ for f in "$SCRIPT_DIR"/*; do
 done
 shopt -u nullglob
 
+if [[ -d "$SCRIPT_DIR/help-text" ]]; then
+  mkdir -p "$TARGET_DIR/help-text"
+  cp -a "$SCRIPT_DIR/help-text/." "$TARGET_DIR/help-text/"
+fi
+
 if [[ ${#installed[@]} -eq 0 ]]; then
   echo "install.sh: no executable tools found to install in $SCRIPT_DIR" >&2
   exit 1
