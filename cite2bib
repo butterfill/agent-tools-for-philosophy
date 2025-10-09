@@ -5,56 +5,15 @@ set -euo pipefail
 # See --help for detailed usage.
 
 BIB_FILE=${BIB_FILE:-"$HOME/endnote/phd_biblio.bib"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-cite2bib — resolve citation/key to BibTeX entry
-
-Usage:
-  cite2bib <citation-or-key>
-
-Behavior:
-  - Prints the matching BibTeX entry to stdout
-  - Exit codes: 0 success, 1 not found, 2 usage error
-
-Examples (list → then read one):
-  find-bib --author vesper --year 2013 --title jump > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2bib "$key" | rg '^@'
-  cite2bib vesper2012_jumping > vesper.bib
-EOF
+  cat "$HELP_TEXT_DIR/cite2bib-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Inputs:
-  - LaTeX-style citation (e.g. \\citet{vesper:2012_jumping})
-  - BibTeX key with colons (e.g. vesper:2012_jumping)
-  - Normalized key without colons (e.g. vesper2012_jumping)
-
-Environment:
-  - BIB_FILE (default: ${BIB_FILE})
-  - missing-keys.txt is appended in the working directory on misses
-
-Resolution strategy:
-  - ripgrep for exact key matches (^@type{key,)
-  - fallback: strip colons and scan for normalized key with awk/gawk
-
-Dependencies:
-  - rg, awk (or gawk), sed
-
-Workflow tips:
-  - Combine with find-bib to shortlist keys before fetching entries.
-  - Use cite2bib <key> | rg '^@' to confirm the key resolves.
-
-Examples (list → then read one):
-  find-bib --author vesper --year 2013 --title jump > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2bib "$key" | rg '^@'
-  cite2bib vesper2012_jumping > vesper.bib
-EOF
+  cat "$HELP_TEXT_DIR/cite2bib-human.txt"
 }
 
 human_requested=false

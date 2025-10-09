@@ -4,66 +4,15 @@ set -euo pipefail
 # cite2pdf — resolve citation/key(s) to PDF fulltext path(s)
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-cite2pdf — resolve citation/key(s) to PDF fulltext path(s)
-
-Usage:
-  cite2pdf [citation-or-key ...]
-  cite2pdf                     # read newline-delimited keys from stdin
-
-Behavior:
-  - Prints absolute PDF paths (one per resolved key)
-  - Exit codes: 0 success, 1 nothing resolved, 2 usage error
-
-Examples (list → then read one):
-  # From a draft → keys → open the first PDF
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2pdf --open "$key"
-  
-  # Path-only, keep for later
-  cite2pdf vesper:2012_jumping > vesper.pdf.path
-EOF
+  cat "$HELP_TEXT_DIR/cite2pdf-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Inputs:
-  - LaTeX-style citation (e.g. \\citet{vesper:2012_jumping})
-  - BibTeX key with colons (e.g. vesper:2012_jumping)
-  - Normalized key without colons (e.g. vesper2012_jumping)
-
-Environment:
-  - PAPERS_DIR (default: ${PAPERS_DIR})
-
-Resolution strategy:
-  1) fd search for <normalized-key>.pdf under PAPERS_DIR
-  2) Fallback: cite2md lookup, then swap .md → .pdf if present
-
-Dependencies:
-  - fd, cite2md, sed, jq (transitive via cite2md), system opener (open / xdg-open / start)
-
-Human actions:
-  --open    Print the path and launch it with the desktop PDF viewer
-  --reveal  Print the path and reveal it in Finder or open containing directory
-
-Workflow tips:
-  - Combine with draft2keys or cite2md to move from draft citations to PDFs.
-  - Use rg or fd inside PAPERS_DIR if a PDF is missing to locate nearby files.
-
-Examples (list → then read one):
-  # From a draft → keys → open the first PDF
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2pdf --open "$key"
-  
-  # Path-only, keep for later
-  cite2pdf vesper:2012_jumping > vesper.pdf.path
-EOF
+  cat "$HELP_TEXT_DIR/cite2pdf-human.txt"
 }
 
 human_requested=false

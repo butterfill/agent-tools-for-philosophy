@@ -13,46 +13,15 @@ set -euo pipefail
 # - Treats inputs literally; no glob expansion.
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-cat-sources — print Markdown fulltext for paths under PAPERS_DIR
-
-Usage:
-  cat-sources [paths...]
-  cat-sources               # read newline-delimited paths from stdin
-
-Behavior:
-  - Rejects absolute or parent-directory paths
-  - Exits 1 if nothing was printed; exits 2 on invalid input
-
-Examples (list → then read one):
-  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
-  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
-  cite2md --cat vesper:2012_jumping
-EOF
+  cat "$HELP_TEXT_DIR/cat-sources-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Environment:
-  - PAPERS_DIR (default: ${PAPERS_DIR})
-
-Workflow tips:
-  - Pair with fd-sources or rg-sources to discover relative paths.
-  - Use comments (# ...) in stdin lists to temporarily disable entries.
-
-Notes:
-  - Only streams files that live under PAPERS_DIR.
-  - Preserves relative paths, so run from repo root to share lists.
-
-Examples (list → then read one):
-  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
-  p=$(rg-sources -l 'bayesian prior' | sed -n '1p'); cat-sources "$p"
-  cite2md --cat vesper:2012_jumping
-EOF
+  cat "$HELP_TEXT_DIR/cat-sources-human.txt"
 }
 
 human_requested=false

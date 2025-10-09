@@ -5,50 +5,14 @@ set -euo pipefail
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-fd-sources — filename search scoped to fulltext sources
-
-Usage:
-  fd-sources [fd-flags...] [--] [pattern] [paths...]
-
-Behavior:
-  - Restricts search to Markdown files under PAPERS_DIR
-  - Exits 2 if absolute or parent-directory paths are provided
-
-Examples (list → then read one):
-  fd-sources vesper2012_jumping
-  fd-sources -i 'vesper.*jump'
-  fd-sources -i 'butterfill.*2019'
-  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
-EOF
+  cat "$HELP_TEXT_DIR/fd-sources-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Environment:
-  - PAPERS_DIR (default: ${PAPERS_DIR})
-
-Dependencies:
-  - fd
-
-Workflow tips:
-  - Pipe into cat-sources to stream content once you have a relative path.
-  - Combine with rg-sources for content search, then fd-sources for filename refinement.
-
-Notes:
-  - File type overrides (-e/--extension) are blocked to prevent leaving Markdown scope.
-  - To search other formats, run fd directly with your own globbing.
-
-Examples (list → then read one):
-  fd-sources vesper2012_jumping
-  fd-sources -i 'vesper.*jump'
-  fd-sources -i 'butterfill.*2019'
-  p=$(fd-sources vesper2012_jumping | sed -n '1p'); cat-sources "$p"
-EOF
+  cat "$HELP_TEXT_DIR/fd-sources-human.txt"
 }
 
 human_requested=false

@@ -5,48 +5,14 @@ set -euo pipefail
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-draft2keys — extract BibTeX keys from a draft
-
-Usage:
-  draft2keys <draft-file>
-
-Behavior:
-  - Prints unique keys in first-occurrence order
-  - Exit codes: 0 success, 1 no citations, 2 usage error
-
-Examples:
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2md --cat "$key"
-EOF
+  cat "$HELP_TEXT_DIR/draft2keys-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Parsers:
-  - LaTeX \\cite...{key1,key2} (handles *, up to two optional [..] args)
-  - Pandoc inline citations (@key, [@key])
-
-Environment:
-  - PAPERS_DIR (default: ${PAPERS_DIR}) — used by downstream tools like cite2md
-
-Dependencies:
-  - rg, sed, awk
-
-Workflow tips:
-  - draft2keys draft.md > keys.txt then feed keys into cite2md or cite2pdf.
-  - Combine with cat-sources or rg-sources once you have the Markdown paths.
-
-Examples:
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2md --cat "$key"
-EOF
+  cat "$HELP_TEXT_DIR/draft2keys-human.txt"
 }
 
 human_requested=false

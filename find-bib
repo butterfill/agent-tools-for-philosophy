@@ -4,60 +4,15 @@ set -euo pipefail
 # find-bib — filter CSL-JSON (Pandoc) bibliography by fields and emit keys, JSON, or BibTeX via cite2bib
 
 BIB_JSON=${BIB_JSON:-"$HOME/endnote/phd_biblio.json"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-find-bib — search entries in Pandoc CSL-JSON
-
-Usage:
-  find-bib [filters...] [--cat]
-
-Filters (repeatable; case-insensitive substrings):
-  --author TXT
-  --year YYYY
-  --doi TXT
-  --title TXT
-  --abstract TXT
-
-Output:
-  - default: print matching keys (one per line)
-  - --cat: print each match as BibTeX via cite2bib
-
-Exit codes: 0 success, 1 no matches, 2 usage/config error
-
-Examples (list → then read one):
-  find-bib --author vesper --year 2013 --title jump > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2bib "$key"
-  # Or: p=$(cite2md "$key")
-EOF
+  cat "$HELP_TEXT_DIR/find-bib-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Environment:
-  - BIB_JSON (default: ${BIB_JSON})
-  - BIB_FILE (used by cite2bib when --cat is active)
-
-Dependencies:
-  - jq, cite2bib (required when using --cat)
-
-Resolution details:
-  - Normalizes author names and abstracts for substring search.
-  - Derives year from CSL date-parts or literal strings.
-
-Workflow tips:
-  - Pipe into cite2md or cite2pdf after narrowing results to a small list.
-  - Use --cat to validate keys against your BibTeX library before exporting.
-
-Examples (list → then read one):
-  find-bib --author vesper --year 2013 --title jump > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2bib "$key"
-  # Or: p=$(cite2md "$key")
-EOF
+  cat "$HELP_TEXT_DIR/find-bib-human.txt"
 }
 
 human_requested=false

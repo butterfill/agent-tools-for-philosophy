@@ -6,70 +6,15 @@ set -euo pipefail
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 INDEX_FILE="$PAPERS_DIR/bibtex-index.jsonl"
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
 print_core_help() {
-  cat <<'EOF'
-cite2md — resolve citation/key(s) to Markdown fulltext path(s)
-
-Usage:
-  cite2md [--cat] [citation-or-key ...]
-  cite2md [--cat]               # read newline-delimited keys from stdin
-
-Flags:
-  --cat   Print Markdown contents instead of the file path
-
-Examples (list → then read one):
-  # From a draft → keys → read first key
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2md --cat "$key"
-  
-  # Path-only, then search in that file
-  p=$(cite2md vesper:2012_jumping)
-  rg -n "joint outcome" "$p"
-EOF
+  cat "$HELP_TEXT_DIR/cite2md-help.txt"
 }
 
 print_human_help() {
-  print_core_help
-  cat <<EOF
-
-Inputs:
-  - LaTeX-style citation (e.g. \\citet{vesper:2012_jumping})
-  - BibTeX key with colons (e.g. vesper:2012_jumping)
-  - Normalized key without colons (e.g. vesper2012_jumping)
-
-Environment:
-  - PAPERS_DIR (default: ${PAPERS_DIR})
-  - INDEX_FILE (default: ${INDEX_FILE})
-  - missing-fulltext.txt is appended in the current working directory when lookups fail
-
-Resolution strategy:
-  1) Search PAPERS_DIR for files ending with <normalized-key>.md
-  2) Fall back to bibtex-index.jsonl (matches .key and colon-stripped variants)
-
-Dependencies:
-  - fd, jq, sed, awk
-
-Human shortcuts:
-  --vs       Print the path then open in VS Code
-  --vsi      Print the path then open in VS Code Insiders
-  --reveal   Reveal the path in Finder (macOS) or xdg-open the directory (Linux)
-
-Workflow tips:
-  - Combine with draft2keys to resolve citations from drafts.
-  - Pipe through rg once you have the Markdown path for in-document search.
-
-Examples (list → then read one):
-  # From a draft → keys → read first key
-  draft2keys draft.md > keys.txt
-  key=$(sed -n '1p' keys.txt)
-  cite2md --cat "$key"
-  
-  # Path-only, then search in that file
-  p=$(cite2md vesper:2012_jumping)
-  rg -n "joint outcome" "$p"
-EOF
+  cat "$HELP_TEXT_DIR/cite2md-human.txt"
 }
 
 human_requested=false
