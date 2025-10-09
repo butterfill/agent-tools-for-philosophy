@@ -19,7 +19,3 @@ Examples:
   draft2keys draft.md > keys.txt
   key=$(sed -n '1p' keys.txt)
   cite2md --cat "$key"
-
-Notes:
-  - Skips blank lines and # comments when reading from stdin.
-  - Works best on Markdown or LaTeX drafts where citations follow standard forms.

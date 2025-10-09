@@ -27,4 +27,4 @@ Examples (list → then read one):
 
 Notes:
   - Supports multiple filters of the same type to narrow long lists.
-  - Pair with cite2md or cite2pdf to inspect fulltext once a key is selected.
+  - Pair with cite2md to inspect fulltext once a key is selected.

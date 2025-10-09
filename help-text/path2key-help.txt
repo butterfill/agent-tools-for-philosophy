@@ -14,6 +14,3 @@ Exit codes:
   - 1 path processed but no key identified
   - 2 usage or configuration error (e.g. missing cite2bib)
 
-Notes:
-  - Reconstructs keys by reinserting colons before a four-digit year.
-  - Verifies each candidate key with cite2bib before printing.

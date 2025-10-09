@@ -27,7 +27,3 @@ Examples (list → then read one):
   # Path-only, then search in that file
   p=$(cite2md vesper:2012_jumping)
   rg -n "joint outcome" "$p"
-
-Notes:
-  - Accepts newline-delimited keys on stdin when called without arguments.
-  - Logs unresolved keys to missing-fulltext.txt in the current working directory.

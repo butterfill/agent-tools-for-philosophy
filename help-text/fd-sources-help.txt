@@ -4,7 +4,6 @@ Usage:
   fd-sources [fd-flags...] [--] [pattern] [paths...]
 
 Behavior:
-  - Restricts searches to Markdown files under PAPERS_DIR
   - Rejects absolute paths and parent-directory references
   - Blocks fd extension overrides; use fd directly for other formats
 
@@ -19,4 +18,3 @@ Examples (list → then read one):
 
 Notes:
   - Works well in tandem with cat-sources to inspect files immediately.
-  - Use to locate Markdown complements before calling cite2md or cite2pdf.

@@ -21,7 +21,3 @@ Examples (list → then read one):
   key=$(sed -n '1p' keys.txt)
   cite2bib "$key" | rg '^@'
   cite2bib vesper2012_jumping > vesper.bib
-
-Notes:
-  - Strips colons from inputs when the exact key is not found, then retries.
-  - Logs unresolved keys to missing-keys.txt in the current working directory.
