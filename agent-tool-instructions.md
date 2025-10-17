@@ -43,12 +43,6 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
   - From a citation/key: `cite2md vesper:2012_jumping | cat-sources`
   - From a draft: `draft2keys draft.md | cite2md --cat`
 
-### Missing fulltext
-- When `cite2md` cannot resolve a key, it prints a standardized message to stderr and appends the key to `missing-fulltext.txt` in the current working directory (one key per line) for follow‑up.
-
-### Missing BibTeX entries
-- When `cite2bib` cannot resolve a key in the BibTeX file, it prints a standardized message to stderr and appends the key to `missing-keys.txt` in the current working directory (one key per line).
-
 ### Notes
 - Prefer `cite2md`/`cite2bib` to move between citations/keys and fulltext/BibTeX quickly when reviewing drafts.
 - Use `find-bib` to discover related literature by author, year, title terms, or abstract snippets.
