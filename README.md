@@ -11,13 +11,15 @@ Focused on assisting philosophical research: checking for accuracy, searching, a
 # Install tools and run tests
 ./install.sh
 ```
-The, in a folder containing a draft `draft.md` you are thinking about:
+Then in a folder containing a draft `draft.md` you are thinking about:
 
 ```bash
 cp ~/LOCAL_PATH_TO_THIS_REPO/agent-tool-instructions.md .
 
 codex exec "Please identify the most important sources cited in `draft.md`. For each source cited, attempt to find its BibTeX key in my library. Create a file, `found-keys.txt`, which contains a list of the BibTeX keys you found, one per line. The tools you should use to achieve this are described in `agent-tool-instructions.md`."
 ```
+
+This assumes you use `codex`; `opencode`, `claude` or whatever will also work. 
 
 ## Quickstart Example 2
 ```bash
