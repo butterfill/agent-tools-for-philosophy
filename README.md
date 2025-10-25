@@ -1,6 +1,36 @@
-Aim: enable AI agents to read, search, quote, and cite from your personal library of academic sources stored as markdown files using your BibTeX keys.
+# Agent Tools for Philosophy
 
-These are CLI tools created for use by AI coding/analysis agents (codex, Claude Code, rovodev, etc.) focused on philosophical analysis: reading, searching, quoting, and citing.
+CLI tools to enable AI agents to search, read, quote, and cite from your personal library of academic sources stored as markdown files, using your BibTeX keys.
+
+Focused on assisting philosophical research: checking for accuracy, searching, and quoting.
+
+
+
+## Quickstart Example 1
+```bash
+# Install tools and run tests
+./install.sh
+```
+The, in a folder containing a draft `draft.md` you are thinking about:
+
+```bash
+cp ~/LOCAL_PATH_TO_THIS_REPO/agent-tool-instructions.md .
+
+codex exec "Please identify the most important sources cited in `draft.md`. For each source cited, attempt to find its BibTeX key in my library. Create a file, `found-keys.txt`, which contains a list of the BibTeX keys you found, one per line. The tools you should use to achieve this are described in `agent-tool-instructions.md`."
+```
+
+## Quickstart Example 2
+```bash
+# setup as in example 1
+
+codex exec "We are checking draft.md against a source it cites. Please review agent-tool-instructions.md to understand the available tools. Your task is to check draft.md against the source with key `mylopoulos:2019_intentions` : the aim is to understand whether draft.md represents each the source accurately, fairly and charitably. If there is a mistake in draft.md, that is of the first importance. If there is material in the source which draft.md does not consider, but which would substantially change the argument of the ms were it considered, that is of the second importance. (Note that draft.md does not have to provide a comprehensive account of this source. Nor are we concerned with minor editorial issues like publication year or page numbers.) \
+\
+Please create a file `checking/[BibTeX-key-without-the-colon].md` which
+contains a series of headings. Each heading should contain three points: (1) a consise statement of an issue; (2) one
+or more verbatim quotes from draft.md concerning the issue; and (3) one or more verbatim quotes from the source. Put all
+quotes in \"double quotes\" and do not use the double quote mark for any other purpose."
+```
+
 
 
 ## Goals
@@ -19,28 +49,39 @@ These are CLI tools created for use by AI coding/analysis agents (codex, Claude 
 - an agent is given a topic, or a draft, and is asked to find potentially relevant academic sources in my library.
 
 
-## Install and Requirements
-- Ensure `jq` is installed (required for `find-bib`)
-- Set `$BIB_FILE` to the location of your BibTeX file and `$PAPERS_DIR` to the folder containing your markdown sources (or use defaults if you are configuring a dedicated host) machine).
-- Run `./install.sh` to copy executable tools into a user bin.
+## The Tools
+Please see [`agent-tool-instructions.md`](agent-tool-instructions.md) for a list of the tools and their usage.
 
-### Requirements
+
+## Requirements
+- platforms: macOS, Linux
+- Ensure `jq` is installed (required for `find-bib`)
 - `$BIB_FILE` points to your BibTeX file
 - `$PAPERS_DIR` points to your directory .md files, where each file basename includes the BibTeX key with any colons removed.
+- *optional* gawk on macOS (`brew install gawk`), will be used if available.
 
-If, like me, you have old `.md` files and are using a tool to map them to BibTeX keys which you are gradually improving, you can also have a file called `bibtex-index.jsonl` in `$PAPERS_DIR` with this format:
+[optional] If, like me, you have old `.md` files and are using a tool to map them to BibTeX keys which you are gradually improving, you can also have a file called `bibtex-index.jsonl` in `$PAPERS_DIR` with this format:
 
 ```json
 {"key": "liu:2022_facial", "filename": "Liu et al 2022 - Facial expressions elicit multiplexed perceptions of emotion categories and liu2022_facial.md"}
 ```
 
 
+## Install
+- Run `./install.sh` to copy executable tools into a user bin.
+
+
 ## Usage
 Copy `agent-tool-instructions.md` to your agent’s working directory. Tell the agent to read this file and use the tools when performing your tasks.
 
 
-## DIY
+## Status
+Status: experimental.
+
+## Customization
 These tools work well for me but you might not want these exact tools yourself. Copy just the `specs/` folder and `agent-tool-instructions.md`, modify the spec for each tool to suit your needs, then ask codex or whoever to implement.
+
+(I'm making the repo public mainly because I want to share the approach rather than the code.)
 
 
 ## How This Came About
@@ -98,3 +139,9 @@ Never let your agents know about the human-specific extensions.
   - Load help text from file in the tool (e.g., `cat help-texts/cite2md.help.txt`).
 - Testing
   - Provide a minimal smoke test or example commands. Add test scripts under `tests/`.
+
+
+## Contact
+
+[butterfill.com](https://butterfill.com)
+
