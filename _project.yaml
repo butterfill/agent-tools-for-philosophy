@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=http://localhost:8080/schema-project.json
+
+id: G2qNKSSYie6n9HvZc9pY2
+title: Agent Tools for Philosophy
+url:
+  - 
+git-remote:
+  - git@github.com:butterfill/agent-tools
+type: programming
+location: 
+authors: 
+  - Stephen A. Butterfill
+status: in progress
+

@@ -3,9 +3,9 @@
 **Command-line tools that let AI agents search, read, and cite sources from your personal library.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)]()
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)
 
-Focused on assisting philosophical research.
+Created for my own philosophical research.
 
 ---
 
@@ -18,6 +18,7 @@ Focused on assisting philosophical research.
 - [Usage](#usage)
 - [Example Workflows](#example-workflows)
 - [Status](#status)
+- [Limitations](#limitations)
 - [Customization](#customization)
 - [For Human Users](#for-human-users)
 - [Testing](#testing)
@@ -119,7 +120,7 @@ cite2md --cat vesper:2012_jumping | head -20
 
 ### Required Dependencies
 - **`jq`** — JSON processing (required for `find-bib`, `cite2bib`, `cite2md`)
-- **`fd`** — Fast file finding ([installation guide](https://github.com/sharkdp/fd#installation))
+- **`fd`** — Fast file finding; alias to `fd` if it’s `fdfind` on your platform ([installation guide](https://github.com/sharkdp/fd#installation))
 - **`rg`** (ripgrep) — Fast text search ([installation guide](https://github.com/BurntSushi/ripgrep#installation))
 
 Install on macOS:
@@ -130,6 +131,7 @@ brew install jq fd ripgrep
 Install on Ubuntu/Debian:
 ```bash
 sudo apt install jq fd-find ripgrep
+ln -s $(command -v fdfind) ~/.local/bin/fd
 ```
 
 ### Optional Dependencies
@@ -146,8 +148,7 @@ sudo apt install jq fd-find ripgrep
 If you do not want BibTeX keys in `.md` file names, you can create a `bibtex-index.jsonl` file in your `$PAPERS_DIR`:
 
 ```json
-{"key": "liu:2022_facial", "filename": "Liu et al 2022 - Facial expressions elicit multiplexed perceptions of emotion categories and liu2022_facial.md"}
-{"key": "vesper:2012_jumping", "path": "subfolder/vesper2012_jumping.md"}
+{"key": "liu:2022_facial", "filename": "Liu et al 2022 - Facial expressions elicit multiplexed perceptions of emotion categories.md"}
 ```
 
 ---
@@ -289,6 +290,16 @@ fd-sources "intention" | head -5
 
 ---
 
+## Limitations
+
+### Path Safety and AI Agent Use
+
+These tools are **not designed to provide security isolation**. While some tools reject absolute paths and parent-directory traversal in their inputs (`cat-sources`, `fd-sources`, `rg-sources`), others work with or return absolute paths (`cite2md`, `cite2pdf`, `path2key`). The tools scope searches to `$PAPERS_DIR` for convenience, not security.
+
+**I use these tools in a disposable VPS where this is fine for my workflow.** They should not be used by an AI agent in an environment where giving the agent access to arbitrary file paths could be a problem. These tools are unsuitable if you're running an agent with access to sensitive files or systems (but see [Customization](#customization) below).
+
+---
+
 ## Customization
 
 These tools work well for me, but you may want to adapt them for your own workflow.
@@ -395,9 +406,12 @@ See the "Contributing Tools" section in the current README for full guidelines.
 ### How This Came About
 I used to copy sources that I wanted an agent to read for each task into a directory. This was quite slow, and it became harder and harder to ensure that the agent could only see the sources I wanted it to see.
 
-I first thought about using MCP, but this is simpler. (I was inspired by 
-[Cameron’s My Take on the MCP vs CLI Debate](https://www.async-let.com/posts/my-take-on-the-mcp-verses-cli-debate/) and 
-the note by Armin Ronacher that he cites.)
+I first thought about using MCP, but this is simpler. 
+I was inspired by 
+Armin Ronacher’s [Tools: Code Is All You Need](https://lucumr.pocoo.org/2025/7/3/tools/)
+and Cameron’s 
+[My Take on the MCP vs CLI Debate](https://www.async-let.com/posts/my-take-on-the-mcp-verses-cli-debate/)
+as well as some things Simon Willison wrote. Thank you!
 
 ---
 
