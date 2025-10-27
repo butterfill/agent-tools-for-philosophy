@@ -139,6 +139,7 @@ ln -s $(command -v fdfind) ~/.local/bin/fd
 
 ### Development Dependencies
 - **`shellcheck`** — used by the test suite to lint every shell script (install with `brew install shellcheck` or `sudo apt install shellcheck`)
+- On macOS, upgrade Bash via `brew install bash` so that built-in utilities like `mapfile` are available when running the test suite (`./run-tests.sh`).
 
 ### Environment Variables
 - **`$BIB_FILE`** — Must point to your BibTeX file
