@@ -137,6 +137,9 @@ ln -s $(command -v fdfind) ~/.local/bin/fd
 ### Optional Dependencies
 - **`gawk`** on macOS (`brew install gawk`) — will be used if available for better performance
 
+### Development Dependencies
+- **`shellcheck`** — used by the test suite to lint every shell script (install with `brew install shellcheck` or `sudo apt install shellcheck`)
+
 ### Environment Variables
 - **`$BIB_FILE`** — Must point to your BibTeX file
 - **`$PAPERS_DIR`** — Must point to your directory of `.md` files
@@ -351,6 +354,7 @@ bash tests/rg-sources.e2e.test.sh
 ### Test Notes
 - Tests call scripts via `./` prefix (assuming current directory)
 - Some tests use fixtures in `tests/fixtures/`
+- `tests/shellcheck.test.sh` runs shellcheck across every shell script; install `shellcheck` locally so it doesn't skip
 - The `find-bib` tests use `tests/fixtures/phd_biblio.json` (CSL-JSON)
 - The `cite2bib` tests use `tests/fixtures/sample.bib`
 
@@ -378,6 +382,7 @@ If you want to contribute a new tool:
 
 ### Code Style Guidelines
 
+- **Linting:** All shell scripts must pass `shellcheck` (run `tests/shellcheck.test.sh`)
 - **Prefer standard Unix tools:** `fd`, `rg`, `jq`, `yq`, `ast-grep`
 - **Output discipline**
   - Keep stdout for the tool’s primary data. Send diagnostics to stderr.

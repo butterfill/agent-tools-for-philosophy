@@ -25,10 +25,10 @@ declare -a TMP_DIRS=()
 declare -a TMP_FILES=()
 
 cleanup() {
-  for f in ${TMP_FILES[@]:-}; do
+  for f in "${TMP_FILES[@]}"; do
     [[ -f "$f" ]] && rm -f "$f"
   done
-  for d in ${TMP_DIRS[@]:-}; do
+  for d in "${TMP_DIRS[@]}"; do
     [[ -d "$d" ]] && rm -rf "$d"
   done
 }

@@ -10,9 +10,6 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 choose_target_dir() {
-  local path_dirs IFS=':'
-  local d
-
   # 1) syncthing/bin override
   if [[ -d "$HOME/syncthing/bin" ]]; then
     printf '%s\n' "$HOME/syncthing/bin"
@@ -43,7 +40,6 @@ fi
 echo "Installing tools to: $TARGET_DIR"
 
 installed=()
-skipped=()
 
 shopt -s nullglob
 for f in "$SCRIPT_DIR"/*; do
