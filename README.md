@@ -98,17 +98,17 @@ to understand the available tools. Your task is to ..."
 
 ```
 
-### 4. (Optional) Try a Simple Command Yourself
+### 4. (Optional) Try It Yourself
 
 ```bash
 # Search for papers by an author
 find-bib --author "Steward"
 
-# Get the markdown file for a specific paper
-cite2md vesper:2012_jumping
+# Open markdown file for a specific paper in VS Code (assumes vs code is installed)
+cite2md --vs vesper:2012_jumping
 
-# Read the full text
-cite2md --cat vesper:2012_jumping | head -20
+# Read the full text (assumes glow is installed)
+cite2md --cat vesper:2012_jumping | glow
 ```
 
 ---
