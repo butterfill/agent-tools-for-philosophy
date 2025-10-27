@@ -59,7 +59,6 @@ it() {
   local tmp
   tmp=$(mktemp "/tmp/testcase.${RANDOM}.XXXXXX")
   # Ensure cleanup even if the test aborts.
-  local cleanup_tmp
   cleanup_tmp() { rm -f "$tmp"; }
   trap cleanup_tmp RETURN
 
