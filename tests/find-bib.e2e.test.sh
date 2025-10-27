@@ -6,6 +6,9 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="$REPO_ROOT/find-bib"
 BIB_JSON_PATH="${BIB_JSON:-$HOME/endnote/phd_biblio.json}"
 BIB_JSON_PATH="${BIB_JSON:-$HOME/endnote/phd_biblio.json}"
@@ -14,36 +17,11 @@ BIB_FILE_PATH="${BIB_FILE:-$HOME/endnote/phd_biblio.bib}"
 # Ensure local tools are discoverable (cite2bib) for --cat
 export PATH="$REPO_ROOT:$PATH"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
-require jq
-require rg
+require_command jq rg
 
 if [[ ! -f "$BIB_JSON_PATH" ]]; then
-  echo "SKIP: CSL-JSON not found at $BIB_JSON_PATH" >&2
-  exit 2
+  skip_suite "CSL-JSON not found at $BIB_JSON_PATH"
 fi
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
-}
 
 run_output() {
   bash -lc "$*"
@@ -75,10 +53,11 @@ it "finds vesper:2012_jumping by author/year/title filters" \
 
 # 2) --cat emits BibTeX via cite2bib when BIB_FILE provided
 if command -v cite2bib >/dev/null 2>&1; then
-  it "--cat prints a BibTeX entry for vesper:2012_jumping"     has_line_matching '^@\w+\{vesper:2012_jumping,'     BIB_FILE="$BIB_FILE_PATH" BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --title jump --cat
+  it "--cat prints a BibTeX entry for vesper:2012_jumping" \
+    has_line_matching '^@\w+\{vesper:2012_jumping,' \
+    BIB_FILE="$BIB_FILE_PATH" BIB_JSON="$BIB_JSON_PATH" "$TOOL" --author vesper --year 2013 --title jump --cat
 else
-  echo "SKIP: cite2bib not on PATH; skipping --cat e2e" >&2
+  skip "--cat prints a BibTeX entry for vesper:2012_jumping" "cite2bib not on PATH"
 fi
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite

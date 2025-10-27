@@ -6,9 +6,13 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
+require_command git
+
 if ! command -v shellcheck >/dev/null 2>&1; then
-  echo "WARNING: shellcheck not found; skipping shell lint. Install shellcheck to enable this test." >&2
-  exit 2
+  skip_suite "shellcheck not found; install shellcheck to enable this test"
 fi
 
 mapfile -d '' scripts < <(
@@ -27,9 +31,14 @@ mapfile -d '' scripts < <(
   done | LC_ALL=C sort -z
 )
 
+lint_shell_scripts() {
+  shellcheck --severity=warning -- "${scripts[@]}"
+}
+
 if [[ "${#scripts[@]}" -eq 0 ]]; then
-  echo "No shell scripts found to lint." >&2
-  exit 0
+  skip "shellcheck passes on tracked shell scripts" "no shell scripts found to lint"
+else
+  it "shellcheck passes on tracked shell scripts" lint_shell_scripts
 fi
 
-shellcheck --severity=warning -- "${scripts[@]}"
+complete_suite

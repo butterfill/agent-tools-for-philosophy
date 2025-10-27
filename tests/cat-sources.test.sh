@@ -6,44 +6,21 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="$REPO_ROOT/cat-sources"
 PAPERS_ROOT="${PAPERS_DIR:-$HOME/papers}"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
 if [[ ! -x "$TOOL" ]]; then
-  echo "SKIP: cat-sources tool not executable" >&2
-  exit 2
+  skip_suite "cat-sources tool not executable"
 fi
 
 if [[ ! -d "$PAPERS_ROOT" ]]; then
-  echo "SKIP: PAPERS_DIR not found at $PAPERS_ROOT" >&2
-  exit 2
+  skip_suite "PAPERS_DIR not found at $PAPERS_ROOT"
 fi
 
-require rg
-require fd
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
-}
+require_command rg fd
 
 prints_known_file() {
   local out
@@ -66,5 +43,4 @@ abs_path_rejected() {
 
 it "rejects absolute paths with an error" abs_path_rejected
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite

@@ -6,20 +6,12 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="$REPO_ROOT/cite2pdf"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
-require fd
+require_command fd
 
 declare -a TMP_DIRS=()
 declare -a TMP_FILES=()
@@ -46,18 +38,6 @@ make_tmpfile() {
   file=$(mktemp)
   TMP_FILES+=("$file")
   printf '%s\n' "$file"
-}
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
 }
 
 direct_match_resolves_pdf() {
@@ -166,5 +146,4 @@ it "falls back to cite2md when direct lookup fails" fallback_uses_cite2md_when_f
 it "opens viewer when --open is set while printing the path" open_flag_invokes_viewer_and_prints_path
 it "reports standardized missing message and exits with 1" missing_key_reports_standard_message
 
-echo "RESULT: $pass passed, $fail failed"
-[[ $fail -eq 0 ]]
+complete_suite

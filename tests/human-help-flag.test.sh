@@ -6,6 +6,9 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOLS=(
   cat-sources
   cite2bib
@@ -18,20 +21,7 @@ TOOLS=(
   rg-sources
 )
 
-pass=0
-fail=0
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
-}
+require_command rg
 
 help_excludes_human() {
   local tool_path="$1"
@@ -74,8 +64,7 @@ human_precedes_help() {
 for tool in "${TOOLS[@]}"; do
   TOOL_PATH="$REPO_ROOT/$tool"
   if [[ ! -x "$TOOL_PATH" ]]; then
-    echo "SKIP: missing tool $tool" >&2
-    exit 2
+    skip_suite "missing tool $tool"
   fi
   it "$tool --help hides --human" help_excludes_human "$TOOL_PATH"
   it "$tool --human prints environment section" human_includes_environment "$TOOL_PATH"
@@ -83,5 +72,4 @@ for tool in "${TOOLS[@]}"; do
   it "$tool --human --help prefers human output" human_precedes_help "$TOOL_PATH"
 done
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite

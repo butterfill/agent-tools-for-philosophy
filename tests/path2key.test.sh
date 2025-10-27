@@ -12,27 +12,15 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="$REPO_ROOT/path2key"
 export TOOL
 # Ensure local tools are discoverable (cite2bib)
 export PATH="$REPO_ROOT:$PATH"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
-require cite2bib
-require awk
-require sed
-require rg
-require jq
+require_command cite2bib awk sed rg jq
 
 # Prepare a temporary BibTeX file so cite2bib can validate keys
 TMP_BIB=$(mktemp -t tmp_rovodev_path2key_bib.XXXX.bib)
@@ -74,18 +62,6 @@ has_line_matching() {
   echo "$out" | rg -q "$pattern"
 }
 
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
-}
-
 # --- Tests ---
 
 # 1) Filename heuristic — simple normalized key in basename
@@ -116,5 +92,4 @@ it "resolves via index fallback when heuristic doesn't match" bash -lc '
   [[ "$out" == "sinigaglia:2022_motor" ]]
 '
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite

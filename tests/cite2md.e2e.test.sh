@@ -6,40 +6,17 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="$REPO_ROOT/cite2md"
 PAPERS_ROOT="${PAPERS_DIR:-$HOME/papers}"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
-require fd
-require rg
-require jq
+require_command fd rg jq
 
 if [[ ! -d "$PAPERS_ROOT" ]]; then
-  echo "SKIP: PAPERS_DIR not found at $PAPERS_ROOT" >&2
-  exit 2
+  skip_suite "PAPERS_DIR not found at $PAPERS_ROOT"
 fi
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
-}
 
 run_output() {
   bash -lc "$*"
@@ -99,5 +76,4 @@ writes_missing_fulltext_log() {
 
 it "appends missing keys to missing-fulltext.txt in cwd" writes_missing_fulltext_log
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite

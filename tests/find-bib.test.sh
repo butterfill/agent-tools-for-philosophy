@@ -6,37 +6,16 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="./find-bib"
 FIXTURE_JSON="tests/fixtures/phd_biblio.json"
 
 # Ensure local tools are discoverable (cite2bib) for --cat integration
 export PATH="$REPO_ROOT:$PATH"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
-require jq
-require rg
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
-}
+require_command jq rg
 
 run_output() {
   bash -lc "$*"
@@ -77,8 +56,7 @@ if command -v cite2bib >/dev/null 2>&1; then
     has_line_matching '^@\w+\{smith:2021_joint,' \
     BIB_FILE="tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat
 else
-  echo "SKIP: cite2bib not found; skipping --cat test" >&2
+  skip "emits BibTeX via --cat for smith:2021_joint" "cite2bib not found"
 fi
 
-echo "RESULT: $pass passed, $fail failed"
-test "$fail" -eq 0
+complete_suite

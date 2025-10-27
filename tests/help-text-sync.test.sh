@@ -8,10 +8,12 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 HELP_DIR="$REPO_ROOT/help-text"
 if [[ ! -d "$HELP_DIR" ]]; then
-  echo "help-text directory not found: $HELP_DIR" >&2
-  exit 2
+  skip_suite "help-text directory not found: $HELP_DIR"
 fi
 
 TOOLS=(
@@ -25,9 +27,6 @@ TOOLS=(
   path2key
   rg-sources
 )
-
-pass=0
-fail=0
 
 have_difft=false
 have_difftastic=false
@@ -50,18 +49,6 @@ show_diff() {
     diff -u "$expected" "$actual" || true
   fi
   echo "  --- end diff ---"
-}
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
 }
 
 check_help_output() {
@@ -113,5 +100,4 @@ for tool in "${TOOLS[@]}"; do
   it "$tool --human matches help-text" check_help_output "$tool" "human"
 done
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite

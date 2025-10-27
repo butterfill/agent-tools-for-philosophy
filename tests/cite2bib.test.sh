@@ -6,22 +6,12 @@ set -euo pipefail
 REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 cd "$REPO_ROOT"
 
+source "$REPO_ROOT/tests/lib/test_helpers.sh"
+test_suite "$0"
+
 TOOL="$REPO_ROOT/cite2bib"
 
-pass=0
-fail=0
-
-require() {
-  local cmd="$1"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "SKIP: missing dependency: $cmd" >&2
-    exit 2
-  fi
-}
-
-require rg
-require sed
-require awk
+require_command rg sed awk
 
 # Create a temp bib file
 TMP_BIB=$(mktemp -t tmp_rovodev_cite2bib_bib.XXXX.bib)
@@ -52,18 +42,6 @@ has_line_matching() {
     return 1
   fi
   rg -q "$pattern" <<< "$out"
-}
-
-it() {
-  local name="$1"; shift
-  echo "TEST: $name"
-  if "$@"; then
-    echo "  PASS"
-    pass=$((pass+1))
-  else
-    echo "  FAIL ($name)" >&2
-    fail=$((fail+1))
-  fi
 }
 
 # 1) Exact key match succeeds
@@ -101,8 +79,7 @@ if command -v gawk >/dev/null 2>&1; then
     has_line_matching '^@' \
     CITE2BIB_AWK_IMPL=gawk BIB_FILE="$TMP_BIB" "$TOOL" "vesper2012_jumping"
 else
-  echo "SKIP: gawk not found; skipping forced gawk test" >&2
+  skip "gawk path works when forced" "gawk not found"
 fi
 
-echo "RESULT: $pass passed, $fail failed"
-[[ "$fail" -eq 0 ]]
+complete_suite
