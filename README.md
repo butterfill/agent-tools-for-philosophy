@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)
+[![CI](https://github.com/butterfill/agent-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/butterfill/agent-tools/actions/workflows/ci.yml)
 
 Created for my own philosophical research.
 
@@ -33,7 +34,7 @@ Created for my own philosophical research.
 This toolkit is designed for researchers who:
 - Have a collection of academic papers as **markdown files**
 - Maintain a **BibTeX bibliography** for their research
-- Want to use **AI agents** to help with fact-checking, citation verification, and research tasks
+- Want to use claude, codex, opencode or other AI agents to help with fact-checking, citation verification, and research tasks
 - Need programmatic access to their personal research library
 
 ---
@@ -64,8 +65,8 @@ All tools follow a consistent pattern: list → then read one. This helps manage
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/agent-tools-for-philosophy.git
-cd agent-tools-for-philosophy
+git clone https://github.com/butterfill/agent-tools.git
+cd agent-tools
 
 # Run install script (copies tools to your PATH and runs tests)
 ./install.sh
@@ -119,7 +120,7 @@ cite2md --cat vesper:2012_jumping | glow
 - macOS or Linux
 
 ### Required Dependencies
-- **`jq`** — JSON processing (required for `find-bib`, `cite2bib`, `cite2md`)
+- **`jq`** — JSON processing (required for `find-bib`, `cite2bib`, `cite2md`; [installation guide](https://github.com/jqlang/jq))
 - **`fd`** — Fast file finding; alias to `fd` if it’s `fdfind` on your platform ([installation guide](https://github.com/sharkdp/fd#installation))
 - **`rg`** (ripgrep) — Fast text search ([installation guide](https://github.com/BurntSushi/ripgrep#installation))
 
@@ -237,8 +238,10 @@ Create a file called found-keys.txt with the keys, one per line."
 cat found-keys.txt
 
 # Ask the agent to fact-check each source
-your-agent "For each key in found-keys.txt, read the corresponding source and check 
-whether draft.md represents it accurately. Create a report in checking/ directory."
+your-agent "For each key in `found-keys.txt`, read the corresponding source and check 
+whether `draft.md` represents it accurately. 
+Use the tools in agent-tool-instructions.md to find and read sources.
+Create a report in `checking/[key-without-colon].md`."
 ```
 
 ### Workflow 2: Verify a Specific Citation
