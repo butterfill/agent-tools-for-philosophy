@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)
-[![CI](https://github.com/butterfill/agent-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/butterfill/agent-tools/actions/workflows/ci.yml)
+[![CI](https://github.com/butterfill/agent-tools-for-philosophy/actions/workflows/ci.yml/badge.svg)](https://github.com/butterfill/agent-tools-for-philosophy/actions/workflows/ci.yml)
 
 Created for my own philosophical research.
 
@@ -65,8 +65,8 @@ All tools follow a consistent pattern: list → then read one. This helps manage
 
 ```bash
 # Clone the repository
-git clone https://github.com/butterfill/agent-tools.git
-cd agent-tools
+git clone https://github.com/butterfill/agent-tools-for-philosophy.git
+cd agent-tools-for-philosophy
 
 # Run install script (copies tools to your PATH and runs tests)
 ./install.sh
@@ -88,7 +88,7 @@ export PAPERS_DIR="$HOME/papers"
 ### 3. Instruct Your Agent
 ```bash
 # Copy instructions to your working directory
-cp ~/path/to/agent-tools/agent-tool-instructions.md .
+cp ~/path/to/agent-tools-for-philosophy/agent-tool-instructions.md .
 
 # start your agent
 codex # or claude, opencode, ...
@@ -199,7 +199,7 @@ Then instruct your AI agent (via your agent framework) to read this file and use
 
 ```bash
 # Copy instructions to your working directory
-cp ~/path/to/agent-tools/agent-tool-instructions.md .
+cp ~/path/to/agent-tools-for-philosophy/agent-tool-instructions.md .
 
 # Start your AI agent and give it instructions
 # (this attempts everything at once; unless it's a very small draft, better to break into steps)
@@ -227,7 +227,7 @@ Human-specific extensions (like opening files in VS Code, revealing in Finder) a
 
 ```bash
 # Copy agent instructions to your working directory
-cp ~/agent-tools/agent-tool-instructions.md .
+cp ~/agent-tools-for-philosophy/agent-tool-instructions.md .
 
 # Ask your AI agent to extract citation keys
 your-agent "Please identify the most important sources cited in draft.md. 
@@ -250,7 +250,7 @@ Create a report in `checking/[key-without-colon].md`."
 
 ```bash
 # Copy agent instructions
-cp ~/agent-tools/agent-tool-instructions.md .
+cp ~/agent-tools-for-philosophy/agent-tool-instructions.md .
 
 # Ask agent to verify
 your-agent "Review agent-tool-instructions.md to understand the available tools. 
