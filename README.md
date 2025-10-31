@@ -215,7 +215,7 @@ For extended human-friendly features, use `--human` instead of `--help`:
 cite2md --human
 ```
 
-Human-specific extensions (like opening files in VS Code, revealing in Finder) are documented in `agent-tool-instructions-FOR-HUMANS-ONLY.md` but are **hidden from agents** to keep their interface minimal.
+Human-specific extensions (like opening files in VS Code, revealing in Finder) are documented in `agent-tool-instructions-FOR-HUMANS-ONLY.md` but are **hidden from agents** to save tokens.
 
 ---
 
@@ -301,16 +301,16 @@ fd-sources "intention" | head -5
 
 ### Path Safety and AI Agent Use
 
-These tools are **not designed to provide security isolation**. While some tools reject absolute paths and parent-directory traversal in their inputs (`cat-sources`, `fd-sources`, `rg-sources`), others work with or return absolute paths (`cite2md`, `cite2pdf`, `path2key`). The tools scope searches to `$PAPERS_DIR` for convenience, not security.
+  These tools are **not designed to provide security isolation**. Some tools work with or return absolute paths (`cite2md`, `cite2pdf`, `path2key`). The tools scope searches to `$PAPERS_DIR` for convenience, not security.
 
-**I use these tools in a disposable VPS where this is fine for my workflow.** They should not be used by an AI agent in an environment where giving the agent access to arbitrary file paths could be a problem. These tools are unsuitable if you're running an agent with access to sensitive files or systems (but see [Customization](#customization) below).
+  **I use these tools in a disposable VPS.** Unless you are a great babysitter, the tools should not be used by an AI agent in an environment where giving the agent access to arbitrary file paths could be a problem. These tools are unsuitable if you're running an agent with access to sensitive files or systems (but see [Customization](#customization) below).
 
 ---
 
 ## Customization
 
 These tools work well for me, but you may want to adapt them for your own workflow.
-Copy just the `specs/` folder and `agent-tool-instructions.md`, modify the specifications to suit your needs, then ask an agent to implement your own versions.
+  Copy just the `specs/` folder, the 'Contributing' section from this README, and `agent-tool-instructions.md`, modify the specifications to suit your needs, then ask an agent to implement your own versions.
 
 ---
 
@@ -330,12 +330,12 @@ Run any tool with `--human` to see human-friendly help:
 cite2md --human
 ```
 
-**Why hide these from agents?**  
-To keep the agent interface minimal and focused. Agents don't need editor integrations or GUI operations.
+  This is hidden from agents to save tokens.
 
 ---
 
 ## Testing
+*I have not read the tests carefully.*
 
 ### Run All Tests
 
