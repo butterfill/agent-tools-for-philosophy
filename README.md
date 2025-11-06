@@ -403,16 +403,7 @@ See the "Contributing Tools" section in the current README for full guidelines.
 
 ---
 
-## Background
-
-### Goals
-
-- **Keep the mental model simple:** discover → read → quote/cite
-- **Reduce friction** in common research scenarios
-- **Include human-only extensions** that are invisible to AI agents (not in `--help`, documented separately)
-
-
-### How This Came About
+## How This Came About
 I used to copy sources that I wanted an agent to read for each task into a directory. This was quite slow, and it became harder and harder to ensure that the agent could only see the sources I wanted it to see.
 
 I first thought about using MCP, but this is simpler. 
