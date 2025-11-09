@@ -67,14 +67,16 @@ fi
 # Extract LaTeX \cite forms and Pandoc @key tokens.
 # Use ripgrep with multiline enabled to handle citations spanning lines.
 
-latex_keys=$(rg -U -o --no-line-number '\\cite[A-Za-z]*\*?\s*(?:\[[^\]]*\]\s*){0,2}\{([^{}]+)\}' --replace '$1' -- "$DRAFT" | \
+# LaTeX: capture comma-separated keys inside single-line braces; disallow newlines/comments inside the brace group
+latex_keys=$(rg -U -o --no-line-number '\\cite[A-Za-z]*\*?\s*(?:\[[^\]]*\]\s*){0,2}\{([^{}\n%]+)\}' --replace '$1' -- "$DRAFT" | \
   awk -F',' '{ for (i=1;i<=NF;i++) { gsub(/^\s+|\s+$/, "", $i); if ($i!="") print $i } }' || true)
 
-pandoc_keys=$(rg -U -o --no-line-number '\[@([A-Za-z0-9:_-]+)' --replace '$1' -- "$DRAFT" || true)
-pandoc_keys_inline=$(rg -U -o --no-line-number '@([A-Za-z0-9:_-]+)' --replace '$1' -- "$DRAFT" || true)
+# Pandoc: match @key tokens but avoid emails by requiring a non-email-local preceding char or start of line.
+# This also captures @keys inside [@a; @b] blocks.
+pandoc_keys=$(rg -U -o --no-line-number '(?:^|[^A-Za-z0-9._%+-])@([A-Za-z0-9:_-]+)' --replace '$1' -- "$DRAFT" || true)
 
 # Merge and de-duplicate preserving first occurrence order.
-all_keys=$(printf '%s\n%s\n%s\n' "$latex_keys" "$pandoc_keys" "$pandoc_keys_inline" | awk 'NF{ if (!seen[$0]++) print }')
+all_keys=$(printf '%s\n%s\n' "$latex_keys" "$pandoc_keys" | awk 'NF{ if (!seen[$0]++) print }')
 
 if [[ -z "${all_keys//\n/}" ]]; then
   # No citations found

@@ -34,4 +34,24 @@ keys_extraction_works() {
 
 it "extracts keys from LaTeX and Pandoc forms" keys_extraction_works
 
+fixture_bugs_is_handled() {
+  local out expected
+  out=$("$TOOL" tests/fixtures/draft2keys-bugs.md)
+  expected=$(cat <<'EOF'
+steward:2009_animal
+doggett:2012_questions
+smith:2012_friends
+pandoc:key1
+pandoc:key2
+EOF
+)
+  if [[ "$out" != "$expected" ]]; then
+    echo "Unexpected output:" >&2
+    printf '%s\n' "$out" >&2
+    return 1
+  fi
+}
+
+it "handles tricky LaTeX and Pandoc cases from fixture without false positives" fixture_bugs_is_handled
+
 complete_suite
