@@ -69,7 +69,7 @@ fi
 
 # LaTeX: capture comma-separated keys inside single-line braces; disallow newlines/comments inside the brace group
 latex_keys=$(rg -U -o --no-line-number '\\cite[A-Za-z]*\*?\s*(?:\[[^\]]*\]\s*){0,2}\{([^{}\n%]+)\}' --replace '$1' -- "$DRAFT" | \
-  awk -F',' '{ for (i=1;i<=NF;i++) { gsub(/^\s+|\s+$/, "", $i); if ($i!="") print $i } }' || true)
+  awk -F',' '{ for (i=1;i<=NF;i++) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i); if ($i!="") print $i } }' || true)
 
 # Pandoc: match @key tokens but avoid emails by requiring a non-email-local preceding char or start of line.
 # This also captures @keys inside [@a; @b] blocks.
