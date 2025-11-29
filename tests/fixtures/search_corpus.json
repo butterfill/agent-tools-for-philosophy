@@ -1,0 +1,47 @@
+{
+  "dataset": [
+    {
+      "id": "davidson:1963_actions",
+      "type": "article-journal",
+      "title": "Actions, Reasons, and Causes",
+      "author": [{ "family": "Davidson", "given": "Donald" }],
+      "issued": { "date-parts": [[1963]] }
+    },
+    {
+      "id": "steward:2012_metaphysics",
+      "type": "book",
+      "title": "A Metaphysics for Freedom",
+      "author": [{ "family": "Steward", "given": "Helen" }],
+      "issued": { "date-parts": [[2012]] }
+    },
+    {
+      "id": "butterfill:2025_constructed",
+      "type": "article-journal",
+      "title": "Constructed Actions",
+      "author": [{ "family": "Butterfill", "given": "Stephen" }],
+      "issued": { "date-parts": [[2025]] }
+    }
+  ],
+  "test_cases": [
+    {
+      "description": "Simple author surname",
+      "query": "davidson",
+      "must_include": ["davidson:1963_actions"]
+    },
+    {
+      "description": "Year and partial title",
+      "query": "2012 meta",
+      "must_include": ["steward:2012_metaphysics"]
+    },
+    {
+      "description": "Fuzzy typo tolerance (Davidsn)",
+      "query": "davidsn reasons",
+      "must_include": ["davidson:1963_actions"]
+    },
+    {
+      "description": "Author + Year combo",
+      "query": "Butterfill 2025",
+      "must_include": ["butterfill:2025_constructed"]
+    }
+  ]
+}
