@@ -30,12 +30,27 @@ export class AgentTools {
     return this.run('cite2pdf', [key]);
   }
 
+  async getMdContent(key: string): Promise<string | null> {
+    return this.run('cite2md', ['--cat', key]);
+  }
+
   openVsCode(key: string): void {
-    // Fire and forget, don't await
     spawn('cite2md', ['--vs', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  }
+
+  openVsCodeInsiders(key: string): void {
+    spawn('cite2md', ['--vsi', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  }
+
+  revealMd(key: string): void {
+    spawn('cite2md', ['--reveal', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
   }
   
   openPdf(key: string): void {
     spawn('cite2pdf', ['--open', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  }
+
+  revealPdf(key: string): void {
+    spawn('cite2pdf', ['--reveal', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
   }
 }
