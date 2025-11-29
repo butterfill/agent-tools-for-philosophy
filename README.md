@@ -23,6 +23,7 @@ Created for my own philosophical research.
 - [Customization](#customization)
 - [For Human Users](#for-human-users)
 - [Testing](#testing)
+- [Python and TypeScript Wrappers](#python-and-typescript-wrappers)
 - [Contributing](#contributing)
 - [Background](#background)
 - [Contact](#contact)
@@ -361,6 +362,22 @@ bash tests/rg-sources.e2e.test.sh
 - `tests/shellcheck.test.sh` runs shellcheck across every shell script; install `shellcheck` locally so it doesn't skip
 - The `find-bib` tests use `tests/fixtures/phd_biblio.json` (CSL-JSON)
 - The `cite2bib` tests use `tests/fixtures/sample.bib`
+
+---
+
+## Python and TypeScript Wrappers
+
+### Python
+
+```
+uv add "agent-tools @ git+ssh://git@github.com/butterfill/agent-tools.git#subdirectory=python"
+```
+
+### TypeScript
+
+```
+pnpm install "git+ssh://git@github.com/butterfill/agent-tools.git#subdirectory=typescript"
+```
 
 ---
 
