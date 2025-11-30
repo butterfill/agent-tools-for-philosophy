@@ -45,7 +45,7 @@ export class Bibliography {
       this.entries = Array.isArray(data) ? data : (data.items || []);
     } catch (error) {
       console.error(`Error loading bibliography from ${this.jsonPath}:`, error);
-      this.entries = [];
+      throw error;
     }
     
     // Prepare index for search

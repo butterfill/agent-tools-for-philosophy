@@ -8,6 +8,7 @@ class Bibliography:
         self.entries = []
         self._search_corpus = []
         # Note: constructor no longer loads automatically to avoid blocking.
+        self._loaded = False
 
     def __len__(self):
         return len(self.entries)
@@ -54,12 +55,18 @@ class Bibliography:
                 str(e.get('id') or '')
             ]
             self._search_corpus.append(" ".join(parts))
+        self._loaded = True
 
     async def load_async(self):
         import asyncio
         await asyncio.to_thread(self.load)
 
     def search(self, query: str, limit: int = 20):
+        if not self._loaded and not self.entries:
+             # Logic implies it's empty, but let's be explicitly silent 
+             # only if we attempted to load. 
+             pass 
+         
         if not self.entries:
             return []
         if not query: return self.entries[:limit]
