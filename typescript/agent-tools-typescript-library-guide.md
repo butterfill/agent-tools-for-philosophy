@@ -138,6 +138,10 @@ interface CslEntry {
 *   `revealPdf(key: string): Promise<ActionResult>`
 *   `getKeysFromDraft(draftPath: string): Promise<string[]>`
     *   Runs `draft2keys` and returns a normalized array of keys from the draft.
+*   `rgSources(args: string[]): Promise<string | null>`
+    *   Runs `rg-sources` with the given flags/args and returns raw stdout (or null if empty).
+*   `rgSourcesLines(args: string[]): Promise<string[]>`
+    *   Convenience: runs `rg-sources` and returns output split into lines.
 
 ### `class Bibliography`
 

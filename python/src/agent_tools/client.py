@@ -47,6 +47,16 @@ class AgentTools:
         stdout = (res.stdout or "").strip()
         return stdout if stdout else None
 
+    def _run_raw(self, cmd: list[str]) -> Optional[str]:
+        try:
+            res = subprocess.run(cmd, capture_output=True, text=True, env=self._env, check=False)
+        except FileNotFoundError as e:
+            raise ToolNotFoundError(str(e))
+        if res.returncode != 0:
+            raise ToolExecutionError(cmd, res.returncode, res.stderr)
+        stdout = res.stdout if res.stdout is not None else ""
+        return stdout if stdout != "" else None
+
     def get_md_path(self, key: str) -> Optional[str]:
         val = self._run(["cite2md", key])
         return val if val else None
@@ -77,6 +87,23 @@ class AgentTools:
             return []
         return [line.strip() for line in out.splitlines() if line.strip()]
 
+    def rg_sources(self, args: list[str]) -> str | None:
+        """Run rg-sources with the provided args and return stdout (or None if empty)."""
+        out = self._run_raw(["rg-sources", *args])
+        if out is None:
+            return None
+        if out.endswith("\r\n"):
+            return out[:-2]
+        if out.endswith("\n") or out.endswith("\r"):
+            return out[:-1]
+        return out
+
+    def rg_sources_lines(self, args: list[str]) -> list[str]:
+        """Run rg-sources and return output split into lines (preserving empty lines at end)."""
+        out = self.rg_sources(args)
+        if not out:
+            return []
+        return out.splitlines()
     def open_vscode(self, key: str) -> ActionResult:
         """Opens the Markdown source in VS Code."""
         try:

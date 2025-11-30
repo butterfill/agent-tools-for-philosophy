@@ -52,6 +52,24 @@ export class AgentTools {
     }
   }
 
+  private async runRaw(cmd: string, args: string[]): Promise<string | null> {
+    try {
+      const { stdout } = await execFileAsync(cmd, args, { env: this.env });
+      // Do not trim spaces; only normalize to null if completely empty
+      if (stdout == null) return null;
+      const s = String(stdout);
+      return s.length > 0 ? s : null;
+    } catch (e: any) {
+      if (e?.code === 'ENOENT') {
+        throw new ToolNotFoundError(`Executable not found: ${cmd}`);
+      }
+      const stderr: string | undefined = e?.stderr;
+      const code: number | null = typeof e?.code === 'number' ? e.code : null;
+      const msg = `Command failed: ${cmd} ${args.join(' ')} (exit=${code ?? 'unknown'})` + (stderr ? `\n${stderr}` : '');
+      throw new ToolExecutionError(msg, code, stderr);
+    }
+  }
+
   private async spawnAction(cmd: string, args: string[]): Promise<ActionResult> {
     try {
       const child = spawn(cmd, args, { env: this.env, detached: true, stdio: 'ignore' });
@@ -117,5 +135,20 @@ export class AgentTools {
     if (!output) return [];
     // Handle normalization of newlines that raw execFile output contains
     return output.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  }
+
+  async rgSources(args: string[]): Promise<string | null> {
+    const out = await this.runRaw('rg-sources', args);
+    if (out == null) return null;
+    // Remove a single trailing newline (CRLF or LF) without trimming spaces
+    if (out.endsWith('\r\n')) return out.slice(0, -2);
+    if (out.endsWith('\n') || out.endsWith('\r')) return out.slice(0, -1);
+    return out;
+  }
+
+  async rgSourcesLines(args: string[]): Promise<string[]> {
+    const output = await this.rgSources(args);
+    if (!output) return [];
+    return output.split(/\n/);
   }
 }

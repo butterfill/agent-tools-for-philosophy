@@ -129,6 +129,12 @@ The `results` are standard CSL-JSON dictionaries (parsed from your JSON file).
 *   `open_pdf(key: str) -> ActionResult`: Opens in system default PDF viewer.
 *   `reveal_md(key: str) -> ActionResult`: Reveals file in Finder/Explorer.
 *   `reveal_pdf(key: str) -> ActionResult`: Reveals PDF in Finder/Explorer.
+*   `get_keys_from_draft(draft_path: str) -> List[str]`
+    *   Runs `draft2keys` and returns a list of keys found in the given draft.
+*   `rg_sources(args: List[str]) -> Optional[str]`
+    *   Runs `rg-sources` with the given flags/args and returns raw stdout (or None if empty).
+*   `rg_sources_lines(args: List[str]) -> List[str]`
+    *   Convenience: runs `rg-sources` and returns output split into lines.
 
 ### `class Bibliography`
 
