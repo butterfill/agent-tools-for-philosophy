@@ -7,14 +7,15 @@ class Bibliography:
         self.path = json_path or os.environ.get("BIB_JSON", os.path.expanduser("~/endnote/phd_biblio.json"))
         self.entries = []
         self._search_corpus = []
-        # Automatically load data on initialization
-        self.load()
+        # Note: constructor no longer loads automatically to avoid blocking.
 
     def __len__(self):
         return len(self.entries)
 
     def load(self):
         if not os.path.exists(self.path):
+            self.entries = []
+            self._search_corpus = []
             return
 
         with open(self.path, 'r', encoding='utf-8') as f:
@@ -53,6 +54,10 @@ class Bibliography:
                 str(e.get('id') or '')
             ]
             self._search_corpus.append(" ".join(parts))
+
+    async def load_async(self):
+        import asyncio
+        await asyncio.to_thread(self.load)
 
     def search(self, query: str, limit: int = 20):
         if not self.entries:

@@ -8,6 +8,7 @@ def test_e2e_production_search():
     (specified via BIB_JSON or default) and finds a known record.
     """
     bib = Bibliography()
+    bib.load()
 
     # If the bibliography is empty, we need to determine if that's a failure or a skip.
     if len(bib) == 0:

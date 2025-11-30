@@ -2,8 +2,9 @@ import * as fs from 'fs';
 import { Bibliography } from '../src/bibliography';
 
 describe('E2E Production Search', () => {
-  test('loads production data and finds davidson 1963', () => {
+  test('loads production data and finds davidson 1963', async () => {
     const bib = new Bibliography();
+    await bib.load();
 
     // Check if data loaded
     if (bib.length === 0) {

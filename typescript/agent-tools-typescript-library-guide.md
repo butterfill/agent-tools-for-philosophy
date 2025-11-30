@@ -73,8 +73,9 @@ import { Bibliography, CslEntry } from '@butterfill/agent-tools';
 **Usage:**
 ```typescript
 // Optional: Pass CSL-JSON path. Defaults to process.env.BIB_JSON
-// Loads data synchronously upon instantiation.
+// Non-blocking constructor; explicitly load bibliography
 const bib = new Bibliography('/Users/me/endnote/phd_biblio.json');
+await bib.load();
 
 console.log(`Loaded ${bib.length} entries.`);
 
@@ -112,9 +113,27 @@ interface CslEntry {
 
 ## Error Handling
 
-- Getter methods in `AgentTools` return `null` if the key cannot be resolved, the file is missing, or the CLI tool returns a non-zero exit code.
-- UI action methods in `AgentTools` return `Promise<ActionResult>`, where `ActionResult` has shape `{ ok: boolean; error?: string }`. If spawning the command fails or the executable is missing, `ok` will be `false` and `error` will contain a message. These methods are not rejected unless something catastrophic occurs during setup.
+- Getter methods in `AgentTools` return `null` only when the command succeeds (exit code 0) but there is no output (e.g., no result). If the executable is missing, they now throw `ToolNotFoundError`. If the command exits non-zero, they throw `ToolExecutionError` containing the exit code and stderr.
+- UI action methods in `AgentTools` return `Promise<ActionResult>`. If spawning the command fails with ENOENT, they do not throw; instead they resolve with `{ ok: false, error }` for convenience in UI flows. If you prefer exceptions for actions too, you can check `!res.ok` and throw manually.
 - `Bibliography`: If the JSON file cannot be loaded, `bib.entries` defaults to an empty array and `bib.length` will be 0.
+
+Example:
+```ts
+try {
+  const path = await client.getMdPath('some:key');
+  if (!path) {
+    // Command succeeded but no result
+  }
+} catch (err) {
+  if (err instanceof ToolNotFoundError) {
+    // Ask user to run ./install.sh or set PATH
+  } else if (err instanceof ToolExecutionError) {
+    console.error('CLI failed:', err.exitCode, err.stderr);
+  } else {
+    throw err;
+  }
+}
+```
 ## Configuration
 
 The wrappers respect the standard environment variables used by the shell tools:

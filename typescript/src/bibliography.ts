@@ -23,23 +23,24 @@ export class Bibliography {
     this.jsonPath = jsonPath || 
       process.env.BIB_JSON || 
       path.join(os.homedir(), 'endnote', 'phd_biblio.json');
-    
-    // Automatically load data on initialization to match Python behavior
-    this.load();
+    // Note: constructor no longer loads automatically to avoid blocking
   }
 
   get length(): number {
     return this.entries.length;
   }
 
-  load(): void {
-    if (!fs.existsSync(this.jsonPath)) {
+  async load(): Promise<void> {
+    try {
+      await fs.promises.access(this.jsonPath, fs.constants.F_OK);
+    } catch {
+      this.entries = [];
+      this.searchIndex = [];
       return;
     }
 
     try {
-      // Synchronous read to ensure data is ready immediately after instantiation
-      const raw = fs.readFileSync(this.jsonPath, 'utf-8');
+      const raw = await fs.promises.readFile(this.jsonPath, 'utf-8');
       const data = JSON.parse(raw);
       this.entries = Array.isArray(data) ? data : (data.items || []);
     } catch (error) {

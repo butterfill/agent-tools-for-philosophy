@@ -35,21 +35,30 @@ The library uses the same environment variables as the CLI tools.
 Use `AgentTools` to resolve citations to file paths or content. This is a synchronous wrapper around `subprocess` calls to `cite2md`, `cite2pdf`, etc.
 
 ```python
-from agent_tools import AgentTools, ActionResult
+from agent_tools import AgentTools, ActionResult, ToolNotFoundError, ToolExecutionError
 
 # Initialize (optional: override PAPERS_DIR)
 client = AgentTools(papers_dir="/users/me/papers")
 
-# 1. Resolve a key to a Markdown path
-md_path = client.get_md_path("vesper:2012_jumping")
-if md_path:
-    print(f"Found markdown at: {md_path}")
+# Load bibliography (non-blocking constructor)
+bib = Bibliography()
+bib.load()  # or: asyncio.run(bib.load_async())
 
-# 2. Get full content (equivalent to cite2md --cat)
-content = client.get_md_content("vesper:2012_jumping")
+try:
+    # 1. Resolve a key to a Markdown path
+    md_path = client.get_md_path("vesper:2012_jumping")
+    if md_path:
+        print(f"Found markdown at: {md_path}")
 
-# 3. Resolve PDF path
-pdf_path = client.get_pdf_path("vesper:2012_jumping")
+    # 2. Get full content (equivalent to cite2md --cat)
+    content = client.get_md_content("vesper:2012_jumping")
+
+    # 3. Resolve PDF path
+    pdf_path = client.get_pdf_path("vesper:2012_jumping")
+except ToolNotFoundError:
+    print("agent-tools not installed or not in PATH. Please run ./install.sh")
+except ToolExecutionError as e:
+    print(f"CLI failed: {e}")
 
 # 4. Human Interactions (UI actions)
 # These open the file in the respective application and return a success indicator
@@ -66,8 +75,10 @@ if not res.ok:
     print(f"Could not reveal markdown: {res.error}")
 ```
 
-**Return Types:**
-- Getter methods return `Optional[str]` and may be `None` if the key cannot be resolved.
+**Return Types and Errors:**
+- Getter methods return `Optional[str]` and may be `None` only when the command succeeded (exit code 0) but produced no output.
+- If the underlying executable is missing, getters raise `ToolNotFoundError`.
+- If the command exits non-zero, getters raise `ToolExecutionError` which includes the exit code and stderr.
 - UI action methods return `ActionResult` with fields: `ok: bool`, `error: Optional[str]`.
 
 ## 4. Usage: `Bibliography`

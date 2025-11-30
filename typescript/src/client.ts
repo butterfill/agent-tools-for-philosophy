@@ -8,6 +8,24 @@ export interface ActionResult {
   error?: string;
 }
 
+export class ToolNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ToolNotFoundError';
+  }
+}
+
+export class ToolExecutionError extends Error {
+  public exitCode: number | null;
+  public stderr?: string;
+  constructor(message: string, exitCode: number | null, stderr?: string) {
+    super(message);
+    this.name = 'ToolExecutionError';
+    this.exitCode = exitCode;
+    this.stderr = stderr;
+  }
+}
+
 export class AgentTools {
   private env: NodeJS.ProcessEnv;
 
@@ -21,9 +39,16 @@ export class AgentTools {
   private async run(cmd: string, args: string[]): Promise<string | null> {
     try {
       const { stdout } = await execFileAsync(cmd, args, { env: this.env });
-      return stdout.trim() || null;
-    } catch (e) {
-      return null;
+      return (stdout?.trim() || '') || null;
+    } catch (e: any) {
+      // Distinguish missing executable and non-zero exits
+      if (e?.code === 'ENOENT') {
+        throw new ToolNotFoundError(`Executable not found: ${cmd}`);
+      }
+      const stderr: string | undefined = e?.stderr;
+      const code: number | null = typeof e?.code === 'number' ? e.code : null;
+      const msg = `Command failed: ${cmd} ${args.join(' ')} (exit=${code ?? 'unknown'})` + (stderr ? `\n${stderr}` : '');
+      throw new ToolExecutionError(msg, code, stderr);
     }
   }
 

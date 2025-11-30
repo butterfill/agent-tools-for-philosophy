@@ -4,6 +4,22 @@ from dataclasses import dataclass
 from typing import Optional
 
 
+class ToolNotFoundError(Exception):
+    """Raised when an underlying CLI tool (e.g., cite2md) is not found in PATH."""
+
+
+class ToolExecutionError(Exception):
+    """Raised when an underlying CLI tool returns a non-zero exit status."""
+    def __init__(self, cmd: list[str], exit_code: int, stderr: str | None = None):
+        self.cmd = cmd
+        self.exit_code = exit_code
+        self.stderr = stderr
+        message = f"Command failed: {' '.join(cmd)} (exit={exit_code})"
+        if stderr:
+            message += f"\n{stderr}"
+        super().__init__(message)
+
+
 @dataclass
 class ActionResult:
     ok: bool
@@ -17,13 +33,19 @@ class AgentTools:
         if papers_dir:
             self._env["PAPERS_DIR"] = papers_dir
 
-    def _run(self, cmd: list[str]) -> str:
+    def _run(self, cmd: list[str]) -> Optional[str]:
         try:
-            # Assumes tools are in PATH via install.sh
-            res = subprocess.run(cmd, capture_output=True, text=True, env=self._env, check=True)
-            return res.stdout.strip()
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return ""
+            # Do not use check=True so we can distinguish exit codes
+            res = subprocess.run(cmd, capture_output=True, text=True, env=self._env, check=False)
+        except FileNotFoundError as e:
+            raise ToolNotFoundError(str(e))
+
+        if res.returncode != 0:
+            # Non-zero exit indicates an execution failure from the tool
+            raise ToolExecutionError(cmd, res.returncode, res.stderr)
+
+        stdout = (res.stdout or "").strip()
+        return stdout if stdout else None
 
     def get_md_path(self, key: str) -> Optional[str]:
         val = self._run(["cite2md", key])
