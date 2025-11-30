@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import fuzzysort from 'fuzzysort';
@@ -10,43 +10,58 @@ export interface CslEntry {
   title?: string;
   author?: { family?: string; given?: string }[];
   issued?: { 'date-parts'?: (number | string)[][] };
-  // ... other fields
+  [key: string]: any;
 }
 
 export class Bibliography {
   public entries: CslEntry[] = [];
   private jsonPath: string;
+  // Index structure for fuzzysort: wraps entry and the search string
+  private searchIndex: { obj: CslEntry, searchStr: string }[] = [];
 
   constructor(jsonPath?: string) {
     this.jsonPath = jsonPath || 
       process.env.BIB_JSON || 
       path.join(os.homedir(), 'endnote', 'phd_biblio.json');
+    
+    // Automatically load data on initialization to match Python behavior
+    this.load();
   }
 
-  async load(): Promise<void> {
-    const raw = await fs.readFile(this.jsonPath, 'utf-8');
-    const data = JSON.parse(raw);
-    this.entries = Array.isArray(data) ? data : (data.items || []);
+  get length(): number {
+    return this.entries.length;
+  }
+
+  load(): void {
+    if (!fs.existsSync(this.jsonPath)) {
+      return;
+    }
+
+    try {
+      // Synchronous read to ensure data is ready immediately after instantiation
+      const raw = fs.readFileSync(this.jsonPath, 'utf-8');
+      const data = JSON.parse(raw);
+      this.entries = Array.isArray(data) ? data : (data.items || []);
+    } catch (error) {
+      console.error(`Error loading bibliography from ${this.jsonPath}:`, error);
+      this.entries = [];
+    }
+    
+    // Prepare index for search
+    this.searchIndex = this.entries.map(e => ({
+      obj: e,
+      // Replicate the robust corpus construction from Python
+      searchStr: `${this.getYear(e)} ${this.getAuthors(e)} ${e.title || ''} ${e.id}`
+    }));
   }
 
   search(query: string, limit: number = 20): CslEntry[] {
+    if (this.entries.length === 0) return [];
     if (!query) return this.entries.slice(0, limit);
 
-    // Prepare options for fuzzysort to search specific fields
-    // Note: For optimal performance with 6000 items, we might want to 
-    // pre-calculate a 'searchString' property on load, similar to the Python version.
-    const keys = ['title', 'id']; 
-    
-    // We create a simpler index for search to avoid complex object traversal during sort
-    const simpleIndex = this.entries.map(e => ({
-      obj: e,
-      searchStr: `${this.getYear(e)} ${this.getAuthors(e)} ${e.title || ''} ${e.id}`
-    }));
-
-    const results = fuzzysort.go(query, simpleIndex, {
+    const results = fuzzysort.go(query, this.searchIndex, {
       key: 'searchStr',
       limit: limit,
-      // threshold: -10000, 
       threshold: -Infinity,
     });
 
@@ -58,6 +73,18 @@ export class Bibliography {
   }
 
   private getYear(e: CslEntry): string {
-    return e.issued?.['date-parts']?.[0]?.[0]?.toString() || '';
+    // Robust parsing matching Python logic
+    try {
+      const parts = e.issued?.['date-parts'];
+      if (parts && Array.isArray(parts) && parts.length > 0) {
+        const first = parts[0];
+        if (Array.isArray(first) && first.length > 0) {
+          return String(first[0]);
+        }
+      }
+    } catch {
+      // ignore errors
+    }
+    return '';
   }
 }
