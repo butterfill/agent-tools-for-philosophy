@@ -51,7 +51,8 @@ export class Bibliography {
     this.searchIndex = this.entries.map(e => ({
       obj: e,
       // Replicate the robust corpus construction from Python
-      searchStr: `${this.getYear(e)} ${this.getAuthors(e)} ${e.title || ''} ${e.id}`
+      // explicitly handles missing title/id and ensures string concatenation
+      searchStr: `${this.getYear(e)} ${this.getAuthors(e)} ${e.title || ''} ${e.id || ''}`
     }));
   }
 
@@ -69,7 +70,14 @@ export class Bibliography {
   }
 
   private getAuthors(e: CslEntry): string {
-    return e.author?.map(a => a.family).join(' ') || '';
+    // Robust check: match Python's isinstance(authors, list) check
+    // This prevents crashes if "author" is null, or a string, or an object in malformed JSON
+    if (!Array.isArray(e.author)) {
+      return '';
+    }
+    return e.author
+      .map(a => a?.family || '') // Handle potentially missing family keys safely
+      .join(' ');
   }
 
   private getYear(e: CslEntry): string {
