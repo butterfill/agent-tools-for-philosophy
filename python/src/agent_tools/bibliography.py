@@ -38,11 +38,19 @@ class Bibliography:
             except Exception:
                 pass
 
+            # Handle author field safely (it can be None in JSON)
+            authors_list = e.get('author')
+            if isinstance(authors_list, list):
+                authors_str = " ".join([a.get('family', '') for a in authors_list if isinstance(a, dict)])
+            else:
+                authors_str = ""
+
+            # Ensure all parts are strings before joining
             parts = [
                 year,
-                " ".join([a.get('family','') for a in e.get('author', [])]),
-                e.get('title', ''),
-                e.get('id', '')
+                authors_str,
+                str(e.get('title') or ''),
+                str(e.get('id') or '')
             ]
             self._search_corpus.append(" ".join(parts))
 
