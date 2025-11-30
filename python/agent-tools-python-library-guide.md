@@ -122,15 +122,18 @@ The `results` are standard CSL-JSON dictionaries (parsed from your JSON file).
 *   `open_vscode_insiders(key: str) -> ActionResult`: Opens in `code-insiders`.
 *   `open_pdf(key: str) -> ActionResult`: Opens in system default PDF viewer.
 *   `reveal_md(key: str) -> ActionResult`: Reveals file in Finder/Explorer.
+*   `reveal_pdf(key: str) -> ActionResult`: Reveals PDF in Finder/Explorer.
 
 ### `class Bibliography`
 
 *   `__init__(json_path: str = None)`
-    *   Loads the bibliography into memory. Uses `BIB_JSON` env var if `json_path` is not provided.
+    *   Initializes the bibliography instance. Uses `BIB_JSON` env var if `json_path` is not provided. Does NOT load data automatically.
+*   `load() -> None`
+    *   Loads the JSON file from disk synchronously. Must be called before searching.
+*   `load_async() -> None`
+    *   Loads the JSON file from disk asynchronously (awaitable).
 *   `search(query: str, limit: int = 20) -> List[Dict]`
     *   Performs a fuzzy search. Returns a list of CSL-JSON objects.
     *   If `query` is empty, returns the first `limit` items.
-*   `load() -> None`
-    *   Reloads the JSON file from disk. Called automatically on init.
 *   `__len__() -> int`
     *   Returns total number of entries.

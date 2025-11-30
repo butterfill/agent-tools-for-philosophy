@@ -59,6 +59,9 @@ if (!r2.ok) console.error('Open PDF failed:', r2.error);
 
 const r3 = await client.revealMd('vesper:2012_jumping');
 if (!r3.ok) console.error('Reveal failed:', r3.error);
+
+const r4 = await client.revealPdf('vesper:2012_jumping');
+if (!r4.ok) console.error('Reveal PDF failed:', r4.error);
 ```
 
 ### 2. `Bibliography` Engine
@@ -110,6 +113,35 @@ interface CslEntry {
   [key: string]: any; // Allows for dynamic CSL fields
 }
 ```
+
+## API Reference
+
+### `class AgentTools`
+
+*   `constructor(papersDir?: string)`
+*   `getMdPath(key: string): Promise<string | null>`
+    *   Returns absolute path to `.md` file.
+*   `getPdfPath(key: string): Promise<string | null>`
+    *   Returns absolute path to `.pdf` file.
+*   `getMdContent(key: string): Promise<string | null>`
+    *   Returns the full text content of the Markdown file.
+*   `getBibEntry(key: string): Promise<string | null>`
+    *   Returns the raw BibTeX entry string.
+*   `openVsCode(key: string): Promise<ActionResult>`
+*   `openVsCodeInsiders(key: string): Promise<ActionResult>`
+*   `openPdf(key: string): Promise<ActionResult>`
+*   `revealMd(key: string): Promise<ActionResult>`
+*   `revealPdf(key: string): Promise<ActionResult>`
+
+### `class Bibliography`
+
+*   `constructor(jsonPath?: string)`
+    *   Initializes the bibliography instance. Does NOT load data automatically.
+*   `load(): Promise<void>`
+    *   Loads the JSON file from disk. Must be called before searching.
+*   `search(query: string, limit: number = 20): CslEntry[]`
+    *   Performs a fuzzy search.
+*   `get length(): number`
 
 ## Error Handling
 
