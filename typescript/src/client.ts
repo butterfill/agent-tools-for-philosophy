@@ -33,6 +33,10 @@ export class AgentTools {
   async getMdContent(key: string): Promise<string | null> {
     return this.run('cite2md', ['--cat', key]);
   }
+  
+  async getBibEntry(key: string): Promise<string | null> {
+    return this.run('cite2bib', [key]);
+  }
 
   openVsCode(key: string): void {
     spawn('cite2md', ['--vs', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();

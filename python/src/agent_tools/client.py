@@ -30,6 +30,11 @@ class AgentTools:
         val = self._run(["cite2md", "--cat", key])
         return val if val else None
 
+    def get_bib_entry(self, key: str) -> Optional[str]:
+        """Returns the raw BibTeX entry for the given key."""
+        val = self._run(["cite2bib", key])
+        return val if val else None
+    
     def open_vscode(self, key: str) -> None:
         """Opens the Markdown source in VS Code."""
         subprocess.Popen(["cite2md", "--vs", key], env=self._env)
