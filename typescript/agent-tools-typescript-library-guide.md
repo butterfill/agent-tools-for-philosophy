@@ -50,10 +50,15 @@ const pdfPath = await client.getPdfPath('vesper:2012_jumping');
 // 3. Get raw BibTeX entry
 const bibTex = await client.getBibEntry('vesper:2012_jumping');
 
-// 4. Fire-and-forget UI actions (opens local apps)
-client.openVsCode('vesper:2012_jumping');
-client.openPdf('vesper:2012_jumping');
-client.revealMd('vesper:2012_jumping'); // Show in Finder/Explorer
+// 4. UI actions with success indicator
+const r1 = await client.openVsCode('vesper:2012_jumping');
+if (!r1.ok) console.error('VS Code failed:', r1.error);
+
+const r2 = await client.openPdf('vesper:2012_jumping');
+if (!r2.ok) console.error('Open PDF failed:', r2.error);
+
+const r3 = await client.revealMd('vesper:2012_jumping');
+if (!r3.ok) console.error('Reveal failed:', r3.error);
 ```
 
 ### 2. `Bibliography` Engine
@@ -107,9 +112,9 @@ interface CslEntry {
 
 ## Error Handling
 
-*   **`AgentTools`**: Methods return `null` if the key cannot be resolved, the file is missing, or the CLI tool returns a non-zero exit code. They do *not* typically throw errors unless the child process fails to spawn (e.g., tool not in PATH).
-*   **`Bibliography`**: If the JSON file cannot be loaded, `bib.entries` defaults to an empty array and `bib.length` will be 0. Use `try/catch` around `new Bibliography()` if you strictly require the file to exist.
-
+- Getter methods in `AgentTools` return `null` if the key cannot be resolved, the file is missing, or the CLI tool returns a non-zero exit code.
+- UI action methods in `AgentTools` return `Promise<ActionResult>`, where `ActionResult` has shape `{ ok: boolean; error?: string }`. If spawning the command fails or the executable is missing, `ok` will be `false` and `error` will contain a message. These methods are not rejected unless something catastrophic occurs during setup.
+- `Bibliography`: If the JSON file cannot be loaded, `bib.entries` defaults to an empty array and `bib.length` will be 0.
 ## Configuration
 
 The wrappers respect the standard environment variables used by the shell tools:

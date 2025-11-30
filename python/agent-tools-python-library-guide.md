@@ -1,7 +1,7 @@
 # Python Developer Guide: `agent-tools`
 
 This package provides Python bindings for the `agent-tools` shell suite. It offers two primary components:
-1.  **`AgentToolsClient`**: A wrapper around the shell CLI tools (like `cite2md`, `cite2pdf`) to interact with the file system.
+1.  **`AgentTools`**: A wrapper around the shell CLI tools (like `cite2md`, `cite2pdf`) to interact with the file system.
 2.  **`Bibliography`**: A pure Python class for high-performance fuzzy searching of your CSL-JSON bibliography.
 
 ## 1. Installation
@@ -30,15 +30,15 @@ The library uses the same environment variables as the CLI tools.
 *   `PAPERS_DIR`: Path to your Markdown notes (Default: `~/papers`).
 *   `BIB_JSON`: Path to your CSL-JSON bibliography (Default: `~/endnote/phd_biblio.json`).
 
-## 3. Usage: `AgentToolsClient`
+## 3. Usage: `AgentTools`
 
-Use `AgentToolsClient` to resolve citations to file paths or content. This is a synchronous wrapper around `subprocess` calls to `cite2md`, `cite2pdf`, etc.
+Use `AgentTools` to resolve citations to file paths or content. This is a synchronous wrapper around `subprocess` calls to `cite2md`, `cite2pdf`, etc.
 
 ```python
-from agent_tools import AgentToolsClient
+from agent_tools import AgentTools, ActionResult
 
 # Initialize (optional: override PAPERS_DIR)
-client = AgentToolsClient(papers_dir="/users/me/papers")
+client = AgentTools(papers_dir="/users/me/papers")
 
 # 1. Resolve a key to a Markdown path
 md_path = client.get_md_path("vesper:2012_jumping")
@@ -51,15 +51,24 @@ content = client.get_md_content("vesper:2012_jumping")
 # 3. Resolve PDF path
 pdf_path = client.get_pdf_path("vesper:2012_jumping")
 
-# 4. Human Interactions (fire-and-forget UI actions)
-# These open the file in the respective application
-client.open_vscode("vesper:2012_jumping")
-client.open_pdf("vesper:2012_jumping")
-client.reveal_md("vesper:2012_jumping") # Show in Finder/Explorer
+# 4. Human Interactions (UI actions)
+# These open the file in the respective application and return a success indicator
+res = client.open_vscode("vesper:2012_jumping")
+if not res.ok:
+    print(f"Could not open VS Code: {res.error}")
+
+res = client.open_pdf("vesper:2012_jumping")
+if not res.ok:
+    print(f"Could not open PDF: {res.error}")
+
+res = client.reveal_md("vesper:2012_jumping") # Show in Finder/Explorer
+if not res.ok:
+    print(f"Could not reveal markdown: {res.error}")
 ```
 
 **Return Types:**
-All getter methods return `Optional[str]`. You must handle `None` (key not found).
+- Getter methods return `Optional[str]` and may be `None` if the key cannot be resolved.
+- UI action methods return `ActionResult` with fields: `ok: bool`, `error: Optional[str]`.
 
 ## 4. Usage: `Bibliography`
 
@@ -87,7 +96,7 @@ The `results` are standard CSL-JSON dictionaries (parsed from your JSON file).
 
 ## 5. API Reference
 
-### `class AgentToolsClient`
+### `class AgentTools`
 
 *   `__init__(papers_dir: Optional[str] = None)`
 *   `get_md_path(key: str) -> Optional[str]`
@@ -98,10 +107,10 @@ The `results` are standard CSL-JSON dictionaries (parsed from your JSON file).
     *   Returns the full text content of the Markdown file.
 *   `get_bib_entry(key: str) -> Optional[str]`
     *   Returns the raw BibTeX entry string.
-*   `open_vscode(key: str) -> None`: Opens in `code`.
-*   `open_vscode_insiders(key: str) -> None`: Opens in `code-insiders`.
-*   `open_pdf(key: str) -> None`: Opens in system default PDF viewer.
-*   `reveal_md(key: str) -> None`: Reveals file in Finder/Explorer.
+*   `open_vscode(key: str) -> ActionResult`: Opens in `code`.
+*   `open_vscode_insiders(key: str) -> ActionResult`: Opens in `code-insiders`.
+*   `open_pdf(key: str) -> ActionResult`: Opens in system default PDF viewer.
+*   `reveal_md(key: str) -> ActionResult`: Reveals file in Finder/Explorer.
 
 ### `class Bibliography`
 

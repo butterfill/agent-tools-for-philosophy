@@ -1,6 +1,14 @@
 import os
 import subprocess
+from dataclasses import dataclass
 from typing import Optional
+
+
+@dataclass
+class ActionResult:
+    ok: bool
+    error: Optional[str] = None
+
 
 class AgentTools:
     """Synchronous wrapper around agent-tools CLI scripts."""
@@ -34,23 +42,53 @@ class AgentTools:
         """Returns the raw BibTeX entry for the given key."""
         val = self._run(["cite2bib", key])
         return val if val else None
-    
-    def open_vscode(self, key: str) -> None:
+
+    def open_vscode(self, key: str) -> ActionResult:
         """Opens the Markdown source in VS Code."""
-        subprocess.Popen(["cite2md", "--vs", key], env=self._env)
+        try:
+            subprocess.Popen(["cite2md", "--vs", key], env=self._env)
+            return ActionResult(ok=True)
+        except FileNotFoundError as e:
+            return ActionResult(ok=False, error=str(e))
+        except Exception as e:
+            return ActionResult(ok=False, error=str(e))
 
-    def open_vscode_insiders(self, key: str) -> None:
+    def open_vscode_insiders(self, key: str) -> ActionResult:
         """Opens the Markdown source in VS Code Insiders."""
-        subprocess.Popen(["cite2md", "--vsi", key], env=self._env)
+        try:
+            subprocess.Popen(["cite2md", "--vsi", key], env=self._env)
+            return ActionResult(ok=True)
+        except FileNotFoundError as e:
+            return ActionResult(ok=False, error=str(e))
+        except Exception as e:
+            return ActionResult(ok=False, error=str(e))
 
-    def reveal_md(self, key: str) -> None:
+    def reveal_md(self, key: str) -> ActionResult:
         """Reveals the Markdown source in Finder/Explorer."""
-        subprocess.Popen(["cite2md", "--reveal", key], env=self._env)
+        try:
+            subprocess.Popen(["cite2md", "--reveal", key], env=self._env)
+            return ActionResult(ok=True)
+        except FileNotFoundError as e:
+            return ActionResult(ok=False, error=str(e))
+        except Exception as e:
+            return ActionResult(ok=False, error=str(e))
 
-    def open_pdf(self, key: str) -> None:
+    def open_pdf(self, key: str) -> ActionResult:
         """Opens the PDF in the default system viewer."""
-        subprocess.Popen(["cite2pdf", "--open", key], env=self._env)
+        try:
+            subprocess.Popen(["cite2pdf", "--open", key], env=self._env)
+            return ActionResult(ok=True)
+        except FileNotFoundError as e:
+            return ActionResult(ok=False, error=str(e))
+        except Exception as e:
+            return ActionResult(ok=False, error=str(e))
 
-    def reveal_pdf(self, key: str) -> None:
+    def reveal_pdf(self, key: str) -> ActionResult:
         """Reveals the PDF in Finder/Explorer."""
-        subprocess.Popen(["cite2pdf", "--reveal", key], env=self._env)
+        try:
+            subprocess.Popen(["cite2pdf", "--reveal", key], env=self._env)
+            return ActionResult(ok=True)
+        except FileNotFoundError as e:
+            return ActionResult(ok=False, error=str(e))
+        except Exception as e:
+            return ActionResult(ok=False, error=str(e))

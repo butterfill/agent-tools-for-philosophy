@@ -3,6 +3,11 @@ import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
 
+export interface ActionResult {
+  ok: boolean;
+  error?: string;
+}
+
 export class AgentTools {
   private env: NodeJS.ProcessEnv;
 
@@ -22,6 +27,30 @@ export class AgentTools {
     }
   }
 
+  private async spawnAction(cmd: string, args: string[]): Promise<ActionResult> {
+    try {
+      const child = spawn(cmd, args, { env: this.env, detached: true, stdio: 'ignore' });
+      return await new Promise<ActionResult>((resolve) => {
+        let settled = false;
+        child.on('error', (err) => {
+          if (!settled) {
+            settled = true;
+            resolve({ ok: false, error: (err as Error)?.message || String(err) });
+          }
+        });
+        setImmediate(() => {
+          if (!settled) {
+            try { child.unref(); } catch {}
+            settled = true;
+            resolve({ ok: true });
+          }
+        });
+      });
+    } catch (e) {
+      return { ok: false, error: (e as Error)?.message || String(e) };
+    }
+  }
+
   async getMdPath(key: string): Promise<string | null> {
     return this.run('cite2md', [key]);
   }
@@ -38,23 +67,23 @@ export class AgentTools {
     return this.run('cite2bib', [key]);
   }
 
-  openVsCode(key: string): void {
-    spawn('cite2md', ['--vs', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  openVsCode(key: string): Promise<ActionResult> {
+    return this.spawnAction('cite2md', ['--vs', key]);
   }
 
-  openVsCodeInsiders(key: string): void {
-    spawn('cite2md', ['--vsi', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  openVsCodeInsiders(key: string): Promise<ActionResult> {
+    return this.spawnAction('cite2md', ['--vsi', key]);
   }
 
-  revealMd(key: string): void {
-    spawn('cite2md', ['--reveal', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  revealMd(key: string): Promise<ActionResult> {
+    return this.spawnAction('cite2md', ['--reveal', key]);
   }
   
-  openPdf(key: string): void {
-    spawn('cite2pdf', ['--open', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  openPdf(key: string): Promise<ActionResult> {
+    return this.spawnAction('cite2pdf', ['--open', key]);
   }
 
-  revealPdf(key: string): void {
-    spawn('cite2pdf', ['--reveal', key], { env: this.env, detached: true, stdio: 'ignore' }).unref();
+  revealPdf(key: string): Promise<ActionResult> {
+    return this.spawnAction('cite2pdf', ['--reveal', key]);
   }
 }
