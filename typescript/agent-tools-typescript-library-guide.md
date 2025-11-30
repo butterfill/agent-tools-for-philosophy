@@ -50,7 +50,11 @@ const pdfPath = await client.getPdfPath('vesper:2012_jumping');
 // 3. Get raw BibTeX entry
 const bibTex = await client.getBibEntry('vesper:2012_jumping');
 
-// 4. UI actions with success indicator
+// 4. Extract keys from a draft file (wraps `draft2keys`)
+const keys = await client.getKeysFromDraft('/path/to/draft.md');
+console.log(keys); // ['davidson:1963_actions', 'vesper:2012_jumping']
+
+// 5. UI actions with success indicator
 const r1 = await client.openVsCode('vesper:2012_jumping');
 if (!r1.ok) console.error('VS Code failed:', r1.error);
 
@@ -132,6 +136,8 @@ interface CslEntry {
 *   `openPdf(key: string): Promise<ActionResult>`
 *   `revealMd(key: string): Promise<ActionResult>`
 *   `revealPdf(key: string): Promise<ActionResult>`
+*   `getKeysFromDraft(draftPath: string): Promise<string[]>`
+    *   Runs `draft2keys` and returns a normalized array of keys from the draft.
 
 ### `class Bibliography`
 

@@ -55,12 +55,16 @@ try:
 
     # 3. Resolve PDF path
     pdf_path = client.get_pdf_path("vesper:2012_jumping")
+
+    # 4. Extract keys from a draft using draft2keys
+    keys = client.get_keys_from_draft("/path/to/draft.md")
+    print(keys)
 except ToolNotFoundError:
     print("agent-tools not installed or not in PATH. Please run ./install.sh")
 except ToolExecutionError as e:
     print(f"CLI failed: {e}")
 
-# 4. Human Interactions (UI actions)
+# 5. Human Interactions (UI actions)
 # These open the file in the respective application and return a success indicator
 res = client.open_vscode("vesper:2012_jumping")
 if not res.ok:
@@ -118,6 +122,8 @@ The `results` are standard CSL-JSON dictionaries (parsed from your JSON file).
     *   Returns the full text content of the Markdown file.
 *   `get_bib_entry(key: str) -> Optional[str]`
     *   Returns the raw BibTeX entry string.
+*   `get_keys_from_draft(draft_path: str) -> List[str]`
+    *   Runs `draft2keys` and returns a list of keys found in the given draft.
 *   `open_vscode(key: str) -> ActionResult`: Opens in `code`.
 *   `open_vscode_insiders(key: str) -> ActionResult`: Opens in `code-insiders`.
 *   `open_pdf(key: str) -> ActionResult`: Opens in system default PDF viewer.

@@ -111,4 +111,11 @@ export class AgentTools {
   revealPdf(key: string): Promise<ActionResult> {
     return this.spawnAction('cite2pdf', ['--reveal', key]);
   }
+
+  async getKeysFromDraft(draftPath: string): Promise<string[]> {
+    const output = await this.run('draft2keys', [draftPath]);
+    if (!output) return [];
+    // Handle normalization of newlines that raw execFile output contains
+    return output.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  }
 }

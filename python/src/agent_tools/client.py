@@ -65,6 +65,18 @@ class AgentTools:
         val = self._run(["cite2bib", key])
         return val if val else None
 
+    def get_keys_from_draft(self, draft_path: str) -> list[str]:
+        """Return citation keys extracted from a draft file using `draft2keys`.
+
+        The underlying tool prints one key per line. This method normalizes
+        newlines and trims whitespace, returning an empty list if the tool
+        prints no output.
+        """
+        out = self._run(["draft2keys", draft_path])
+        if not out:
+            return []
+        return [line.strip() for line in out.splitlines() if line.strip()]
+
     def open_vscode(self, key: str) -> ActionResult:
         """Opens the Markdown source in VS Code."""
         try:
