@@ -8,7 +8,10 @@ class DummyCompleted:
 
 def test_rg_sources_raw_and_lines(monkeypatch):
     def fake_run(cmd, capture_output, text, env, check):
-        # Simulate rg-sources output
+        # Simulate rg-sources output: 
+        # Line 1: "a"
+        # Line 2: " b " (starts and ends with space)
+        # Stream ends with newline
         return DummyCompleted(returncode=0, stdout='a\n b \n', stderr='')
 
     import subprocess
@@ -17,11 +20,11 @@ def test_rg_sources_raw_and_lines(monkeypatch):
     tools = AgentTools()
 
     raw = tools.rg_sources(['-n', 'pattern'])
-    assert raw == 'a\n b'
 
+    # NEW (Correct - matches TypeScript behavior):
+    assert raw == 'a\n b '
     lines = tools.rg_sources_lines(['-l', 'pattern'])
     assert lines == ['a', ' b ']
-
 
 def test_rg_sources_empty(monkeypatch):
     def fake_run(cmd, capture_output, text, env, check):
