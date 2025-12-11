@@ -6,7 +6,9 @@
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)
 [![CI](https://github.com/butterfill/agent-tools-for-philosophy/actions/workflows/ci.yml/badge.svg)](https://github.com/butterfill/agent-tools-for-philosophy/actions/workflows/ci.yml)
 
-Created for my own philosophical research.
+Created for my own philosophical research. 
+
+Python and ts wrappers included.
 
 ---
 
