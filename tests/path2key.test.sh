@@ -50,7 +50,7 @@ export BIB_FILE="$TMP_BIB"
 run_output() {
   local cmd
   printf -v cmd '%q ' "$@"
-  bash -lc "$cmd"
+  bash -lc "PATH=$(printf '%q' "$REPO_ROOT"):\$PATH; $cmd"
 }
 
 has_line_matching() {
@@ -84,12 +84,34 @@ it "resolves Butterfill:2012fk from mixed-case legacy form" \
   has_line_matching '^Butterfill:2012fk$' \
   "$TOOL" "Butterfill2012fk.md"
 
+harness_prefers_repo_local_cite2bib() {
+  local stub_bin out
+  stub_bin=$(mktemp -d)
+  cat > "$stub_bin/cite2bib" <<'EOF'
+#!/usr/bin/env bash
+echo "@article{wrong:key,"
+exit 0
+EOF
+  chmod +x "$stub_bin/cite2bib"
+  if ! out=$(PATH="$stub_bin:$PATH" run_output "$TOOL" "sinigaglia2022_motor.md" 2>/dev/null); then
+    rm -rf "$stub_bin"
+    return 1
+  fi
+  rm -rf "$stub_bin"
+  [[ "$out" == "sinigaglia:2022_motor" ]]
+}
+
+it "test harness keeps repo-local cite2bib first on PATH" harness_prefers_repo_local_cite2bib
+
 # 4) Index fallback — use a temporary index mapping a non-heurstic basename to a known key
-it "resolves via index fallback when heuristic doesn't match" bash -lc '
+index_fallback_resolves() {
+  local out
   printf %s "{\"key\": \"sinigaglia:2022_motor\", \"filename\": \"random-nonheuristic-name.md\"}\n" > "$TMP_IDX"
-  out=$(INDEX_FILE="$TMP_IDX" "$TOOL" "random-nonheuristic-name.md" 2>/dev/null || true)
+  out=$(run_output INDEX_FILE="$TMP_IDX" "$TOOL" "random-nonheuristic-name.md" 2>/dev/null || true)
   echo "$out"
   [[ "$out" == "sinigaglia:2022_motor" ]]
-'
+}
+
+it "resolves via index fallback when heuristic doesn't match" index_fallback_resolves
 
 complete_suite

@@ -24,7 +24,9 @@ if [[ ! -f "$BIB_JSON_PATH" ]]; then
 fi
 
 run_output() {
-  bash -lc "$*"
+  local cmd
+  printf -v cmd '%q ' "$@"
+  bash -lc "PATH=$(printf '%q' "$REPO_ROOT"):\$PATH; $cmd"
 }
 
 has_line_matching() {

@@ -18,7 +18,9 @@ export PATH="$REPO_ROOT:$PATH"
 require_command jq rg
 
 run_output() {
-  bash -lc "$*"
+  local cmd
+  printf -v cmd '%q ' "$@"
+  bash -lc "PATH=$(printf '%q' "$REPO_ROOT"):\$PATH; $cmd"
 }
 
 has_line_matching() {
