@@ -55,6 +55,24 @@ if command -v cite2bib >/dev/null 2>&1; then
   it "emits BibTeX via --cat for smith:2021_joint" \
     has_line_matching '^@\w+\{smith:2021_joint,' \
     BIB_FILE="tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat
+
+  cat_mode_fails_when_cite2bib_fails() {
+    local tmp_bib out rc
+    tmp_bib=$(mktemp)
+    cat > "$tmp_bib" <<'BIB'
+@article{not:the_key,
+  title = {Placeholder}
+}
+BIB
+    set +e
+    out=$(BIB_FILE="$tmp_bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat 2>&1)
+    rc=$?
+    set -e
+    rm -f "$tmp_bib"
+    [[ $rc -eq 1 ]] && rg -q '^MISSING cite2bib: smith:2021_joint' <<< "$out"
+  }
+
+  it "returns non-zero in --cat mode when cite2bib cannot emit entries" cat_mode_fails_when_cite2bib_fails
 else
   skip "emits BibTeX via --cat for smith:2021_joint" "cite2bib not found"
 fi

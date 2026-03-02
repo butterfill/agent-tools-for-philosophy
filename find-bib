@@ -52,6 +52,8 @@ fi
 
 authors=(); years=(); dois=(); titles=(); abstracts=()
 mode="keys"
+cat_emitted=false
+cat_failed=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -117,7 +119,11 @@ case "$mode" in
     if [[ -n "$keys" ]]; then
       while IFS= read -r k; do
         [[ -z "$k" ]] && continue
-        cite2bib "$k" || true
+        if cite2bib "$k"; then
+          cat_emitted=true
+        else
+          cat_failed=true
+        fi
       done <<< "$keys"
     fi
     ;;
@@ -132,16 +138,12 @@ if [[ "$mode" != "cat" ]]; then
     exit 1
   fi
 else
-  # cat mode: decide success by whether anything matched
-  if jq -e \
-      --argjson authors "$authors_json" \
-      --argjson years "$years_json" \
-      --argjson dois "$dois_json" \
-      --argjson titles "$titles_json" \
-      --argjson abstracts "$abstracts_json" \
-      "$jq_prog | key_of | length > 0" "$BIB_JSON" >/dev/null; then
-    exit 0
-  else
+  # cat mode: succeed only if at least one entry was emitted and none failed.
+  if $cat_failed; then
     exit 1
   fi
+  if $cat_emitted; then
+    exit 0
+  fi
+  exit 1
 fi
