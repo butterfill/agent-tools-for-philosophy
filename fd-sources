@@ -4,6 +4,7 @@ set -euo pipefail
 # fd-sources — fd scoped to Markdown sources in PAPERS_DIR (search by filename)
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+FD_OPTIONS_OVERRIDE=${FD_OPTIONS_OVERRIDE:-}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
@@ -76,7 +77,7 @@ done
 cd "$PAPERS_DIR"
 
 declare -a CMD
-CMD=(fd)
+CMD=(env "FD_OPTIONS=$FD_OPTIONS_OVERRIDE" fd)
 
 CMD+=("--extension" "md" "--extension" "mdx")
 

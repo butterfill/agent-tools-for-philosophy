@@ -53,6 +53,19 @@ direct_match_resolves_pdf() {
   [[ $rc -eq 0 ]] && [[ "$out" -ef "$pdf" ]]
 }
 
+direct_match_ignores_fd_options() {
+  local papers pdf out rc
+  papers=$(make_tmpdir)
+  mkdir -p "$papers/sub"
+  pdf="$papers/sub/vesper2012_jumping.pdf"
+  : > "$pdf"
+  set +e
+  out=$(FD_OPTIONS='--glob *definitely_no_fd_hits*' PAPERS_DIR="$papers" "$TOOL" "vesper:2012_jumping")
+  rc=$?
+  set -e
+  [[ $rc -eq 0 ]] && [[ "$out" -ef "$pdf" ]]
+}
+
 stdin_ignores_comments_and_blank_lines() {
   local papers pdf out rc
   papers=$(make_tmpdir)
@@ -141,6 +154,7 @@ missing_key_reports_standard_message() {
 }
 
 it "resolves PDFs via direct fd match" direct_match_resolves_pdf
+it "ignores FD_OPTIONS during direct fd lookup" direct_match_ignores_fd_options
 it "handles stdin input with comments and blank lines" stdin_ignores_comments_and_blank_lines
 it "falls back to cite2md when direct lookup fails" fallback_uses_cite2md_when_fd_finds_nothing
 it "opens viewer when --open is set while printing the path" open_flag_invokes_viewer_and_prints_path

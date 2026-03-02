@@ -50,6 +50,16 @@ it "path lookup works for key with colon" \
 it "path lookup works for normalized key (no colon)" \
   outputs_path_and_exists "$KEY_NORM"
 
+fd_options_ignored_for_path_lookup() {
+  local path
+  if ! path=$(FD_OPTIONS='--glob *definitely_no_fd_hits*' PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "$KEY_WITH_COLON" 2>/dev/null); then
+    return 1
+  fi
+  [[ -n "$path" && -f "$path" ]]
+}
+
+it "ignores FD_OPTIONS during fd-based path lookup" fd_options_ignored_for_path_lookup
+
 it "latex citation form resolves and contains header when --cat" \
   has_line_matching '^# Are You Ready to Jump\?' \
   PAPERS_DIR="$PAPERS_ROOT" "$TOOL" --cat "\\citet{$KEY_WITH_COLON}"

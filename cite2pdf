@@ -4,6 +4,7 @@ set -euo pipefail
 # cite2pdf — resolve citation/key(s) to PDF fulltext path(s)
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+FD_OPTIONS_OVERRIDE=${FD_OPTIONS_OVERRIDE:-}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
@@ -126,7 +127,7 @@ find_pdf_via_fd() {
     return 1
   fi
   local path
-  path=$(fd -a -t f --regex "${normkey}\\.pdf$" "$PAPERS_DIR" | head -n1 || true)
+  path=$(env FD_OPTIONS="$FD_OPTIONS_OVERRIDE" fd -a -t f --regex "${normkey}\\.pdf$" "$PAPERS_DIR" | head -n1 || true)
   if [[ -n "$path" && -f "$path" ]]; then
     printf '%s' "$path"
     return 0

@@ -30,6 +30,16 @@ run_ok_and_matches() {
 it "finds vesper2012_jumping filename by substring" \
   run_ok_and_matches 'vesper2012_jumping\.md$' "vesper2012_jumping"
 
+fd_options_ignored() {
+  local out
+  if ! out=$(FD_OPTIONS='--glob *definitely_no_fd_hits*' PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "vesper2012_jumping" 2>/dev/null); then
+    return 1
+  fi
+  rg -q 'vesper2012_jumping\.md$' <<< "$out"
+}
+
+it "ignores FD_OPTIONS while searching" fd_options_ignored
+
 abs_path_rejected() {
   local rc=0
   set +e

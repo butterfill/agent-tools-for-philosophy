@@ -6,6 +6,7 @@ set -euo pipefail
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
 INDEX_FILE="$PAPERS_DIR/bibtex-index.jsonl"
+FD_OPTIONS_OVERRIDE=${FD_OPTIONS_OVERRIDE:-}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
@@ -146,7 +147,7 @@ resolve_one() {
     return 1
   fi
   normkey=$(printf '%s' "$bibkey" | tr -d ':')
-  file=$(fd -a -t f --regex "${normkey}\\.md$" "$PAPERS_DIR" | head -n1 || true)
+  file=$(env FD_OPTIONS="$FD_OPTIONS_OVERRIDE" fd -a -t f --regex "${normkey}\\.md$" "$PAPERS_DIR" | head -n1 || true)
   if [ -z "$file" ] && [ -f "$INDEX_FILE" ]; then
     rel=$(jq -r --arg k "$bibkey" 'select(.key==$k) | .path // .filename' "$INDEX_FILE" 2>/dev/null || true)
     if [ -z "${rel:-}" ] || [ "$rel" = "null" ]; then
