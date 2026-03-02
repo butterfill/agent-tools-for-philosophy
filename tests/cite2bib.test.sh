@@ -99,4 +99,15 @@ rg_config_ignored_ok() {
 
 it "ignores RIPGREP_CONFIG_PATH when resolving exact keys" rg_config_ignored_ok
 
+# 7) Validate parsed rg line numbers before extraction when RG_CONFIG_PATH is overridden
+non_numeric_start_line_rejected_ok() {
+  local out
+  if ! out=$(RG_CONFIG_PATH="$TMP_RGRC" BIB_FILE="$TMP_BIB" "$TOOL" "vesper:2012_jumping" 2>/dev/null); then
+    return 1
+  fi
+  [[ "$(printf '%s\n' "$out" | sed -n '1p')" == "@article{vesper:2012_jumping," ]]
+}
+
+it "rejects non-numeric rg line parsing and still resolves entry" non_numeric_start_line_rejected_ok
+
 complete_suite

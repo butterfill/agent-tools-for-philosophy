@@ -80,7 +80,7 @@ extract_from_line() {
 # Try exact key match first
 start_line=$(RIPGREP_CONFIG_PATH="$RG_CONFIG_PATH" rg -n "^[[:space:]]*@[A-Za-z]+\{${bibkey}," "$BIB_FILE" | head -n1 | cut -d: -f1 || true)
 
-if [ -n "${start_line:-}" ]; then
+if [[ "${start_line:-}" =~ ^[0-9]+$ ]]; then
   extract_from_line "$start_line"
   exit 0
 fi
@@ -122,7 +122,7 @@ else # POSIX awk
   ' "$BIB_FILE")
 fi
 
-if [ -n "${start_line:-}" ]; then
+if [[ "${start_line:-}" =~ ^[0-9]+$ ]]; then
   extract_from_line "$start_line"
   exit 0
 fi
