@@ -5,6 +5,7 @@ set -euo pipefail
 # See --help for detailed usage.
 
 BIB_FILE=${BIB_FILE:-"$HOME/endnote/phd_biblio.bib"}
+RG_CONFIG_PATH=${RG_CONFIG_PATH:-/dev/null}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
@@ -77,7 +78,7 @@ extract_from_line() {
 }
 
 # Try exact key match first
-start_line=$(rg -n "^[[:space:]]*@[A-Za-z]+\{${bibkey}," "$BIB_FILE" | head -n1 | cut -d: -f1 || true)
+start_line=$(RIPGREP_CONFIG_PATH="$RG_CONFIG_PATH" rg -n "^[[:space:]]*@[A-Za-z]+\{${bibkey}," "$BIB_FILE" | head -n1 | cut -d: -f1 || true)
 
 if [ -n "${start_line:-}" ]; then
   extract_from_line "$start_line"

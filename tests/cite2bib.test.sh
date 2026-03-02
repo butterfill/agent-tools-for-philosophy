@@ -15,7 +15,8 @@ require_command rg sed awk
 
 # Create a temp bib file
 TMP_BIB=$(mktemp -t tmp_rovodev_cite2bib_bib.XXXX.bib)
-trap 'rm -f "$TMP_BIB"' EXIT
+TMP_RGRC=$(mktemp -t tmp_rovodev_cite2bib_rg.XXXX.rc)
+trap 'rm -f "$TMP_BIB" "$TMP_RGRC"' EXIT
 cat > "$TMP_BIB" <<'BIB'
 @article{borg:2024_acting,
   author={Borg, Emma},
@@ -28,6 +29,11 @@ cat > "$TMP_BIB" <<'BIB'
   title={Jumping}
 }
 BIB
+
+cat > "$TMP_RGRC" <<'RGRC'
+--with-filename
+--color=always
+RGRC
 
 run_output() {
   local cmd
@@ -81,5 +87,16 @@ if command -v gawk >/dev/null 2>&1; then
 else
   skip "gawk path works when forced" "gawk not found"
 fi
+
+# 6) Ignore RIPGREP_CONFIG_PATH side effects from user environment
+rg_config_ignored_ok() {
+  local out
+  if ! out=$(RIPGREP_CONFIG_PATH="$TMP_RGRC" BIB_FILE="$TMP_BIB" "$TOOL" "vesper:2012_jumping" 2>/dev/null); then
+    return 1
+  fi
+  [[ "$(printf '%s\n' "$out" | sed -n '1p')" == "@article{vesper:2012_jumping," ]]
+}
+
+it "ignores RIPGREP_CONFIG_PATH when resolving exact keys" rg_config_ignored_ok
 
 complete_suite

@@ -13,6 +13,7 @@ set -euo pipefail
 #   Markdown filtering is not applied.
 
 PAPERS_DIR=${PAPERS_DIR:-"$HOME/papers"}
+RG_CONFIG_PATH=${RG_CONFIG_PATH:-/dev/null}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
 
@@ -132,7 +133,7 @@ done
 
 # Build command
 declare -a CMD
-CMD=(rg)
+CMD=(env "RIPGREP_CONFIG_PATH=$RG_CONFIG_PATH" rg)
 
 CMD+=("--type-add" "mdx:*.mdx" "-t" "md" "-t" "mdx")
 
