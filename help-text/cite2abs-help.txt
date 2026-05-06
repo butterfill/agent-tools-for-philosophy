@@ -1,0 +1,28 @@
+cite2abs — resolve citations/keys to Markdown abstracts
+
+Usage:
+  cite2abs [--cat] [citation-or-key ...]
+  cite2abs [--cat]               # read newline-delimited keys from stdin
+
+Inputs accepted:
+  - LaTeX-style citations (e.g. \citet{butterfill:2019_goals})
+  - BibTeX keys with colons (e.g. butterfill:2019_goals)
+  - Normalized keys without colons (e.g. butterfill2019_goals)
+
+Output:
+  - default: print an absolute abstract Markdown path for each resolved key
+  - --cat: stream the abstract Markdown contents to stdout, concatenated
+
+Exit codes:
+  - 0 at least one key resolved
+  - 1 inputs processed but nothing resolved
+  - 2 usage/config error (e.g. missing input, invalid flag, missing ABSTRACTS_DIR)
+
+Examples (discovery-only triage):
+  cite2abs --cat butterfill:2019_goals
+  cite2abs --cat "\citet{butterfill:2019_goals}"
+  cite2abs butterfill:2019_goals
+
+Notes:
+  - Abstracts are for source discovery only.
+  - For fact-checking or source interpretation, read full text with cite2md --cat.

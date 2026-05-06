@@ -1,0 +1,30 @@
+cite2abs — resolve citations/keys to Markdown abstracts
+
+Usage:
+  cite2abs [--cat] [citation-or-key ...]
+  cite2abs [--cat]               # read newline-delimited keys from stdin
+
+Inputs:
+  - LaTeX citations such as \citet{key}, \citep{key}, etc.
+  - BibTeX keys with colons (author:year_topic)
+  - Normalized keys with colons stripped (author2020_topic)
+
+Environment:
+  - ABSTRACTS_DIR (default: $HOME/syncthing/db/papers-abstracts) — root directory for Markdown abstracts
+
+Resolution strategy:
+  1) Look for <key>.md under ABSTRACTS_DIR.
+  2) Fall back to <colon-stripped-key>.md under ABSTRACTS_DIR.
+
+Output modes:
+  - default: print absolute Markdown abstract paths (one per resolved key)
+  - --cat: stream Markdown abstract contents to stdout (keys concatenated in order)
+
+Workflow tips:
+  - Use rg-abstracts to find candidate sources cheaply, then cite2abs --cat to inspect one abstract.
+  - Use abstracts only for discovery. Read full text with cite2md --cat before fact-checking or reporting what a paper argues.
+
+Examples (discovery-only triage):
+  cite2abs --cat butterfill:2019_goals
+  cite2abs --cat "\citet{butterfill:2019_goals}"
+  cite2abs butterfill:2019_goals

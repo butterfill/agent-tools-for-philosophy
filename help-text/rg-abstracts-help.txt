@@ -1,0 +1,20 @@
+rg-abstracts — run ripgrep against Markdown abstracts
+
+Usage:
+  rg-abstracts [rg-flags...] [--] [pattern] [paths...]
+
+Behavior:
+  - Restricts searches to Markdown files located under ABSTRACTS_DIR
+  - Rejects absolute paths and parent-directory references in positional arguments
+  - Blocks ripgrep type/glob overrides (-t/-T/--glob/--iglob/--type-*)
+
+Exit codes:
+  - Mirrors ripgrep’s status (0 match found, 1 no matches, >1 error)
+
+Examples (discovery-only triage):
+  rg-abstracts -l -i "joint action"
+  rg-abstracts -i -C2 "motor representation"
+
+Notes:
+  - Abstracts are for finding candidate sources only.
+  - Do not use abstracts to fact-check drafts or report what papers argue.

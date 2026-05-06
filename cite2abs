@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve a LaTeX citation or BibTeX key to a Markdown abstract file.
+# See --help for detailed usage.
+
+ABSTRACTS_DIR=${ABSTRACTS_DIR:-"$HOME/syncthing/db/papers-abstracts"}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
+
+print_core_help() {
+  cat "$HELP_TEXT_DIR/cite2abs-help.txt"
+}
+
+print_human_help() {
+  cat "$HELP_TEXT_DIR/cite2abs-human.txt"
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "cite2abs: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
+  exit 0
+fi
+
+if [ $# -lt 1 ]; then
+  if [ -t 0 ]; then
+    print_core_help >&2
+    exit 2
+  fi
+fi
+
+MODE="path"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --cat)
+      MODE="cat"
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "Unknown flag: $1" >&2
+      exit 2
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+declare -a INPUTS
+if [[ $# -gt 0 ]]; then
+  while [[ $# -gt 0 ]]; do
+    INPUTS+=("$1")
+    shift
+  done
+else
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    INPUTS+=("$line")
+  done
+fi
+
+if [[ ${#INPUTS[@]} -eq 0 ]]; then
+  echo "cite2abs: no input keys provided" >&2
+  exit 2
+fi
+
+if [[ ! -d "$ABSTRACTS_DIR" ]]; then
+  echo "cite2abs: ABSTRACTS_DIR not found: $ABSTRACTS_DIR" >&2
+  exit 2
+fi
+
+resolved_any=false
+
+resolve_one() {
+  local input="$1"
+  local bibkey normkey file
+
+  if [[ "$input" =~ \{[^}]+\} ]]; then
+    bibkey=$(printf '%s\n' "$input" | sed -n 's/.*{\([^}]*\)}.*/\1/p')
+  else
+    bibkey="$input"
+  fi
+
+  if [[ -z "$bibkey" ]]; then
+    echo "cite2abs: could not parse a key from input: $input" >&2
+    return 1
+  fi
+
+  if [[ "$bibkey" == /* || "$bibkey" == *"/"* ]]; then
+    echo "cite2abs: key must not contain paths: $bibkey" >&2
+    return 1
+  fi
+
+  normkey=$(printf '%s' "$bibkey" | tr -d ':')
+  file="$ABSTRACTS_DIR/$bibkey.md"
+
+  if [[ ! -f "$file" ]]; then
+    file="$ABSTRACTS_DIR/$normkey.md"
+  fi
+
+  if [[ ! -f "$file" ]]; then
+    echo "MISSING cite2abs: $bibkey in $ABSTRACTS_DIR" >&2
+    return 1
+  fi
+
+  case "$MODE" in
+    path) printf '%s\n' "$file" ;;
+    cat) cat "$file" ;;
+  esac
+  return 0
+}
+
+rc_overall=1
+for token in "${INPUTS[@]}"; do
+  if resolve_one "$token"; then
+    resolved_any=true
+  fi
+done
+
+if $resolved_any; then
+  rc_overall=0
+fi
+exit "$rc_overall"

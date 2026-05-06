@@ -1,0 +1,23 @@
+rg-abstracts — run ripgrep against Markdown abstracts
+
+Usage:
+  rg-abstracts [rg-flags...] [--] [pattern] [paths...]
+
+Environment:
+  - ABSTRACTS_DIR (default: $HOME/syncthing/db/papers-abstracts) — search root
+
+Behavior:
+  - Forces Markdown scope by injecting ripgrep type filters for .md/.mdx
+  - Rejects absolute or parent-directory paths (before and after --)
+  - Disallows ripgrep type/glob overrides to keep searches within Markdown abstracts
+
+Dependencies:
+  - ripgrep (rg)
+
+Workflow tips:
+  - Use -l to capture relative abstract filenames, then choose candidate keys for full-text reading.
+  - Use abstracts only for discovery. Read full text with cite2md --cat before fact-checking or reporting what a paper argues.
+
+Examples (discovery-only triage):
+  rg-abstracts -l -i "joint action"
+  rg-abstracts -i -C2 "motor representation"

@@ -11,6 +11,7 @@ test_suite "$0"
 
 TOOLS=(
   cat-sources
+  cite2abs
   cite2bib
   cite2md
   cite2pdf
@@ -18,6 +19,7 @@ TOOLS=(
   fd-sources
   find-bib
   path2key
+  rg-abstracts
   rg-sources
 )
 

@@ -7,6 +7,11 @@ Some of the features are for humans only, and are not intended to be used by AI 
 - `--vsi`: open in VS Code Insiders (same as `code-insiders "$(cite2md [key])"`)
 - `-r` / `--reveal`: open Finder with the file revealed (same as `open -R "$(cite2md [key])"`)
 
+## Abstract tools
+- `cite2abs`: prints an abstract Markdown path, or contents with `--cat`.
+- `rg-abstracts`: searches Markdown abstracts under `$ABSTRACTS_DIR` (default `$HOME/syncthing/db/papers-abstracts`).
+- Abstracts are for discovery-only triage. Use `cite2md --cat` before fact-checking or reporting what a paper argues.
+
 ## cite2pdf (human-only tool)
 - Reads LaTeX citations (`\citet{...}`), colon keys, or normalized keys.
 - Resolves PDFs under `$PAPERS_DIR` (default `~/papers`); prints absolute path.

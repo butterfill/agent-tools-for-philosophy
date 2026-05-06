@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# rg-abstracts — ripgrep scoped to Markdown abstracts in ABSTRACTS_DIR
+#
+# Behaves like rg, but restricts search scope to ABSTRACTS_DIR
+# (default: $HOME/syncthing/db/papers-abstracts) and, by default, limits to
+# Markdown files (.md, .markdown, .mdx).
+
+ABSTRACTS_DIR=${ABSTRACTS_DIR:-"$HOME/syncthing/db/papers-abstracts"}
+RG_CONFIG_PATH=${RG_CONFIG_PATH:-/dev/null}
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
+
+print_core_help() {
+  cat "$HELP_TEXT_DIR/rg-abstracts-help.txt"
+}
+
+print_human_help() {
+  cat "$HELP_TEXT_DIR/rg-abstracts-human.txt"
+}
+
+human_requested=false
+help_requested=false
+for arg in "$@"; do
+  case "$arg" in
+    --human) human_requested=true ;;
+    -h|--help) help_requested=true ;;
+  esac
+done
+
+if $human_requested; then
+  for arg in "$@"; do
+    case "$arg" in
+      --human|-h|--help) ;;
+      *)
+        echo "rg-abstracts: --human cannot be combined with $arg" >&2
+        exit 2
+        ;;
+    esac
+  done
+  print_human_help
+  exit 0
+fi
+
+if $help_requested; then
+  print_core_help
+  exit 0
+fi
+
+if [[ ! -d "$ABSTRACTS_DIR" ]]; then
+  echo "rg-abstracts: ABSTRACTS_DIR not found: $ABSTRACTS_DIR" >&2
+  exit 2
+fi
+
+expect_value_for=""
+declare -a ARGS
+seen_double_dash=false
+
+for arg in "$@"; do
+  if $seen_double_dash; then
+    if [[ "$arg" == /* ]]; then
+      echo "rg-abstracts: absolute paths not allowed: $arg" >&2
+      exit 2
+    fi
+    if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+      echo "rg-abstracts: parent-directory paths not allowed: $arg" >&2
+      exit 2
+    fi
+    ARGS+=("$arg")
+    continue
+  fi
+
+  if [[ -n "$expect_value_for" ]]; then
+    if [[ "$arg" == /* ]]; then
+      echo "rg-abstracts: absolute paths not allowed for $expect_value_for: $arg" >&2
+      exit 2
+    fi
+    if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+      echo "rg-abstracts: parent-directory paths not allowed for $expect_value_for: $arg" >&2
+      exit 2
+    fi
+    ARGS+=("$arg")
+    expect_value_for=""
+    continue
+  fi
+
+  if [[ "$arg" == "--" ]]; then
+    seen_double_dash=true
+    ARGS+=("$arg")
+    continue
+  fi
+
+  if [[ "$arg" == -* ]]; then
+    case "$arg" in
+      -t|--type|-T|--type-not|--type-add|--type-clear|--type-list|-g|--glob|--iglob|--type-add=*|--type-clear=*|--glob=*|--iglob=*)
+        echo "rg-abstracts: file type/glob overrides are not supported; use rg directly for non-Markdown" >&2
+        exit 2
+        ;;
+      -e|--regexp|-f|--file|-C|--context|-A|--after-context|-B|--before-context|--max-columns|--max-count|-m|--max-depth|--threads|-j|--ignore-file|--path-separator|--encoding)
+        expect_value_for="$arg"
+        ;;
+    esac
+    ARGS+=("$arg")
+    continue
+  fi
+
+  if [[ "$arg" == /* ]]; then
+    echo "rg-abstracts: absolute paths not allowed: $arg" >&2
+    exit 2
+  fi
+  if [[ "$arg" == ../* || "$arg" == */../* || "$arg" == */.. || "$arg" == ./../* || "$arg" == ".." ]]; then
+    echo "rg-abstracts: parent-directory paths not allowed: $arg" >&2
+    exit 2
+  fi
+
+  ARGS+=("$arg")
+done
+
+declare -a CMD
+CMD=(env "RIPGREP_CONFIG_PATH=$RG_CONFIG_PATH" rg)
+CMD+=("--type-add" "mdx:*.mdx" "-t" "md" "-t" "mdx")
+
+cd "$ABSTRACTS_DIR"
+exec "${CMD[@]}" "${ARGS[@]}"

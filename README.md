@@ -44,17 +44,19 @@ This toolkit is designed for researchers who:
 
 ## What's Included
 
-Eight command-line tools for working with your research library:
+Eleven command-line tools for working with your research library:
 
 | Tool | Purpose |
 |------|---------|
 | **`cite2md`** | Convert a BibTeX key or citation to a markdown file path (or print contents) |
+| **`cite2abs`** | Convert a BibTeX key or citation to an abstract Markdown file path, or print the abstract |
 | **`cite2bib`** | Get the BibTeX entry for a citation or key |
 | **`cite2pdf`** | Locate the PDF file for a citation or key |
 | **`draft2keys`** | Extract all BibTeX keys from a draft document |
 | **`find-bib`** | Search your bibliography by author, title, year, or abstract |
 | **`path2key`** | Extract the BibTeX key from a filename or path |
 | **`rg-sources`** | Search full text of all papers using ripgrep |
+| **`rg-abstracts`** | Search Markdown abstracts using ripgrep |
 | **`fd-sources`** | Find papers by filename pattern |
 | **`cat-sources`** | Print contents of source files from filenames or paths |
 
@@ -86,6 +88,9 @@ export BIB_FILE="$HOME/documents/research/my-bibliography.bib"
 # Path to your directory of markdown papers
 # Each file should have the BibTeX key (without colons) in its filename
 export PAPERS_DIR="$HOME/papers"
+
+# Optional: path to your directory of markdown abstracts
+export ABSTRACTS_DIR="$HOME/syncthing/db/papers-abstracts"
 ```
 
 ### 3. Instruct Your Agent
@@ -150,6 +155,9 @@ ln -s $(command -v fdfind) ~/.local/bin/fd
 - **`$PAPERS_DIR`** — Must point to your directory of `.md` files
   - Each markdown filename should include the BibTeX key with colons removed
   - Example: `vesper2012_jumping.md` for key `vesper:2012_jumping`
+- **`$ABSTRACTS_DIR`** — Optional path to Markdown abstract files
+  - Defaults to `$HOME/syncthing/db/papers-abstracts`
+  - Abstract filenames should be BibTeX keys with `.md`, with either colon form or colons removed
 
 ### Optional: BibTeX Index File
 
@@ -281,6 +289,9 @@ find-bib --author "Steward" --author "Velleman"
 
 # Search abstracts for key terms
 find-bib --abstract "motor representation"
+
+# Search Markdown abstract files for candidate sources
+rg-abstracts -l -i "joint action"
 
 # Full-text search across all papers
 rg-sources "bayesian prior" -i -C 2

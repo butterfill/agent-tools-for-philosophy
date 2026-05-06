@@ -4,11 +4,13 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 ### The Tools
 - cite2md — print a Markdown fulltext path or content for a citation/key
   - Use `--cat` to stream content for a single key.
+- cite2abs — print an abstract path or content for a citation/key
 - draft2keys — extract keys from a draft (prints unique keys)
 - cite2bib — print the corresponding BibTeX entry for a citation/key
 - path2key — infer the BibTeX key from a filename or path
 - find-bib — search the bibliography by fields; output keys or BibTeX
 - rg-sources — ripgrep search across Markdown fulltext of available sources
+- rg-abstracts — ripgrep search across Markdown abstracts
 - fd-sources — filename search across Markdown fulltext sources
 - cat-sources — print contents of source files from a filename
 
@@ -37,6 +39,17 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
   - `fd-sources vesper2012_jumping > files.txt`
   - `p=$(sed -n '1p' files.txt); cat-sources "$p"`
 
+### Discovery-only abstract triage
+For finding candidate sources, you may search and read abstracts before reading full text.
+
+- Search abstracts:
+  - `rg-abstracts -l -i "joint action"`
+  - `rg-abstracts -i -C2 "motor representation"`
+- Read one abstract:
+  - `cite2abs --cat butterfill:2019_goals`
+
+Use abstracts only to identify promising sources. Do not use abstracts to fact-check a draft or to report what a paper argues. Abstracts should not usually be quoted. For those tasks, read the full text with `cite2md --cat`. Sometimes abstracts are missing even though the full text of a source exists.
+
 - Read files found by other tools
   - From `fd-sources`: `fd-sources vesper2012_jumping | cat-sources`
   - From `rg-sources`: `rg-sources -l 'bayesian prior' | cat-sources`
@@ -46,5 +59,6 @@ Use these CLI tools to locate sources, read full text, and fetch citations. Tool
 ### Notes
 - Prefer `cite2md`/`cite2bib` to move between citations/keys and fulltext/BibTeX quickly when reviewing drafts.
 - Use `find-bib` to discover related literature by author, year, title terms, or abstract snippets.
+- Use `rg-abstracts`/`cite2abs` only for discovery triage; use full text for evidence.
 - `path2key` helps when you only have a filename and need the citation key.
 - For options and flags, run `--help` on any command.
