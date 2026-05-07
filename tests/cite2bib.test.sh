@@ -35,39 +35,23 @@ cat > "$TMP_RGRC" <<'RGRC'
 --color=always
 RGRC
 
-run_output() {
-  local cmd
-  printf -v cmd '%q ' "$@"
-  bash -lc "$cmd"
-}
-
-has_line_matching() {
-  local pattern="$1"; shift
-  local out
-  if ! out=$(run_output "$@" 2>/dev/null); then
-    return 1
-  fi
-  rg -q "$pattern" <<< "$out"
-}
-
 # 1) Exact key match succeeds
 it "exact key match works" \
   has_line_matching '^@' \
   BIB_FILE="$TMP_BIB" "$TOOL" "borg:2024_acting"
 
-# 2) Non-existent key should not error; should print not found message and exit non-zero
-not_found_ok() {
+_not_found_ok() {
+  local tmpdir="$1"
   local out rc
-  rm -f missing-keys.txt
   set +e
   out=$(BIB_FILE="$TMP_BIB" "$TOOL" "acting" 2>&1)
   rc=$?
   set -e
   rg -q 'MISSING cite2bib: acting \(normalized: acting\) in ' <<< "$out" && \
-  test $rc -eq 1 && rg -q '^acting$' missing-keys.txt
+  test $rc -eq 1 && rg -q '^acting$' "$tmpdir/missing-keys.txt"
 }
 
-it "non-existent key prints standardized MISSING message, logs key, and exits 1" not_found_ok
+it_in_tmpdir "non-existent key prints standardized MISSING message, logs key, and exits 1" _not_found_ok
 
 # 3) Normalized key match (colons removed)
 it "normalized key fallback works" \

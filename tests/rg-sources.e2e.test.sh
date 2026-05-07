@@ -30,15 +30,16 @@ run_ok_and_matches() {
 it "finds a known phrase in vesper2012_jumping via default Markdown types" \
   run_ok_and_matches 'vesper2012_jumping\.md:' "Are You Ready to Jump\?"
 
-abs_path_rejected() {
+_abs_path_rejected() {
+  local tmpdir="$1"
   local rc=0
   set +e
-  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -- foo "/etc" >/dev/null 2>err.txt
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -- foo "/etc" >/dev/null 2>"$tmpdir/err.txt"
   rc=$?
   set -e
-  rg -q 'absolute paths not allowed' err.txt && test $rc -eq 2
+  rg -q 'absolute paths not allowed' "$tmpdir/err.txt" && test $rc -eq 2
 }
 
-it "rejects absolute paths with an error" abs_path_rejected
+it_in_tmpdir "rejects absolute paths with an error" _abs_path_rejected
 
 complete_suite

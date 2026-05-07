@@ -13,36 +13,14 @@ TOOL="$REPO_ROOT/cite2pdf"
 
 require_command fd
 
-declare -a TMP_DIRS=()
-declare -a TMP_FILES=()
-
-cleanup() {
-  for f in "${TMP_FILES[@]}"; do
-    [[ -f "$f" ]] && rm -f "$f"
-  done
-  for d in "${TMP_DIRS[@]}"; do
-    [[ -d "$d" ]] && rm -rf "$d"
-  done
-}
-trap cleanup EXIT
-
-make_tmpdir() {
-  local dir
-  dir=$(mktemp -d)
-  TMP_DIRS+=("$dir")
-  printf '%s\n' "$dir"
-}
-
-make_tmpfile() {
-  local file
-  file=$(mktemp)
-  TMP_FILES+=("$file")
-  printf '%s\n' "$file"
-}
-
 direct_match_resolves_pdf() {
+  with_tmpdir _direct_match_resolves_pdf
+}
+
+_direct_match_resolves_pdf() {
+  local tmpdir="$1"
   local papers pdf out rc
-  papers=$(make_tmpdir)
+  papers="$tmpdir/papers"
   mkdir -p "$papers/sub"
   pdf="$papers/sub/vesper2012_jumping.pdf"
   : > "$pdf"
@@ -54,8 +32,13 @@ direct_match_resolves_pdf() {
 }
 
 direct_match_ignores_fd_options() {
+  with_tmpdir _direct_match_ignores_fd_options
+}
+
+_direct_match_ignores_fd_options() {
+  local tmpdir="$1"
   local papers pdf out rc
-  papers=$(make_tmpdir)
+  papers="$tmpdir/papers"
   mkdir -p "$papers/sub"
   pdf="$papers/sub/vesper2012_jumping.pdf"
   : > "$pdf"
@@ -67,8 +50,13 @@ direct_match_ignores_fd_options() {
 }
 
 stdin_ignores_comments_and_blank_lines() {
+  with_tmpdir _stdin_ignores_comments_and_blank_lines
+}
+
+_stdin_ignores_comments_and_blank_lines() {
+  local tmpdir="$1"
   local papers pdf out rc
-  papers=$(make_tmpdir)
+  papers="$tmpdir/papers"
   mkdir -p "$papers"
   pdf="$papers/borg2024_acting.pdf"
   : > "$pdf"
@@ -80,10 +68,16 @@ stdin_ignores_comments_and_blank_lines() {
 }
 
 fallback_uses_cite2md_when_fd_finds_nothing() {
+  with_tmpdir _fallback_uses_cite2md_when_fd_finds_nothing
+}
+
+_fallback_uses_cite2md_when_fd_finds_nothing() {
+  local tmpdir="$1"
   local papers stub_bin pdf md out rc
-  papers=$(make_tmpdir)
-  stub_bin=$(make_tmpdir)
+  papers="$tmpdir/papers"
+  stub_bin="$tmpdir/bin"
   mkdir -p "$papers/notes"
+  mkdir -p "$stub_bin"
   md="$papers/notes/vesper2012_jumping.md"
   pdf="$papers/notes/vesper2012_jumping.pdf"
   : > "$md"
@@ -112,11 +106,17 @@ EOF
 }
 
 open_flag_invokes_viewer_and_prints_path() {
+  with_tmpdir _open_flag_invokes_viewer_and_prints_path
+}
+
+_open_flag_invokes_viewer_and_prints_path() {
+  local tmpdir="$1"
   local papers pdf stub_bin log rc out
-  papers=$(make_tmpdir)
-  stub_bin=$(make_tmpdir)
-  log=$(make_tmpfile)
+  papers="$tmpdir/papers"
+  stub_bin="$tmpdir/bin"
+  log="$tmpdir/xdg-open.log"
   mkdir -p "$papers"
+  mkdir -p "$stub_bin"
   pdf="$papers/vesper2012_jumping.pdf"
   : > "$pdf"
 
@@ -140,11 +140,13 @@ EOF
   [[ $rc -eq 0 ]] && [[ "$out" -ef "$pdf" ]] && { last=$(tail -n1 "$log"); [[ "$last" -ef "$pdf" ]]; }
 }
 
-missing_key_reports_standard_message() {
+_missing_key_reports_standard_message() {
+  local tmpdir="$1"
   local papers stdout err rc expected
-  papers=$(make_tmpdir)
-  stdout=$(make_tmpfile)
-  err=$(make_tmpfile)
+  papers="$tmpdir/papers"
+  stdout="$tmpdir/stdout.txt"
+  err="$tmpdir/err.txt"
+  mkdir -p "$papers"
   set +e
   PAPERS_DIR="$papers" "$TOOL" "missing:key" >"$stdout" 2>"$err"
   rc=$?
@@ -158,6 +160,6 @@ it "ignores FD_OPTIONS during direct fd lookup" direct_match_ignores_fd_options
 it "handles stdin input with comments and blank lines" stdin_ignores_comments_and_blank_lines
 it "falls back to cite2md when direct lookup fails" fallback_uses_cite2md_when_fd_finds_nothing
 it "opens viewer when --open is set while printing the path" open_flag_invokes_viewer_and_prints_path
-it "reports standardized missing message and exits with 1" missing_key_reports_standard_message
+it_in_tmpdir "reports standardized missing message and exits with 1" _missing_key_reports_standard_message
 
 complete_suite

@@ -55,7 +55,14 @@ show_diff() {
 
 check_help_output() {
   local tool="$1"
+  local mode="$2"
+  with_tmpfile _check_help_output "$tool" "$mode"
+}
+
+_check_help_output() {
+  local tool="$1"
   local mode="$2"    # help or human
+  local actual_file="$3"
   local flag
   local expected_file="$HELP_DIR/${tool}-${mode}.txt"
   local tool_path="$REPO_ROOT/$tool"
@@ -76,24 +83,18 @@ check_help_output() {
     return 1
   fi
 
-  local actual_file
-  actual_file=$(mktemp "$REPO_ROOT/.help-text.actual.XXXXXX")
-
   if ! "$tool_path" "$flag" >"$actual_file"; then
     echo "$tool $flag failed" >&2
     show_diff "$expected_file" "$actual_file"
-    rm -f "$actual_file"
     return 1
   fi
 
   if ! cmp -s "$expected_file" "$actual_file"; then
     echo "$tool $flag output differs from help-text/${tool}-${mode}.txt" >&2
     show_diff "$expected_file" "$actual_file"
-    rm -f "$actual_file"
     return 1
   fi
 
-  rm -f "$actual_file"
   return 0
 }
 

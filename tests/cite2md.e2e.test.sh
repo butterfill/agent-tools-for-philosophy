@@ -18,19 +18,6 @@ if [[ ! -d "$PAPERS_ROOT" ]]; then
   skip_suite "PAPERS_DIR not found at $PAPERS_ROOT"
 fi
 
-run_output() {
-  bash -lc "$*"
-}
-
-has_line_matching() {
-  local pattern="$1"; shift
-  local out
-  if ! out=$(run_output "$@" 2>/dev/null); then
-    return 1
-  fi
-  rg -q "$pattern" <<< "$out"
-}
-
 outputs_path_and_exists() {
   local key="$1"
   local path
@@ -74,16 +61,17 @@ reads_from_stdin_single() {
 
 it "reads path from stdin for a single key" reads_from_stdin_single
 
-writes_missing_fulltext_log() {
+_writes_missing_fulltext_log() {
+  local tmpdir="$1"
   local missing="no:such_key_zzzz"
-  rm -f missing-fulltext.txt
+  local rc
   set +e
-  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "$missing" >/dev/null 2>err.txt
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "$missing" >/dev/null 2>"$tmpdir/err.txt"
   rc=$?
   set -e
-  test $rc -eq 1 && rg -q "^$missing$" missing-fulltext.txt
+  test $rc -eq 1 && rg -q "^$missing$" "$tmpdir/missing-fulltext.txt"
 }
 
-it "appends missing keys to missing-fulltext.txt in cwd" writes_missing_fulltext_log
+it_in_tmpdir "appends missing keys to missing-fulltext.txt in cwd" _writes_missing_fulltext_log
 
 complete_suite

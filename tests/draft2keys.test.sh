@@ -11,20 +11,19 @@ TOOL="$REPO_ROOT/draft2keys"
 
 require_command rg
 
-make_tmp_draft() {
-  local f
-  f=$(mktemp -t tmp_draft2keys.XXXX.md)
-  cat > "$f" <<'MD'
+keys_extraction_works() {
+  with_tmpdir _keys_extraction_works
+}
+
+_keys_extraction_works() {
+  local tmpdir="$1"
+  local draft out
+  draft="$tmpdir/draft.md"
+  cat > "$draft" <<'MD'
 Intro text.
 Here is a LaTeX citation with options: \citep[see][ch.~2]{vesper:2012_jumping, example:missing}.
 And a Pandoc inline citation @sinigaglia:2022_motor plus bracket form [@vesper:2012_jumping].
 MD
-  printf '%s' "$f"
-}
-
-keys_extraction_works() {
-  local draft out
-  draft=$(make_tmp_draft)
   out=$("$TOOL" "$draft")
   # Expect vesper first, then sinigaglia; no duplicates
   grep -qx 'vesper:2012_jumping' <<< "$out" && \

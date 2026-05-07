@@ -40,15 +40,16 @@ fd_options_ignored() {
 
 it "ignores FD_OPTIONS while searching" fd_options_ignored
 
-abs_path_rejected() {
+_abs_path_rejected() {
+  local tmpdir="$1"
   local rc=0
   set +e
-  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -- "/etc" >/dev/null 2>err.txt
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" -- "/etc" >/dev/null 2>"$tmpdir/err.txt"
   rc=$?
   set -e
-  rg -q 'absolute paths not allowed' err.txt && test $rc -eq 2
+  rg -q 'absolute paths not allowed' "$tmpdir/err.txt" && test $rc -eq 2
 }
 
-it "rejects absolute path arguments" abs_path_rejected
+it_in_tmpdir "rejects absolute path arguments" _abs_path_rejected
 
 complete_suite

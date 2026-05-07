@@ -17,30 +17,6 @@ export PATH="$REPO_ROOT:$PATH"
 
 require_command jq rg
 
-run_output() {
-  local cmd
-  printf -v cmd '%q ' "$@"
-  bash -lc "PATH=$(printf '%q' "$REPO_ROOT"):\$PATH; $cmd"
-}
-
-has_line_matching() {
-  local pattern="$1"; shift
-  local out
-  if ! out=$(run_output "$@" 2>/dev/null); then
-    return 1
-  fi
-  rg -q "$pattern" <<< "$out"
-}
-
-has_n_lines() {
-  local n="$1"; shift
-  local out
-  if ! out=$(run_output "$@" 2>/dev/null); then
-    return 1
-  fi
-  test "$(printf '%s\n' "$out" | sed '/^$/d' | wc -l | tr -d ' ')" -eq "$n"
-}
-
 # 1) Field filters: Steward 2009 Animal Agency
 it "finds Steward 2009 Animal Agency by field filters" \
   has_line_matching '^steward:2009_animal$' \
@@ -58,23 +34,23 @@ if command -v cite2bib >/dev/null 2>&1; then
     has_line_matching '^@\w+\{smith:2021_joint,' \
     BIB_FILE="tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat
 
-  cat_mode_fails_when_cite2bib_fails() {
-    local tmp_bib out rc
-    tmp_bib=$(mktemp)
+  _cat_mode_fails_when_cite2bib_fails() {
+    local tmpdir="$1"
+    local tmp_bib="$tmpdir/missing-entry.bib"
+    local out rc
     cat > "$tmp_bib" <<'BIB'
 @article{not:the_key,
   title = {Placeholder}
 }
 BIB
     set +e
-    out=$(BIB_FILE="$tmp_bib" BIB_JSON="$FIXTURE_JSON" "$TOOL" --author smith --cat 2>&1)
+    out=$(BIB_FILE="$tmp_bib" BIB_JSON="$REPO_ROOT/$FIXTURE_JSON" "$REPO_ROOT/find-bib" --author smith --cat 2>&1)
     rc=$?
     set -e
-    rm -f "$tmp_bib"
     [[ $rc -eq 1 ]] && rg -q '^MISSING cite2bib: smith:2021_joint' <<< "$out"
   }
 
-  it "returns non-zero in --cat mode when cite2bib cannot emit entries" cat_mode_fails_when_cite2bib_fails
+  it_in_tmpdir "returns non-zero in --cat mode when cite2bib cannot emit entries" _cat_mode_fails_when_cite2bib_fails
 else
   skip "emits BibTeX via --cat for smith:2021_joint" "cite2bib not found"
 fi

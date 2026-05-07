@@ -2,7 +2,17 @@
 set -euo pipefail
 
 # Shared helpers for shell test suites.
-# Provides a small DSL for consistent reporting and diagnostics.
+#
+# Contract for tests:
+# - Set REPO_ROOT before calling helpers that execute repository tools.
+# - run_output intentionally evaluates commands through bash -lc so call sites can
+#   use environment-prefixed commands such as BIB_FILE=... "$TOOL" key.
+# - run_output puts REPO_ROOT first on PATH so tests prefer repo-local tools.
+# - with_tmpdir, with_tmpfile, run_in_tmpdir, and it_in_tmpdir are the preferred
+#   APIs for temporary resources; test scratch files must not be written to the
+#   repository root.
+# - run_in_tmpdir/it_in_tmpdir run the command from an isolated temporary cwd
+#   and pass the temp directory path as the command's first argument.
 
 if [[ -z "${BASH_VERSION:-}" ]]; then
   echo "test_helpers.sh requires bash" >&2
@@ -123,6 +133,32 @@ require_command() {
   done
 }
 
+run_output() {
+  local cmd
+  printf -v cmd '%q ' "$@"
+  PATH="$REPO_ROOT:$PATH" bash -lc "$cmd"
+}
+
+has_line_matching() {
+  local pattern="$1"
+  shift
+  local out
+  if ! out=$(run_output "$@" 2>/dev/null); then
+    return 1
+  fi
+  rg -q "$pattern" <<< "$out"
+}
+
+has_n_lines() {
+  local expected="$1"
+  shift
+  local out
+  if ! out=$(run_output "$@" 2>/dev/null); then
+    return 1
+  fi
+  [[ "$(printf '%s\n' "$out" | sed '/^$/d' | wc -l | tr -d ' ')" == "$expected" ]]
+}
+
 with_tmpdir() {
   if [[ $# -lt 1 ]]; then
     echo "test_helpers: with_tmpdir command..." >&2
@@ -132,28 +168,82 @@ with_tmpdir() {
   local dir rc
   dir=$(mktemp -d "/tmp/test.${RANDOM}.XXXXXX")
 
+  local restore_errexit=0
+  case "$-" in
+    *e*) restore_errexit=1 ;;
+  esac
+
   set +e
   "$@" "$dir"
   rc=$?
-  set -e
 
   rm -rf -- "$dir"
+  if [[ "$restore_errexit" -eq 1 ]]; then
+    set -e
+  fi
   return "$rc"
 }
 
-capture() {
-  if [[ $# -lt 2 ]]; then
-    echo "test_helpers: capture VAR command..." >&2
+run_in_tmpdir() {
+  if [[ $# -lt 1 ]]; then
+    echo "test_helpers: run_in_tmpdir command..." >&2
     exit 1
   fi
-  local var_name="$1"
+
+  local cmd="$1"
   shift
-  local output
+  local dir rc
+  dir=$(mktemp -d "/tmp/test.${RANDOM}.XXXXXX")
+
+  local restore_errexit=0
+  case "$-" in
+    *e*) restore_errexit=1 ;;
+  esac
+
   set +e
-  output="$("$@" 2>&1)"
-  local rc=$?
-  set -e
-  printf -v "$var_name" '%s' "$output"
+  (cd "$dir" && "$cmd" "$dir" "$@")
+  rc=$?
+
+  rm -rf -- "$dir"
+  if [[ "$restore_errexit" -eq 1 ]]; then
+    set -e
+  fi
+  return "$rc"
+}
+
+it_in_tmpdir() {
+  if [[ $# -lt 2 ]]; then
+    echo "test_helpers: it_in_tmpdir requires a description and a command" >&2
+    exit 1
+  fi
+
+  local description="$1"
+  shift
+  it "$description" run_in_tmpdir "$@"
+}
+
+with_tmpfile() {
+  if [[ $# -lt 1 ]]; then
+    echo "test_helpers: with_tmpfile command..." >&2
+    exit 1
+  fi
+
+  local file rc
+  file=$(mktemp "/tmp/test.${RANDOM}.XXXXXX")
+
+  local restore_errexit=0
+  case "$-" in
+    *e*) restore_errexit=1 ;;
+  esac
+
+  set +e
+  "$@" "$file"
+  rc=$?
+
+  rm -f -- "$file"
+  if [[ "$restore_errexit" -eq 1 ]]; then
+    set -e
+  fi
   return "$rc"
 }
 

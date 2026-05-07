@@ -11,7 +11,6 @@ test_suite "$0"
 
 TOOL="$REPO_ROOT/find-bib"
 BIB_JSON_PATH="${BIB_JSON:-$HOME/endnote/phd_biblio.json}"
-BIB_JSON_PATH="${BIB_JSON:-$HOME/endnote/phd_biblio.json}"
 BIB_FILE_PATH="${BIB_FILE:-$HOME/endnote/phd_biblio.bib}"
 
 # Ensure local tools are discoverable (cite2bib) for --cat
@@ -22,30 +21,6 @@ require_command jq rg
 if [[ ! -f "$BIB_JSON_PATH" ]]; then
   skip_suite "CSL-JSON not found at $BIB_JSON_PATH"
 fi
-
-run_output() {
-  local cmd
-  printf -v cmd '%q ' "$@"
-  bash -lc "PATH=$(printf '%q' "$REPO_ROOT"):\$PATH; $cmd"
-}
-
-has_line_matching() {
-  local pattern="$1"; shift
-  local out
-  if ! out=$(run_output "$@" 2>/dev/null); then
-    return 1
-  fi
-  rg -q "$pattern" <<< "$out"
-}
-
-has_n_lines() {
-  local n="$1"; shift
-  local out
-  if ! out=$(run_output "$@" 2>/dev/null); then
-    return 1
-  fi
-  test "$(printf '%s\n' "$out" | sed '/^$/d' | wc -l | tr -d ' ')" -eq "$n"
-}
 
 # 1) Field filters for Vesper 2012 jumping
 it "finds vesper:2012_jumping by author/year/title filters" \

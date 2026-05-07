@@ -32,15 +32,16 @@ prints_known_file() {
 
 it "prints content of a known file" prints_known_file
 
-abs_path_rejected() {
+_abs_path_rejected() {
+  local tmpdir="$1"
   local rc=0
   set +e
-  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "/etc/passwd" >/dev/null 2>err.txt
+  PAPERS_DIR="$PAPERS_ROOT" "$TOOL" "/etc/passwd" >/dev/null 2>"$tmpdir/err.txt"
   rc=$?
   set -e
-  rg -q 'absolute paths not allowed' err.txt && test $rc -eq 2
+  rg -q 'absolute paths not allowed' "$tmpdir/err.txt" && test $rc -eq 2
 }
 
-it "rejects absolute paths with an error" abs_path_rejected
+it_in_tmpdir "rejects absolute paths with an error" _abs_path_rejected
 
 complete_suite
