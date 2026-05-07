@@ -124,21 +124,20 @@ require_command() {
 }
 
 with_tmpdir() {
-  if [[ $# -lt 2 ]]; then
-    echo "test_helpers: with_tmpdir VAR command..." >&2
+  if [[ $# -lt 1 ]]; then
+    echo "test_helpers: with_tmpdir command..." >&2
     exit 1
   fi
 
-  local var_name="$1"
-  shift
-  local dir
-  dir=$(mktemp -d "/tmp/${var_name}.${RANDOM}.XXXXXX")
-  printf -v "$var_name" '%s' "$dir"
+  local dir rc
+  dir=$(mktemp -d "/tmp/test.${RANDOM}.XXXXXX")
+
   set +e
-  "$@"
-  local rc=$?
+  "$@" "$dir"
+  rc=$?
   set -e
-  rm -rf "$dir"
+
+  rm -rf -- "$dir"
   return "$rc"
 }
 

@@ -19,10 +19,11 @@ setup_abstracts() {
 }
 
 finds_matching_abstract() {
-  with_tmpdir abstracts_dir _finds_matching_abstract
+  with_tmpdir _finds_matching_abstract
 }
 
 _finds_matching_abstract() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
   out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -l -i "joint action")
@@ -30,10 +31,11 @@ _finds_matching_abstract() {
 }
 
 preserves_context_flags() {
-  with_tmpdir abstracts_dir _preserves_context_flags
+  with_tmpdir _preserves_context_flags
 }
 
 _preserves_context_flags() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
   out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -n -C 1 "visual attention")
@@ -41,10 +43,11 @@ _preserves_context_flags() {
 }
 
 rejects_absolute_paths() {
-  with_tmpdir abstracts_dir _rejects_absolute_paths
+  with_tmpdir _rejects_absolute_paths
 }
 
 _rejects_absolute_paths() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local rc=0
   set +e

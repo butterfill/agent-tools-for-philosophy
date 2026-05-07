@@ -17,10 +17,11 @@ setup_abstracts() {
 }
 
 cat_prints_abstract() {
-  with_tmpdir abstracts_dir _cat_prints_abstract
+  with_tmpdir _cat_prints_abstract
 }
 
 _cat_prints_abstract() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
   out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" --cat butterfill:2019_goals)
@@ -28,10 +29,11 @@ _cat_prints_abstract() {
 }
 
 path_mode_prints_existing_path() {
-  with_tmpdir abstracts_dir _path_mode_prints_existing_path
+  with_tmpdir _path_mode_prints_existing_path
 }
 
 _path_mode_prints_existing_path() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local path
   path=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" butterfill:2019_goals)
@@ -39,10 +41,11 @@ _path_mode_prints_existing_path() {
 }
 
 normalized_filename_resolves() {
-  with_tmpdir abstracts_dir _normalized_filename_resolves
+  with_tmpdir _normalized_filename_resolves
 }
 
 _normalized_filename_resolves() {
+  local abstracts_dir="$1"
   printf '%s\n' "Normalized abstract." > "$abstracts_dir/butterfill2019_goals.md"
   local out
   out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" --cat butterfill:2019_goals)
@@ -50,10 +53,11 @@ _normalized_filename_resolves() {
 }
 
 citation_form_resolves() {
-  with_tmpdir abstracts_dir _citation_form_resolves
+  with_tmpdir _citation_form_resolves
 }
 
 _citation_form_resolves() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
   out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" --cat '\citet{butterfill:2019_goals}')
@@ -61,10 +65,11 @@ _citation_form_resolves() {
 }
 
 stdin_resolves() {
-  with_tmpdir abstracts_dir _stdin_resolves
+  with_tmpdir _stdin_resolves
 }
 
 _stdin_resolves() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
   out=$(printf '%s\n' "butterfill:2019_goals" | ABSTRACTS_DIR="$abstracts_dir" "$TOOL" --cat)
@@ -72,10 +77,11 @@ _stdin_resolves() {
 }
 
 missing_key_errors() {
-  with_tmpdir abstracts_dir _missing_key_errors
+  with_tmpdir _missing_key_errors
 }
 
 _missing_key_errors() {
+  local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local rc=0
   set +e
