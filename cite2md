@@ -135,19 +135,10 @@ missing_log_file="missing-fulltext.txt"
 action_failed=false
 missing_any=false
 
-extract_latex_key_groups() {
-  awk '
-    {
-      s = $0
-      while (match(s, /\\cite[A-Za-z]*\*?[[:space:]]*(\[[^]]*\][[:space:]]*)*\{[^{}%\n]+\}/)) {
-        citation = substr(s, RSTART, RLENGTH)
-        sub(/^[^{]*\{/, "", citation)
-        sub(/\}.*/, "", citation)
-        print citation
-        s = substr(s, RSTART + RLENGTH)
-      }
-    }
-  '
+extract_latex_key_group() {
+  local input="$1"
+  printf '%s\n' "$input" |
+    sed -n 's/.*\\cite[A-Za-z]*[*]*[[:space:]]*\(\[[^]]*\][[:space:]]*\)*{\([^{}%][^{}%]*\)}.*/\2/p'
 }
 
 add_comma_separated_keys() {
@@ -167,11 +158,9 @@ add_raw_keys() {
 }
 
 for input in "${INPUTS[@]}"; do
-  mapfile -t latex_groups < <(printf '%s\n' "$input" | extract_latex_key_groups)
-  if [[ ${#latex_groups[@]} -gt 0 ]]; then
-    for group in "${latex_groups[@]}"; do
-      add_comma_separated_keys "$group"
-    done
+  latex_group=$(extract_latex_key_group "$input")
+  if [[ -n "$latex_group" ]]; then
+    add_comma_separated_keys "$latex_group"
   else
     add_raw_keys "$input"
   fi
