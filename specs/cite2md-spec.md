@@ -4,7 +4,7 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
 
 ## Name & Purpose
 - Command: `cite2md`
-- Goal: Given `\citet{key}`, a `key` with colons, or a normalized `key` without colons, print the absolute Markdown file path, the file contents, or the first sentence.
+- Goal: Given one or more supported citation commands or bibliography keys, print the absolute Markdown file path(s) or file contents.
 
 ## Configuration & Env Vars
 - `PAPERS_DIR` (default: `$HOME/papers`)
@@ -19,13 +19,18 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
   - `--vs` — **human-only**: open the resolved file in Visual Studio Code (runs `code <path>`); mutually exclusive with other output flags and hidden from `--help`
   - `--vsi` — **human-only**: open the resolved file in Visual Studio Code Insiders (runs `code-insiders <path>`); mutually exclusive with other output flags and hidden from `--help`
   - `-r|--reveal` — **human-only**: reveal the resolved file in Finder (runs `open -R <path>`); mutually exclusive with other output flags and hidden from `--help`
-- Positional: one or more `citation-or-key` tokens; if none provided, read newline-delimited tokens from stdin (blank lines and lines starting with `#` are ignored)
-  - LaTeX style: e.g., `"\citet{vesper:2012_jumping}"` (extracts inner `{…}`)
+- Positional: one or more `citation-or-key` tokens; if none provided, read tokens from stdin (blank lines and lines starting with `#` are ignored)
+  - LaTeX style: e.g., `"\citet{vesper:2012_jumping}"` or `"\citep[see][ch. 2]{key1,key2}"` (extracts one or more keys from supported citation commands)
   - Key with colons: e.g., `vesper:2012_jumping`
   - Normalized key: e.g., `vesper2012_jumping`
+- Stdin accepts newline-separated bibliography keys, whitespace-separated raw bibliography keys, or supported LaTeX citation commands containing one or more comma-separated keys.
+- Input normalization:
+  1. If an input item contains a supported LaTeX citation command, parse citation keys from that command, including comma-separated keys and optional text arguments.
+  2. Otherwise, treat the input item as raw key input and split it on whitespace.
+  3. Resolve each normalized key independently, preserving input order.
 
 ## Resolution Strategy
-1) Parse key and derive `normkey` (remove `:` from key).
+1) Normalize inputs into individual keys, then derive `normkey` for each key (remove `:` from key).
 2) Direct filename lookup using `fd` under `$PAPERS_DIR`:
    - Regex: `${normkey}\.md$`; take the first match.
 3) Fallback to index (`$PAPERS_DIR/bibtex-index.jsonl`) if present:
@@ -42,8 +47,8 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
 - `-r|--reveal`: reveal the resolved file in Finder via `open -R`; does not emit the path if the reveal succeeds.
 
 ## Exit Codes
-- 0: at least one input resolved and emitted
-- 1: none resolved (all missing)
+- 0: all supplied keys resolved
+- 1: one or more supplied keys failed to resolve; successful results are still emitted
 - 2: usage error (e.g., no input keys provided)
 
 ## Dependencies
@@ -52,7 +57,7 @@ Resolves one or more LaTeX-style citations or BibTeX keys to corresponding Markd
 ## Missing Key Handling
 - For any input that cannot be resolved, prints a standardized message to stderr:
   - `MISSING cite2md: <key> (normalized: <normkey>) in <PAPERS_DIR>`
-- Also appends the missing key (verbatim) to a local file `missing-fulltext.txt` in the current working directory (one key per line). The file is created if it does not exist.
+- Also appends each missing key (verbatim) to a local file `missing-fulltext.txt` in the current working directory. The file is always newline-delimited with one unresolved key per line, even when the input was supplied as a space-separated batch. The file is created if it does not exist.
 
 ## Examples
 - Path from LaTeX citation:

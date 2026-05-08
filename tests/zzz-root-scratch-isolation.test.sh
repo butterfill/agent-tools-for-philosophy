@@ -40,6 +40,7 @@ targeted_suites_do_not_write_root_scratch() {
   declare -a suites=(
     tests/cat-sources.test.sh
     tests/cite2bib.test.sh
+    tests/cite2md.test.sh
     tests/cite2md.e2e.test.sh
     tests/cite2pdf.test.sh
     tests/fd-sources.e2e.test.sh

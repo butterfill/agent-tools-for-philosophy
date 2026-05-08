@@ -130,18 +130,61 @@ if [[ ${#INPUTS[@]} -eq 0 ]]; then
   exit 2
 fi
 
-resolved_any=false
+declare -a KEYS
 missing_log_file="missing-fulltext.txt"
 action_failed=false
+missing_any=false
+
+extract_latex_key_groups() {
+  awk '
+    {
+      s = $0
+      while (match(s, /\\cite[A-Za-z]*\*?[[:space:]]*(\[[^]]*\][[:space:]]*)*\{[^{}%\n]+\}/)) {
+        citation = substr(s, RSTART, RLENGTH)
+        sub(/^[^{]*\{/, "", citation)
+        sub(/\}.*/, "", citation)
+        print citation
+        s = substr(s, RSTART + RLENGTH)
+      }
+    }
+  '
+}
+
+add_comma_separated_keys() {
+  local group="$1" key
+  while IFS= read -r key; do
+    [[ -z "$key" ]] && continue
+    KEYS+=("$key")
+  done < <(printf '%s\n' "$group" | awk -F',' '{ for (i=1;i<=NF;i++) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $i); if ($i!="") print $i } }')
+}
+
+add_raw_keys() {
+  local raw="$1" key
+  while IFS= read -r key; do
+    [[ -z "$key" ]] && continue
+    KEYS+=("$key")
+  done < <(printf '%s\n' "$raw" | awk '{ for (i=1;i<=NF;i++) print $i }')
+}
+
+for input in "${INPUTS[@]}"; do
+  mapfile -t latex_groups < <(printf '%s\n' "$input" | extract_latex_key_groups)
+  if [[ ${#latex_groups[@]} -gt 0 ]]; then
+    for group in "${latex_groups[@]}"; do
+      add_comma_separated_keys "$group"
+    done
+  else
+    add_raw_keys "$input"
+  fi
+done
+
+if [[ ${#KEYS[@]} -eq 0 ]]; then
+  echo "cite2md: no input keys provided" >&2
+  exit 2
+fi
 
 resolve_one() {
   local input="$1"; local bibkey normkey file rel
-  # Extract bibkey if LaTeX citation; otherwise use input as key
-  if [[ "$input" =~ \{[^}]+\} ]]; then
-    bibkey=$(printf '%s\n' "$input" | sed -n 's/.*{\([^}]*\)}.*/\1/p')
-  else
-    bibkey="$input"
-  fi
+  bibkey="$input"
   if [ -z "$bibkey" ]; then
     echo "cite2md: could not parse a key from input: $input" >&2
     return 1
@@ -207,13 +250,13 @@ resolve_one() {
   return 0
 }
 
-rc_overall=1
-for token in "${INPUTS[@]}"; do
-  if resolve_one "$token"; then
-    resolved_any=true
+rc_overall=0
+for token in "${KEYS[@]}"; do
+  if ! resolve_one "$token"; then
+    missing_any=true
   fi
 done
 
-if $resolved_any; then rc_overall=0; fi
+if $missing_any; then rc_overall=1; fi
 if $action_failed; then rc_overall=1; fi
 exit $rc_overall
