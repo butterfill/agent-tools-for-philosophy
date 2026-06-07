@@ -41,6 +41,13 @@ def test_shared_search_corpus(bib_instance, corpus_data):
                 f"Found: {result_ids}"
             )
 
+        expected_first = case.get("expected_first")
+        if expected_first:
+            assert result_ids[0] == expected_first, (
+                f"Failed case '{description}': Query '{query}' expected '{expected_first}' first. "
+                f"Found: {result_ids}"
+            )
+
 def test_client_smoke():
     """Basic import check for the client."""
     from agent_tools.client import AgentTools

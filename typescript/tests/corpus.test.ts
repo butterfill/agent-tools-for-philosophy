@@ -46,6 +46,13 @@ describe('Shared Search Corpus', () => {
           );
         }
       });
+
+      if (testCase.expected_first && resultIds[0] !== testCase.expected_first) {
+        throw new Error(
+          `Failed case '${testCase.description}': Query '${testCase.query}' ` +
+          `expected '${testCase.expected_first}' first but got [${resultIds.join(', ')}]`
+        );
+      }
     });
   });
 });

@@ -20,6 +20,30 @@
       "title": "Constructed Actions",
       "author": [{ "family": "Butterfill", "given": "Stephen" }],
       "issued": { "date-parts": [[2025]] }
+    },
+    {
+      "id": "gallese:2010_bodily",
+      "type": "article-journal",
+      "title": "The bodily self as power for action",
+      "author": [
+        { "family": "Gallese", "given": "Vittorio" },
+        { "family": "Sinigaglia", "given": "Corrado" }
+      ],
+      "issued": { "date-parts": [[2010]] }
+    },
+    {
+      "id": "borg:2024_acting",
+      "type": "book",
+      "title": "Acting for Reasons: In defence of Common-sense Psychology",
+      "author": [{ "family": "Borg", "given": "Emma" }],
+      "issued": { "date-parts": [[2024]] }
+    },
+    {
+      "id": "dickinson:2018_actions",
+      "type": "chapter",
+      "title": "Actions and Habits: Psychological Issues in Dual-System Theory",
+      "author": [{ "family": "Dickinson", "given": "Anthony" }],
+      "issued": { "date-parts": [[2018]] }
     }
   ],
   "test_cases": [
@@ -41,7 +65,44 @@
     {
       "description": "Author + Year combo",
       "query": "Butterfill 2025",
-      "must_include": ["butterfill:2025_constructed"]
+      "must_include": ["butterfill:2025_constructed"],
+      "expected_first": "butterfill:2025_constructed"
+    },
+    {
+      "description": "Author plus title word beats accidental fuzzy match",
+      "query": "borg acting",
+      "must_include": ["borg:2024_acting"],
+      "expected_first": "borg:2024_acting"
+    },
+    {
+      "description": "Literal citation key ranks first",
+      "query": "borg:2024_acting",
+      "must_include": ["borg:2024_acting"],
+      "expected_first": "borg:2024_acting"
+    },
+    {
+      "description": "Colonless citation key ranks first",
+      "query": "borg2024acting",
+      "must_include": ["borg:2024_acting"],
+      "expected_first": "borg:2024_acting"
+    },
+    {
+      "description": "Spaced citation key parts rank first",
+      "query": "borg 2024 acting",
+      "must_include": ["borg:2024_acting"],
+      "expected_first": "borg:2024_acting"
+    },
+    {
+      "description": "Colonless Davidson key ranks first",
+      "query": "davidson1963actions",
+      "must_include": ["davidson:1963_actions"],
+      "expected_first": "davidson:1963_actions"
+    },
+    {
+      "description": "Literal Davidson key ranks first",
+      "query": "davidson:1963_actions",
+      "must_include": ["davidson:1963_actions"],
+      "expected_first": "davidson:1963_actions"
     }
   ]
 }
