@@ -57,6 +57,31 @@ export class Bibliography {
     return this.entries.length;
   }
 
+  /**
+   * Build an independent search index without filesystem I/O or load().
+   * Copies the array, but retains entry objects; treat entries as immutable after indexing.
+   * Source validation, deduplication and source precedence belong to the caller.
+   */
+  static fromEntries(entries: readonly CslEntry[]): Bibliography {
+    const bibliography = new Bibliography();
+    bibliography.entries = entries.slice();
+    bibliography.searchIndex = bibliography.entries.map((entry, index) => bibliography.buildSearchRecord(entry, index));
+    return bibliography;
+  }
+
+  /**
+   * Match evidence independent of search()'s legacy padded candidates.
+   * Accepts normalized key containment or coverage of every query token using
+   * the same prefix/typo matcher as ranking. Blank queries match nonempty indexes.
+   * This is a widening heuristic, not a filter or a guarantee of relevance.
+   */
+  hasPlausibleMatch(query: string): boolean {
+    if (!query.trim()) return this.entries.length > 0;
+    const info = this.getQueryInfo(query);
+    return this.searchIndex.some(record => this.isKeyCandidate(info, record) ||
+      (info.tokens.length > 0 && info.tokens.every(token => tokenMatches(token, record.fullTokens))));
+  }
+
   async load(): Promise<void> {
     try {
       await fs.promises.access(this.jsonPath, fs.constants.F_OK);

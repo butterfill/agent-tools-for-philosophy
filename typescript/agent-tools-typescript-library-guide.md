@@ -148,7 +148,11 @@ interface CslEntry {
 *   `constructor(jsonPath?: string)`
     *   Initializes the bibliography instance. Does NOT load data automatically.
 *   `load(): Promise<void>`
-    *   Loads the JSON file from disk. Must be called before searching.
+    *   Loads the JSON file from disk. Call before searching a file-backed instance.
+*   `static fromEntries(entries: readonly CslEntry[]): Bibliography`
+    *   Builds an immediately searchable index without filesystem I/O. Copies array membership, retaining entry objects; treat records as immutable after indexing. Callers own validation, deduplication and source precedence.
+*   `hasPlausibleMatch(query: string): boolean`
+    *   Reports normalized key containment or full query-token coverage using the ranking engine's existing prefix/typo matcher. Blank queries match any nonempty index. Useful for deciding when to broaden search: `search()` may pad results with weak candidates, so array length alone is not evidence of relevance. This method does not change search ranking or filter results.
 *   `search(query: string, limit: number = 20): CslEntry[]`
     *   Performs a fuzzy search.
 *   `get length(): number`

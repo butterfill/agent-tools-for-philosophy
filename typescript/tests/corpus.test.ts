@@ -36,6 +36,8 @@ describe('Shared Search Corpus', () => {
   test('runs all cases from corpus.json', () => {
     corpusData.test_cases.forEach((testCase: any) => {
       const results = bib.search(testCase.query, 5);
+      const inMemory = Bibliography.fromEntries(corpusData.dataset);
+      expect(inMemory.search(testCase.query, 5)).toEqual(results);
       const resultIds = results.map(r => r.id);
 
       testCase.must_include.forEach((expectedId: string) => {
