@@ -1,7 +1,9 @@
 import { spawn, execFile } from 'child_process';
+import { readFile } from 'fs/promises';
 import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
+const EXEC_FILE_MAX_BUFFER = 64 * 1024 * 1024;
 
 export interface ActionResult {
   ok: boolean;
@@ -18,11 +20,13 @@ export class ToolNotFoundError extends Error {
 export class ToolExecutionError extends Error {
   public exitCode: number | null;
   public stderr?: string;
-  constructor(message: string, exitCode: number | null, stderr?: string) {
+  public errorCode?: string;
+  constructor(message: string, exitCode: number | null, stderr?: string, errorCode?: string) {
     super(message);
     this.name = 'ToolExecutionError';
     this.exitCode = exitCode;
     this.stderr = stderr;
+    this.errorCode = errorCode;
   }
 }
 
@@ -36,37 +40,40 @@ export class AgentTools {
     }
   }
 
+  private executionError(cmd: string, args: string[], error: any): Error {
+    if (error?.code === 'ENOENT') {
+      return new ToolNotFoundError(`Executable not found: ${cmd}`);
+    }
+    const stderr = typeof error?.stderr === 'string'
+      ? error.stderr
+      : error?.stderr == null ? undefined : String(error.stderr);
+    const exitCode = typeof error?.code === 'number' ? error.code : null;
+    const errorCode = typeof error?.code === 'string' ? error.code : undefined;
+    const status = exitCode != null
+      ? `exit=${exitCode}`
+      : errorCode ? `code=${errorCode}` : 'exit=unknown';
+    const msg = `Command failed: ${cmd} ${args.join(' ')} (${status})` + (stderr ? `\n${stderr}` : '');
+    return new ToolExecutionError(msg, exitCode, stderr, errorCode);
+  }
+
   private async run(cmd: string, args: string[]): Promise<string | null> {
     try {
-      const { stdout } = await execFileAsync(cmd, args, { env: this.env });
+      const { stdout } = await execFileAsync(cmd, args, { env: this.env, maxBuffer: EXEC_FILE_MAX_BUFFER });
       return (stdout?.trim() || '') || null;
-    } catch (e: any) {
-      // Distinguish missing executable and non-zero exits
-      if (e?.code === 'ENOENT') {
-        throw new ToolNotFoundError(`Executable not found: ${cmd}`);
-      }
-      const stderr: string | undefined = e?.stderr;
-      const code: number | null = typeof e?.code === 'number' ? e.code : null;
-      const msg = `Command failed: ${cmd} ${args.join(' ')} (exit=${code ?? 'unknown'})` + (stderr ? `\n${stderr}` : '');
-      throw new ToolExecutionError(msg, code, stderr);
+    } catch (error: any) {
+      throw this.executionError(cmd, args, error);
     }
   }
 
   private async runRaw(cmd: string, args: string[]): Promise<string | null> {
     try {
-      const { stdout } = await execFileAsync(cmd, args, { env: this.env });
+      const { stdout } = await execFileAsync(cmd, args, { env: this.env, maxBuffer: EXEC_FILE_MAX_BUFFER });
       // Do not trim spaces; only normalize to null if completely empty
       if (stdout == null) return null;
       const s = String(stdout);
       return s.length > 0 ? s : null;
-    } catch (e: any) {
-      if (e?.code === 'ENOENT') {
-        throw new ToolNotFoundError(`Executable not found: ${cmd}`);
-      }
-      const stderr: string | undefined = e?.stderr;
-      const code: number | null = typeof e?.code === 'number' ? e.code : null;
-      const msg = `Command failed: ${cmd} ${args.join(' ')} (exit=${code ?? 'unknown'})` + (stderr ? `\n${stderr}` : '');
-      throw new ToolExecutionError(msg, code, stderr);
+    } catch (error: any) {
+      throw this.executionError(cmd, args, error);
     }
   }
 
@@ -103,7 +110,9 @@ export class AgentTools {
   }
 
   async getMdContent(key: string): Promise<string | null> {
-    return this.run('cite2md', ['--cat', key]);
+    const mdPath = await this.getMdPath(key);
+    if (!mdPath) return null;
+    return readFile(mdPath, 'utf8');
   }
   
   async getBibEntry(key: string): Promise<string | null> {

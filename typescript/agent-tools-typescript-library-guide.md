@@ -37,7 +37,7 @@ import { AgentTools } from '@butterfill/agent-tools';
 // Optional: Pass papers directory. Defaults to process.env.PAPERS_DIR
 const client = new AgentTools('/Users/me/papers');
 
-// 1. Get full text content (wraps `cite2md --cat`)
+// 1. Get full text content (resolve with cite2md, then read the file directly)
 const markdown = await client.getMdContent('vesper:2012_jumping');
 if (markdown) {
   console.log('File content:', markdown);
@@ -128,7 +128,7 @@ interface CslEntry {
 *   `getPdfPath(key: string): Promise<string | null>`
     *   Returns absolute path to `.pdf` file.
 *   `getMdContent(key: string): Promise<string | null>`
-    *   Returns the full text content of the Markdown file.
+    *   Resolves the Markdown path with `cite2md`, then reads and returns the file contents directly. The source is returned verbatim rather than passing the full document through child-process stdout.
 *   `getBibEntry(key: string): Promise<string | null>`
     *   Returns the raw BibTeX entry string.
 *   `openVsCode(key: string): Promise<ActionResult>`
@@ -159,7 +159,8 @@ interface CslEntry {
 
 ## Error Handling
 
-- Getter methods in `AgentTools` return `null` only when the command succeeds (exit code 0) but there is no output (e.g., no result). If the executable is missing, they now throw `ToolNotFoundError`. If the command exits non-zero, they throw `ToolExecutionError` containing the exit code and stderr.
+- Getter methods in `AgentTools` return `null` only when the command succeeds (exit code 0) but there is no output (e.g., no result). If the executable is missing, they throw `ToolNotFoundError`. Other command failures throw `ToolExecutionError`, which exposes a numeric `exitCode` when the process exited normally, a string `errorCode` for process errors such as `EACCES` or `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`, and captured stderr when available.
+- Captured CLI output uses a 64 MiB `execFile` buffer instead of Node's 1 MiB default. `getMdContent()` avoids that buffer entirely for document contents by resolving the path and reading the Markdown file directly.
 - UI action methods in `AgentTools` return `Promise<ActionResult>`. If spawning the command fails with ENOENT, they do not throw; instead they resolve with `{ ok: false, error }` for convenience in UI flows. If you prefer exceptions for actions too, you can check `!res.ok` and throw manually.
 - `Bibliography`: If the JSON file cannot be loaded, `bib.entries` defaults to an empty array and `bib.length` will be 0.
 
@@ -174,7 +175,7 @@ try {
   if (err instanceof ToolNotFoundError) {
     // Ask user to run ./install.sh or set PATH
   } else if (err instanceof ToolExecutionError) {
-    console.error('CLI failed:', err.exitCode, err.stderr);
+    console.error('CLI failed:', err.exitCode ?? err.errorCode, err.stderr);
   } else {
     throw err;
   }
