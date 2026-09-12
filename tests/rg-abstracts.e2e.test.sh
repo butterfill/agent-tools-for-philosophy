@@ -26,7 +26,7 @@ _finds_matching_abstract() {
   local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
-  out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -l -i "joint action")
+  out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -l -i "joint action" </dev/null)
   [[ "$out" == "butterfill:2019_goals.md" ]]
 }
 
@@ -38,8 +38,20 @@ _preserves_context_flags() {
   local abstracts_dir="$1"
   setup_abstracts "$abstracts_dir"
   local out
-  out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -n -C 1 "visual attention")
+  out=$(ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -n -C 1 "visual attention" </dev/null)
   rg -q "other:2020_attention.md:1:This abstract concerns visual attention." <<< "$out"
+}
+
+reads_pattern_file_from_stdin() {
+  with_tmpdir _reads_pattern_file_from_stdin
+}
+
+_reads_pattern_file_from_stdin() {
+  local abstracts_dir="$1"
+  setup_abstracts "$abstracts_dir"
+  local out
+  out=$(printf '%s\n' "joint action" | ABSTRACTS_DIR="$abstracts_dir" "$TOOL" -l -f -)
+  [[ "$out" == "butterfill:2019_goals.md" ]]
 }
 
 rejects_absolute_paths() {
@@ -57,8 +69,9 @@ _rejects_absolute_paths() {
   test "$rc" -eq 2 && rg -q "absolute paths not allowed" "$abstracts_dir/err.txt"
 }
 
-it "finds matching abstract filename" finds_matching_abstract
-it "preserves ordinary ripgrep context flags" preserves_context_flags
+it "finds matching abstract filename with non-interactive stdin" finds_matching_abstract
+it "preserves ordinary ripgrep context flags with non-interactive stdin" preserves_context_flags
+it "preserves -f - pattern input from stdin" reads_pattern_file_from_stdin
 it "rejects absolute paths with an error" rejects_absolute_paths
 
 complete_suite
