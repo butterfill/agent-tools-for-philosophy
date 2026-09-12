@@ -56,6 +56,7 @@ fi
 expect_value_for=""
 declare -a ARGS
 seen_double_dash=false
+stdin_pattern_file=false
 
 for arg in "$@"; do
   if $seen_double_dash; then
@@ -80,6 +81,9 @@ for arg in "$@"; do
       echo "rg-abstracts: parent-directory paths not allowed for $expect_value_for: $arg" >&2
       exit 2
     fi
+    if [[ "$expect_value_for" == "-f" || "$expect_value_for" == "--file" ]] && [[ "$arg" == "-" ]]; then
+      stdin_pattern_file=true
+    fi
     ARGS+=("$arg")
     expect_value_for=""
     continue
@@ -96,6 +100,9 @@ for arg in "$@"; do
       -t|--type|-T|--type-not|--type-add|--type-clear|--type-list|-g|--glob|--iglob|--type-add=*|--type-clear=*|--glob=*|--iglob=*)
         echo "rg-abstracts: file type/glob overrides are not supported; use rg directly for non-Markdown" >&2
         exit 2
+        ;;
+      -f-|--file=-)
+        stdin_pattern_file=true
         ;;
       -e|--regexp|-f|--file|-C|--context|-A|--after-context|-B|--before-context|--max-columns|--max-count|-m|--max-depth|--threads|-j|--ignore-file|--path-separator|--encoding)
         expect_value_for="$arg"
@@ -122,4 +129,11 @@ CMD=(env "RIPGREP_CONFIG_PATH=$RG_CONFIG_PATH" rg)
 CMD+=("--type-add" "mdx:*.mdx" "-t" "md" "-t" "mdx")
 
 cd "$ABSTRACTS_DIR"
-exec "${CMD[@]}" "${ARGS[@]}"
+
+# ripgrep searches stdin instead of the current directory when stdin is a pipe
+# or /dev/null. This wrapper always scopes search content to ABSTRACTS_DIR, so
+# close stdin unless -f - explicitly uses it as a pattern file.
+if $stdin_pattern_file; then
+  exec "${CMD[@]}" "${ARGS[@]}"
+fi
+exec "${CMD[@]}" "${ARGS[@]}" <&-
