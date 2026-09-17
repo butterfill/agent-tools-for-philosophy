@@ -15,21 +15,21 @@ if ! command -v shellcheck >/dev/null 2>&1; then
   skip_suite "shellcheck not found; install shellcheck to enable this test"
 fi
 
-mapfile -d '' scripts < <(
-  git ls-files -z | while IFS= read -r -d '' path; do
-    [[ -f "$path" ]] || continue
-    case "$path" in
-      *.sh) printf '%s\0' "$path" ;;
-      *)
-        if IFS= read -r first_line < "$path"; then
-          if [[ "$first_line" =~ ^#!.*/(bash|dash|ash|ksh|zsh|sh)([[:space:]]|$) ]] || [[ "$first_line" =~ ^#!.*[[:space:]](bash|dash|ash|ksh|zsh|sh)([[:space:]]|$) ]]; then
-            printf '%s\0' "$path"
-          fi
-        fi
-        ;;
-    esac
-  done | LC_ALL=C sort -z
-)
+declare -a scripts=()
+while IFS= read -r path; do
+  [[ -f "$path" ]] || continue
+  case "$path" in
+    *.sh)
+      scripts[${#scripts[@]}]="$path"
+      ;;
+    *)
+      first_line=$(head -n 1 -- "$path" 2>/dev/null || true)
+      if printf '%s\n' "$first_line" | grep -Eq '^#!.*([/[:space:]])(bash|dash|ash|ksh|zsh|sh)([[:space:]]|$)'; then
+        scripts[${#scripts[@]}]="$path"
+      fi
+      ;;
+  esac
+done < <(git ls-files | LC_ALL=C sort)
 
 lint_shell_scripts() {
   shellcheck --severity=warning -- "${scripts[@]}"
