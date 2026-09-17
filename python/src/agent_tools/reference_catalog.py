@@ -64,7 +64,7 @@ class _CatalogSnapshot:
     records: dict[str, ReferenceRecord]
     folded_keys: dict[str, str | None]
     compact_keys: dict[str, str | None]
-    dois: dict[str, str | None]
+    dois: dict[str, tuple[str, ...]]
     ordered_keys: tuple[str, ...]
 
 
@@ -181,6 +181,15 @@ class ReferenceCatalog:
     def revision(self) -> int:
         return self._revision
 
+    @property
+    def ready(self) -> bool:
+        """Whether a usable primary snapshot exists, including last-good data."""
+        try:
+            self._ensure_fresh()
+        except ValueError:
+            return False
+        return True
+
     def __len__(self) -> int:
         self._ensure_fresh()
         return len(self._snapshot.primary)
@@ -235,10 +244,11 @@ class ReferenceCatalog:
         compact = self._snapshot.compact_keys.get(compact_search_text(value))
         return self._snapshot.records.get(compact) if compact else None
 
-    def get_by_doi(self, value: str) -> ReferenceRecord | None:
+    def find_by_doi(self, value: str) -> list[ReferenceRecord]:
+        """Return every record asserting the normalized DOI, in catalogue order."""
         self._ensure_fresh()
-        key = self._snapshot.dois.get(normalize_doi(value))
-        return self._snapshot.records.get(key) if key else None
+        keys = self._snapshot.dois.get(normalize_doi(value), ())
+        return [self._snapshot.records[key] for key in keys]
 
     def is_secondary_only(self, key: str) -> bool:
         record = self.get_record_by_key(key)
@@ -281,8 +291,7 @@ class ReferenceCatalog:
         self,
         path: Path,
         previous: _SourceSnapshot,
-        *,
-        optional: bool,
+        *,        optional: bool,
     ) -> _SourceSnapshot:
         path_key = str(path)
         try:
@@ -369,13 +378,14 @@ class ReferenceCatalog:
 
         folded_keys: dict[str, str | None] = {}
         compact_keys: dict[str, str | None] = {}
-        dois: dict[str, str | None] = {}
+        doi_lists: dict[str, list[str]] = {}
         for record in all_records:
             _add_unique_lookup(folded_keys, record.key.casefold(), record.key)
             _add_unique_lookup(compact_keys, compact_search_text(record.key), record.key)
             doi = normalize_doi(record.raw_entry.get("DOI") or record.raw_entry.get("doi"))
             if doi:
-                _add_unique_lookup(dois, doi, record.key)
+                doi_lists.setdefault(doi, []).append(record.key)
+        dois = {doi: tuple(keys) for doi, keys in doi_lists.items()}
 
         return _CatalogSnapshot(
             primary=BibliographyIndex.from_entries(item.entry for item in primary),
