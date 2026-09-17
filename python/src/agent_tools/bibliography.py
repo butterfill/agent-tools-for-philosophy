@@ -5,8 +5,6 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Any, Iterable
 
-from rapidfuzz import fuzz, process
-
 CslEntry = dict[str, Any]
 
 
@@ -31,6 +29,8 @@ def _token_matches(token: str, field_tokens: list[str]) -> bool:
 
 
 def _plausible_token_matches(token: str, field_tokens: list[str]) -> bool:
+    from rapidfuzz import fuzz
+
     return any(
         candidate == token
         or candidate.startswith(token)
@@ -174,6 +174,8 @@ class BibliographyIndex:
         }
 
     def _candidate_indexes(self, query: dict[str, Any], limit: int) -> set[int]:
+        from rapidfuzz import fuzz, process
+
         candidate_limit = min(len(self.entries), max(limit * 10, 200))
         candidates = {
             idx
@@ -214,6 +216,8 @@ class BibliographyIndex:
 
     @staticmethod
     def _score_record(query: dict[str, Any], record: dict[str, Any]) -> float:
+        from rapidfuzz import fuzz
+
         query_norm = query["norm"]
         query_compact = query["compact"]
         query_tokens = query["tokens"]
