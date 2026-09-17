@@ -44,7 +44,7 @@ interface CatalogSnapshot {
   records: Map<string, ReferenceRecord>;
   foldedKeys: Map<string, string | null>;
   compactKeys: Map<string, string | null>;
-  dois: Map<string, string | null>;
+  dois: Map<string, string[]>;
   orderedKeys: string[];
 }
 
@@ -110,6 +110,8 @@ export class ReferenceCatalog {
 
   private emptySource(): SourceSnapshot { return { signature: '', raw: '', entries: [] }; }
   get revision(): number { return this.revisionValue; }
+  /** True when a usable primary snapshot exists, including a retained last-good snapshot. */
+  get ready(): boolean { return Boolean(this.sources[0].signature); }
   get length(): number { return this.snapshot.primary.length; }
   get primaryPath(): string { return this.paths[0]; }
   get secondaryPath(): string { return this.paths[1]; }
@@ -128,9 +130,10 @@ export class ReferenceCatalog {
     return compact ? this.snapshot.records.get(compact) : undefined;
   }
 
-  getByDoi(value: string): ReferenceRecord | undefined {
-    const key = this.snapshot.dois.get(normalizeDoi(value));
-    return key ? this.snapshot.records.get(key) : undefined;
+  /** DOI is a non-unique indexed attribute, so every matching record is returned. */
+  findByDoi(value: string): ReferenceRecord[] {
+    const keys = this.snapshot.dois.get(normalizeDoi(value)) || [];
+    return keys.map(key => this.snapshot.records.get(key)!).filter(Boolean);
   }
 
   isSecondaryOnly(key: string): boolean {
@@ -168,7 +171,7 @@ export class ReferenceCatalog {
   async start(): Promise<void> {
     await this.reload();
     const primaryPath = this.paths[0];
-    if (!this.sources[0].signature) {
+    if (!this.ready) {
       const reason = this.failures.get(primaryPath) || 'no usable primary snapshot';
       throw new Error(`Primary bibliography unavailable (${primaryPath}): ${reason}`);
     }
@@ -233,11 +236,11 @@ export class ReferenceCatalog {
     const ordinaryRecords = [...primary.map(canonical), ...only.filter(item => isRecent(item.rawEntry, now, this.recentDaysValue)).map(canonical)];
     const allRecords = [...primary.map(canonical), ...only.map(canonical)];
     const secondaryRecords = secondary.map(canonical);
-    const foldedKeys = new Map<string, string | null>(); const compactKeys = new Map<string, string | null>(); const dois = new Map<string, string | null>();
+    const foldedKeys = new Map<string, string | null>(); const compactKeys = new Map<string, string | null>(); const dois = new Map<string, string[]>();
     for (const record of allRecords) {
       addUniqueLookup(foldedKeys, record.key.toLowerCase(), record.key);
       addUniqueLookup(compactKeys, compactSearchText(record.key), record.key);
-      const doi = normalizeDoi(record.rawEntry.DOI || record.rawEntry.doi); if (doi) addUniqueLookup(dois, doi, record.key);
+      const doi = normalizeDoi(record.rawEntry.DOI || record.rawEntry.doi); if (doi) addMultiLookup(dois, doi, record.key);
     }
     return {
       primary: BibliographyIndex.fromEntries(primary.map(item => item.entry)),
@@ -254,4 +257,11 @@ function addUniqueLookup(map: Map<string, string | null>, lookup: string, key: s
   const previous = map.get(lookup);
   if (previous === undefined) map.set(lookup, key);
   else if (previous !== key) map.set(lookup, null);
+}
+
+function addMultiLookup(map: Map<string, string[]>, lookup: string, key: string): void {
+  if (!lookup) return;
+  const keys = map.get(lookup);
+  if (keys) keys.push(key);
+  else map.set(lookup, [key]);
 }
