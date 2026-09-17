@@ -117,6 +117,9 @@ skip_suite() {
   local reason="${1:-skipped}"
   __suite_skipped_entire=1
   __suite_skip_reason="$reason"
+  if [[ -n "${HARNESS_SKIP_FILE:-}" ]]; then
+    printf '%s\n' "$reason" >"$HARNESS_SKIP_FILE"
+  fi
   complete_suite
 }
 
