@@ -41,8 +41,14 @@ A valid empty source clears that source. Malformed JSON, unusable non-empty CSL,
 
 TypeScript callers establish the initial snapshot with `start()` and then receive polling/revision updates. Python refreshes lazily, including when `ready` is queried. Recency is recomputed when a snapshot is rebuilt, not continuously while a snapshot remains unchanged.
 
-## Out of scope for Phase 1
+## Phase 2 CLI completion
 
-The shell `find-bib` tool still has its independent field-filter semantics. It must migrate to this catalogue in Phase 2 before the overall multi-source project is considered complete.
+The shell/JQ implementation of `find-bib` has been replaced by a Python CLI consumer of `ReferenceCatalog`. It no longer parses or filters `BIB_JSON` independently.
 
-Bibliographic de-duplication is also a later project. The Phase 1 catalogue preserves distinct citation keys even when records share a DOI; any future preferred-key or alias system must preserve historically used citation keys rather than treating DOI equality alone as sufficient evidence for destructive merging.
+`find-bib` keeps its application-specific explicit field filters, but catalogue membership, identity, source precedence, parsing, and readiness all come from the canonical library. It deliberately filters the complete canonical union (`scope="all"`), so secondary-only records are discoverable regardless of recency and shared citation keys use primary metadata.
+
+This closes the remaining Phase-1/CLI source-policy discrepancy. The multi-source migration is complete once this Phase-2 change is merged and tested in normal use.
+
+## Still out of scope
+
+Bibliographic de-duplication remains a later project. The catalogue preserves distinct citation keys even when records share a DOI; any future preferred-key or alias system must preserve historically used citation keys rather than treating DOI equality alone as sufficient evidence for destructive merging.
