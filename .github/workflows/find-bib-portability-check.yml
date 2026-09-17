@@ -20,13 +20,13 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq fd-find ripgrep
+          sudo apt-get install -y jq fd-find ripgrep shellcheck
           sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
           mkdir -p "$HOME/.local/bin"
       - name: Prepare dependencies on macOS
         if: runner.os == 'macOS'
         run: |
-          brew install jq fd ripgrep
+          brew install jq fd ripgrep shellcheck
           mkdir -p "$HOME/.local/bin"
       - name: Show runtime versions
         run: |
