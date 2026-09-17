@@ -1,15 +1,6 @@
-import { AgentTools, Bibliography, type CslEntry } from '../src';
-import { AgentTools as ClientAgentTools } from '../src/client';
-import { Bibliography as BibliographyImplementation } from '../src/bibliography';
-
+import { AgentTools, ReferenceCatalog, type CslEntry, type ReferenceSearchHit } from '../src';
+import { AgentTools as ClientAgentTools } from '../src/client'; import { ReferenceCatalog as CatalogImplementation } from '../src/reference-catalog';
 describe('public package entry point', () => {
-  it('exports the documented runtime classes from the root module', () => {
-    expect(AgentTools).toBe(ClientAgentTools);
-    expect(Bibliography).toBe(BibliographyImplementation);
-  });
-
-  it('exports bibliography types from the root module', () => {
-    const entry: CslEntry = { id: 'example:key', type: 'article-journal' };
-    expect(entry.id).toBe('example:key');
-  });
+  it('exports AgentTools and ReferenceCatalog', () => { expect(AgentTools).toBe(ClientAgentTools); expect(ReferenceCatalog).toBe(CatalogImplementation); });
+  it('exports catalogue types', () => { const entry: CslEntry = { id: 'example:key', type: 'article-journal' }; const hit = {} as ReferenceSearchHit; expect(entry.id).toBe('example:key'); expect(hit).toBeDefined(); });
 });

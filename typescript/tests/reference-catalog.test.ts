@@ -1,0 +1,19 @@
+import { mkdtemp, rm, writeFile, rename } from 'node:fs/promises'; import { tmpdir } from 'node:os'; import { join } from 'node:path';
+import { ReferenceCatalog, isRecent, parseReferences } from '../src/reference-catalog';
+const NOW = Date.UTC(2026, 6, 20); const json = (path: string, value: unknown) => writeFile(path, JSON.stringify(value), 'utf8');
+describe('ReferenceCatalog', () => {
+  let dir:string, primary:string, secondary:string;
+  beforeEach(async()=>{ dir=await mkdtemp(join(tmpdir(),'reference-catalog-')); primary=join(dir,'primary.json'); secondary=join(dir,'secondary.json'); }); afterEach(async()=>rm(dir,{recursive:true,force:true}));
+  test('implements source policy and primary precedence', async()=>{
+    await json(primary,[{id:'shared:2020_mind',type:'article',title:'Primary Mind',author:[{family:'Shared'}],issued:{'date-parts':[[2020]]}},{id:'mind:2000_old',type:'article',title:'Philosophy of Mind'}]);
+    await json(secondary,[{id:'shared:2020_mind',type:'article',title:'Wrong metadata'},{id:'aru:2023_mind',type:'article',title:'ARU Mind',accessed:{'date-parts':[[2026,6,1]]}},{id:'remote:2025_topic',type:'article',title:'Unfindabletopic'},{id:'recent:2026_mind',type:'article',title:'Recent Mind',accessed:{'date-parts':[[2026,7,15]]}}]);
+    const c=new ReferenceCatalog({primaryPath:primary,secondaryPath:secondary,recentDays:14,now:()=>NOW}); await c.start(); c.close();
+    expect(c.length).toBe(2); expect(c.getByKey('shared:2020_mind')?.title).toBe('Primary Mind'); expect(c.isSecondaryOnly('remote:2025_topic')).toBe(true);
+    const ordinary=c.search('mind',10).map(e=>e.id); expect(ordinary).toContain('recent:2026_mind'); expect(ordinary).not.toContain('aru:2023_mind');
+    expect(c.search('Unfindabletopic',1)[0].id).toBe('remote:2025_topic'); expect(c.search('aru:2023_mind',1)[0].id).toBe('aru:2023_mind'); expect(c.search('shared',10,'secondary')[0].title).toBe('Primary Mind');
+  });
+  test('supports relaxed keys and normalized DOI', async()=>{ await json(primary,[{'citation-key':'Cullen:2014_individual',type:'article',DOI:'10.1000/ABC'}]); const c=new ReferenceCatalog({primaryPath:primary,secondaryPath:secondary}); await c.start(); c.close(); expect(c.resolveKey('cullen2014individual')?.key).toBe('Cullen:2014_individual'); expect(c.getByDoi('https://doi.org/10.1000/abc')?.key).toBe('Cullen:2014_individual'); });
+  test('retains last-good data and discovers optional secondary', async()=>{ await json(primary,[{id:'a:2020_x',type:'article'}]); const c=new ReferenceCatalog({primaryPath:primary,secondaryPath:secondary,pollMs:60000,warn:()=>undefined}); await c.start(); await writeFile(primary,'{bad','utf8'); await c.reload(); expect(c.keys()).toEqual(['a:2020_x']); await json(secondary,[{id:'b:2021_y',type:'article'}]); await c.reload(); expect(c.keys()).toEqual(['a:2020_x','b:2021_y']); c.close(); });
+  test('publishes atomic replacements and stable revisions', async()=>{ await json(primary,[{id:'a:2020_x',type:'article'}]); const c=new ReferenceCatalog({primaryPath:primary,secondaryPath:secondary,pollMs:60000}); await c.start(); const r=c.revision; const replacement=join(dir,'replacement.json'); await json(replacement,[{id:'b:2021_y',type:'article'}]); await rename(replacement,primary); await c.reload(); expect(c.revision).toBe(r+1); expect(c.keys()).toEqual(['b:2021_y']); await c.reload(); expect(c.revision).toBe(r+1); c.close(); });
+});
+describe('parsing/recency',()=>{ test('normalizes unusual identities and keeps first duplicate',()=>{ const e=parseReferences(JSON.stringify([{'citation-key':':_americans',id:'other'},{id:43138},{id:43138,title:'duplicate'}])); expect(e.map(x=>x.key)).toEqual([':_americans','43138']); }); test('requires valid complete UTC accessed dates',()=>{ expect(isRecent({accessed:{'date-parts':[[2026,7,15]]}},NOW,14)).toBe(true); expect(isRecent({accessed:{'date-parts':[[2026,2,31]]}},NOW,14)).toBe(false); }); });
