@@ -1,149 +1,214 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env python3
+from __future__ import annotations
 
-# find-bib — filter CSL-JSON (Pandoc) bibliography by fields and emit keys, JSON, or BibTeX via cite2bib
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
 
-BIB_JSON=${BIB_JSON:-"$HOME/endnote/phd_biblio.json"}
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-HELP_TEXT_DIR="$SCRIPT_DIR/help-text"
+SCRIPT_DIR = Path(__file__).resolve().parent
+HELP_TEXT_DIR = SCRIPT_DIR / "help-text"
 
-print_core_help() {
-  cat "$HELP_TEXT_DIR/find-bib-help.txt"
+FILTER_FLAGS = {
+    "--author": "author",
+    "--year": "year",
+    "--doi": "doi",
+    "--title": "title",
+    "--abstract": "abstract",
 }
 
-print_human_help() {
-  cat "$HELP_TEXT_DIR/find-bib-human.txt"
-}
 
-human_requested=false
-help_requested=false
-for arg in "$@"; do
-  case "$arg" in
-    --human) human_requested=true ;;
-    -h|--help) help_requested=true ;;
-  esac
-done
+class UsageError(ValueError):
+    pass
 
-if $human_requested; then
-  for arg in "$@"; do
-    case "$arg" in
-      --human|-h|--help) ;;
-      *)
-        echo "find-bib: --human cannot be combined with $arg" >&2
-        exit 2
-        ;;
-    esac
-  done
-  print_human_help
-  exit 0
-fi
 
-if $help_requested; then
-  print_core_help
-  exit 0
-fi
+def _print_help(name: str) -> int:
+    path = HELP_TEXT_DIR / name
+    try:
+        sys.stdout.write(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        print(f"find-bib: cannot read help text: {exc}", file=sys.stderr)
+        return 2
+    return 0
 
-command -v jq >/dev/null 2>&1 || { echo "find-bib: jq not found on PATH" >&2; exit 2; }
 
-if [[ ! -f "$BIB_JSON" ]]; then
-  echo "find-bib: CSL-JSON file not found: $BIB_JSON" >&2
-  exit 2
-fi
+def _handle_help(argv: list[str]) -> int | None:
+    human_requested = "--human" in argv
+    help_requested = any(arg in {"-h", "--help"} for arg in argv)
 
-authors=(); years=(); dois=(); titles=(); abstracts=()
-mode="keys"
-cat_emitted=false
-cat_failed=false
+    if human_requested:
+        for arg in argv:
+            if arg not in {"--human", "-h", "--help"}:
+                print(f"find-bib: --human cannot be combined with {arg}", file=sys.stderr)
+                return 2
+        return _print_help("find-bib-human.txt")
 
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --author) shift; authors+=("${1:-}"); shift || true ;;
-    --year) shift; years+=("${1:-}"); shift || true ;;
-    --doi) shift; dois+=("${1:-}"); shift || true ;;
-    --title) shift; titles+=("${1:-}"); shift || true ;;
-    --abstract) shift; abstracts+=("${1:-}"); shift || true ;;
-    --cat) mode="cat"; shift ;;
-    -*) echo "find-bib: unknown flag: $1" >&2; exit 2 ;;
-    *) echo "find-bib: unexpected positional argument: $1" >&2; exit 2 ;;
-  esac
-done
+    if help_requested:
+        return _print_help("find-bib-help.txt")
 
-# Build jq arrays
-to_json_array() { # prints a JSON array from bash args, properly escaped via jq -R
-  if [[ $# -eq 0 ]]; then echo '[]'; else printf '%s\n' "$@" | jq -Rsc 'split("\n")[:-1]'; fi
-}
+    return None
 
-authors_json=$(to_json_array "${authors[@]:-}")
-years_json=$(to_json_array "${years[@]:-}")
-dois_json=$(to_json_array "${dois[@]:-}")
-titles_json=$(to_json_array "${titles[@]:-}")
-abstracts_json=$(to_json_array "${abstracts[@]:-}")
 
-jq_prog='
-def norm($s): ($s|tostring|gsub("[{}]";"")|ascii_downcase|gsub("\\s+";" ")|gsub("^\\s+|\\s+$";""));
-def name_text($n): if ($n|type)=="object" then [ $n.family, $n.given ] | map(select(.!=null and .!="")) | join(", ") elif ($n|type)=="string" then $n else ($n|tostring) end;
-def authors_text: if .author then ( if (.author|type)=="array" then (.author | map(name_text(.)) | join("; ")) else (.author|tostring) end ) elif .authors then (.authors|tostring) else "" end;
-def year_text: if .issued and ((.issued["date-parts"]|type)=="array") and ((.issued["date-parts"][0]|type)=="array") and (.issued["date-parts"][0][0]) then (.issued["date-parts"][0][0]|tostring) elif .issued and (.issued.literal?) then (.issued.literal|tostring|capture("(?<y>(19|20)[0-9]{2})").y) elif .issued then (.issued|tostring|capture("(?<y>(19|20)[0-9]{2})").y) else "" end;
-def key_of: .id // .ID // .key;
-def get_items: if (type)=="array" then . else (.items // .records // []) end;
-def match_any($hay; $needles): ($needles|length)==0 or ( [ $needles[] | norm(.) ] | any( . as $n | (norm($hay) | contains($n)) ) );
-get_items
-| map(select( (authors_text as $a | match_any($a; $authors))
-             and (year_text as $y | match_any($y; $years))
-             and ((.DOI // .doi // "") as $d | match_any($d; $dois))
-             and ((.title // "") as $t | match_any($t; $titles))
-             and ((.abstract // "") as $ab | match_any($ab; $abstracts)) ))
-| .[]
-'
+def _bootstrap_agent_tools() -> None:
+    candidates = [
+        SCRIPT_DIR / "python" / "src",
+        SCRIPT_DIR / ".agent-tools-python",
+    ]
+    existing = [str(path) for path in candidates if (path / "agent_tools").is_dir()]
+    for path in reversed(existing):
+        if path not in sys.path:
+            sys.path.insert(0, path)
 
-out=""
-case "$mode" in
-  keys)
-    out=$(jq -r \
-      --argjson authors "$authors_json" \
-      --argjson years "$years_json" \
-      --argjson dois "$dois_json" \
-      --argjson titles "$titles_json" \
-      --argjson abstracts "$abstracts_json" \
-      "$jq_prog | key_of" "$BIB_JSON")
-    ;;
-  cat)
-    command -v cite2bib >/dev/null 2>&1 || { echo "find-bib: cite2bib not found for --cat" >&2; exit 2; }
-    keys=$(jq -r \
-      --argjson authors "$authors_json" \
-      --argjson years "$years_json" \
-      --argjson dois "$dois_json" \
-      --argjson titles "$titles_json" \
-      --argjson abstracts "$abstracts_json" \
-      "$jq_prog | key_of" "$BIB_JSON")
-    if [[ -n "$keys" ]]; then
-      while IFS= read -r k; do
-        [[ -z "$k" ]] && continue
-        if cite2bib "$k"; then
-          cat_emitted=true
-        else
-          cat_failed=true
-        fi
-      done <<< "$keys"
-    fi
-    ;;
-esac
 
-if [[ "$mode" != "cat" ]]; then
-  out=$(printf '%s\n' "$out" | sed '/^\s*$/d')
-  if [[ -n "$out" ]]; then
-    printf '%s\n' "$out"
-    exit 0
-  else
-    exit 1
-  fi
-else
-  # cat mode: succeed only if at least one entry was emitted and none failed.
-  if $cat_failed; then
-    exit 1
-  fi
-  if $cat_emitted; then
-    exit 0
-  fi
-  exit 1
-fi
+def _normalize(value: Any) -> str:
+    text = str(value or "").replace("{", "").replace("}", "").casefold()
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _name_text(value: Any) -> str:
+    if isinstance(value, dict):
+        parts = [str(value.get("family") or "").strip(), str(value.get("given") or "").strip()]
+        return ", ".join(part for part in parts if part)
+    return str(value or "")
+
+
+def _authors_text(entry: dict[str, Any]) -> str:
+    authors = entry.get("author")
+    if isinstance(authors, list):
+        return "; ".join(_name_text(author) for author in authors if _name_text(author))
+    if authors is not None:
+        return str(authors)
+    return str(entry.get("authors") or "")
+
+
+def _year_text(entry: dict[str, Any]) -> str:
+    issued = entry.get("issued")
+    if isinstance(issued, dict):
+        parts = issued.get("date-parts")
+        if isinstance(parts, list) and parts and isinstance(parts[0], list) and parts[0]:
+            return str(parts[0][0])
+        literal = issued.get("literal")
+        if literal is not None:
+            match = re.search(r"(?:19|20)\d{2}", str(literal))
+            if match:
+                return match.group(0)
+    if issued is not None:
+        match = re.search(r"(?:19|20)\d{2}", str(issued))
+        if match:
+            return match.group(0)
+    return ""
+
+
+def _match_any(haystack: Any, needles: list[str]) -> bool:
+    if not needles:
+        return True
+    normalized = _normalize(haystack)
+    return any(_normalize(needle) in normalized for needle in needles)
+
+
+def _matches(entry: dict[str, Any], filters: dict[str, list[str]]) -> bool:
+    return (
+        _match_any(_authors_text(entry), filters["author"])
+        and _match_any(_year_text(entry), filters["year"])
+        and _match_any(entry.get("DOI") or entry.get("doi") or "", filters["doi"])
+        and _match_any(entry.get("title") or "", filters["title"])
+        and _match_any(entry.get("abstract") or "", filters["abstract"])
+    )
+
+
+def _parse_args(argv: list[str]) -> tuple[dict[str, list[str]], bool]:
+    filters = {name: [] for name in FILTER_FLAGS.values()}
+    cat_mode = False
+    index = 0
+    while index < len(argv):
+        arg = argv[index]
+        if arg in FILTER_FLAGS:
+            if index + 1 >= len(argv) or argv[index + 1].startswith("--"):
+                raise UsageError(f"{arg} requires a value")
+            filters[FILTER_FLAGS[arg]].append(argv[index + 1])
+            index += 2
+            continue
+        if arg == "--cat":
+            cat_mode = True
+            index += 1
+            continue
+        if arg.startswith("-"):
+            raise UsageError(f"unknown flag: {arg}")
+        raise UsageError(f"unexpected positional argument: {arg}")
+    return filters, cat_mode
+
+
+def _catalog_entries() -> list[dict[str, Any]]:
+    _bootstrap_agent_tools()
+    try:
+        from agent_tools import ReferenceCatalog
+    except ModuleNotFoundError as exc:
+        missing = exc.name or "agent_tools"
+        raise UsageError(
+            f"canonical agent-tools Python library is unavailable (missing {missing}); "
+            "run install.sh or install the python package"
+        ) from exc
+
+    catalog = ReferenceCatalog(warn=lambda _message: None)
+    try:
+        catalog.load()
+        count = len(catalog.keys())
+        return catalog.search("", limit=count, scope="all")
+    except ValueError as exc:
+        raise UsageError(str(exc)) from exc
+
+
+def _key_of(entry: dict[str, Any]) -> str:
+    value = entry.get("citation-key") or entry.get("id")
+    return str(value or "").strip()
+
+
+def _emit_cat(entries: list[dict[str, Any]]) -> int:
+    cite2bib = shutil.which("cite2bib")
+    if cite2bib is None:
+        print("find-bib: cite2bib not found for --cat", file=sys.stderr)
+        return 2
+
+    emitted = False
+    failed = False
+    for entry in entries:
+        key = _key_of(entry)
+        if not key:
+            continue
+        result = subprocess.run([cite2bib, key], check=False)
+        if result.returncode == 0:
+            emitted = True
+        else:
+            failed = True
+
+    if failed:
+        return 1
+    return 0 if emitted else 1
+
+
+def main(argv: list[str]) -> int:
+    help_result = _handle_help(argv)
+    if help_result is not None:
+        return help_result
+
+    try:
+        filters, cat_mode = _parse_args(argv)
+        entries = [entry for entry in _catalog_entries() if _matches(entry, filters)]
+    except UsageError as exc:
+        print(f"find-bib: {exc}", file=sys.stderr)
+        return 2
+
+    if cat_mode:
+        return _emit_cat(entries)
+
+    keys = [key for key in (_key_of(entry) for entry in entries) if key]
+    if not keys:
+        return 1
+    sys.stdout.write("\n".join(keys) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
