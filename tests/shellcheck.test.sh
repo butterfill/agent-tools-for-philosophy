@@ -25,7 +25,7 @@ done < <(
       *.sh) printf '%s\0' "$path" ;;
       *)
         if IFS= read -r first_line < "$path"; then
-          if [[ "$first_line" =~ ^#!.*/(bash|dash|ash|ksh|zsh|sh)([[:space:]]|$) ]] || [[ "$first_line" =~ ^#!.*[[:space:]](bash|dash|ash|ksh|zsh|sh)([[:space:]]|$) ]]; then
+          if printf '%s\n' "$first_line" | grep -Eq '^#!.*([/[:space:]])(bash|dash|ash|ksh|zsh|sh)([[:space:]]|$)'; then
             printf '%s\0' "$path"
           fi
         fi
