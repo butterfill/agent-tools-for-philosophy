@@ -43,10 +43,16 @@ command -v python3 >/dev/null 2>&1 || {
   echo "install.sh: python3 is required for the canonical ReferenceCatalog runtime used by find-bib" >&2
   exit 2
 }
-python3 -m pip --version >/dev/null 2>&1 || {
-  echo "install.sh: python3 pip is required to install the canonical ReferenceCatalog runtime used by find-bib" >&2
+PYTHON_BIN=$(command -v python3)
+
+if command -v uv >/dev/null 2>&1; then
+  PYTHON_INSTALLER=uv
+elif "$PYTHON_BIN" -m pip --version >/dev/null 2>&1; then
+  PYTHON_INSTALLER=pip
+else
+  echo "install.sh: uv or python3 pip is required to install the canonical ReferenceCatalog runtime used by find-bib" >&2
   exit 2
-}
+fi
 
 PYTHON_RUNTIME_DIR="$TARGET_DIR/.agent-tools-python"
 PYTHON_RUNTIME_TMP=$(mktemp -d "$TARGET_DIR/.agent-tools-python.tmp.XXXXXX")
@@ -55,7 +61,13 @@ cleanup_runtime_tmp() {
 }
 trap cleanup_runtime_tmp EXIT
 
-PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --target "$PYTHON_RUNTIME_TMP" "$SCRIPT_DIR/python"
+if [[ "$PYTHON_INSTALLER" == "uv" ]]; then
+  # Bind uv to the same python3 that will execute find-bib so compiled wheels
+  # (for example rapidfuzz) match the runtime interpreter.
+  uv pip install --quiet --python "$PYTHON_BIN" --target "$PYTHON_RUNTIME_TMP" "$SCRIPT_DIR/python"
+else
+  PIP_DISABLE_PIP_VERSION_CHECK=1 "$PYTHON_BIN" -m pip install --quiet --target "$PYTHON_RUNTIME_TMP" "$SCRIPT_DIR/python"
+fi
 rm -rf "$PYTHON_RUNTIME_DIR"
 mv "$PYTHON_RUNTIME_TMP" "$PYTHON_RUNTIME_DIR"
 trap - EXIT
