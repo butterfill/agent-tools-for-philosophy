@@ -25,7 +25,7 @@ fi
 
 # Print four lines: canonical key, author filter, year filter, title filter.
 # The selector independently applies the catalogue's documented primary identity
-# rule (citation-key, falling back to id; first occurrence wins).  It deliberately
+# rule (citation-key, falling back to id; first occurrence wins). It deliberately
 # does not hard-code a mutable personal-library record.
 _select_real_case() {
   local mode="$1"
@@ -183,32 +183,41 @@ raise SystemExit("no canonical field-filter case is fully backed by the configur
 PY
 }
 
+_parse_selected_case() {
+  local selected="$1"
+  local count
+  count=$(printf '%s\n' "$selected" | wc -l | tr -d ' ')
+  if [[ "$count" -ne 4 ]]; then
+    echo "selector returned $count lines, expected 4" >&2
+    printf '%s\n' "$selected" >&2
+    return 1
+  fi
+  SELECTED_KEY=$(printf '%s\n' "$selected" | sed -n '1p')
+  SELECTED_AUTHOR=$(printf '%s\n' "$selected" | sed -n '2p')
+  SELECTED_YEAR=$(printf '%s\n' "$selected" | sed -n '3p')
+  SELECTED_TITLE=$(printf '%s\n' "$selected" | sed -n '4p')
+}
+
 _real_field_filter_roundtrip() {
   local selected out rc
-  local -a fields
   if ! selected=$(_select_real_case field 2>&1); then
     printf '%s\n' "$selected" >&2
     return 1
   fi
-  mapfile -t fields <<< "$selected"
-  if [[ ${#fields[@]} -ne 4 ]]; then
-    echo "selector returned ${#fields[@]} lines, expected 4" >&2
-    printf '%s\n' "$selected" >&2
-    return 1
-  fi
+  _parse_selected_case "$selected" || return 1
 
   set +e
   out=$(BIB_JSON="$BIB_JSON_PATH" ZOTERO_JSON="$ZOTERO_JSON_PATH" \
-    "$TOOL" --author "${fields[1]}" --year "${fields[2]}" --title "${fields[3]}" 2>&1)
+    "$TOOL" --author "$SELECTED_AUTHOR" --year "$SELECTED_YEAR" --title "$SELECTED_TITLE" 2>&1)
   rc=$?
   set -e
   if [[ $rc -ne 0 ]]; then
-    echo "find-bib exited $rc for canonical primary case ${fields[0]}" >&2
+    echo "find-bib exited $rc for canonical primary case $SELECTED_KEY" >&2
     printf '%s\n' "$out" >&2
     return 1
   fi
-  if ! rg -F -x -q -- "${fields[0]}" <<< "$out"; then
-    echo "expected canonical primary key ${fields[0]}" >&2
+  if ! rg -F -x -q -- "$SELECTED_KEY" <<< "$out"; then
+    echo "expected canonical primary key $SELECTED_KEY" >&2
     printf '%s\n' "$out" >&2
     return 1
   fi
@@ -216,38 +225,32 @@ _real_field_filter_roundtrip() {
 
 it "finds a real canonical primary record by author/year/title filters" _real_field_filter_roundtrip
 
-# --cat remains an artifact-layer operation delegated to cite2bib/BIB_FILE.  Run
+# --cat remains an artifact-layer operation delegated to cite2bib/BIB_FILE. Run
 # this case in a temporary cwd so a real-library mismatch can never leak
 # cite2bib's missing-keys.txt bookkeeping into the repository root.
 _real_cat_roundtrip() {
   local tmpdir="$1"
   local selected out rc
-  local -a fields
   [[ -d "$tmpdir" ]] || return 1
 
   if ! selected=$(_select_real_case cat 2>&1); then
     printf '%s\n' "$selected" >&2
     return 1
   fi
-  mapfile -t fields <<< "$selected"
-  if [[ ${#fields[@]} -ne 4 ]]; then
-    echo "selector returned ${#fields[@]} lines, expected 4" >&2
-    printf '%s\n' "$selected" >&2
-    return 1
-  fi
+  _parse_selected_case "$selected" || return 1
 
   set +e
   out=$(BIB_FILE="$BIB_FILE_PATH" BIB_JSON="$BIB_JSON_PATH" ZOTERO_JSON="$ZOTERO_JSON_PATH" \
-    "$TOOL" --author "${fields[1]}" --year "${fields[2]}" --title "${fields[3]}" --cat 2>&1)
+    "$TOOL" --author "$SELECTED_AUTHOR" --year "$SELECTED_YEAR" --title "$SELECTED_TITLE" --cat 2>&1)
   rc=$?
   set -e
   if [[ $rc -ne 0 ]]; then
-    echo "find-bib --cat exited $rc for canonical primary case ${fields[0]}" >&2
+    echo "find-bib --cat exited $rc for canonical primary case $SELECTED_KEY" >&2
     printf '%s\n' "$out" >&2
     return 1
   fi
-  if ! rg -F -q -- "{${fields[0]}," <<< "$out"; then
-    echo "expected BibTeX output for ${fields[0]}" >&2
+  if ! rg -F -q -- "{$SELECTED_KEY," <<< "$out"; then
+    echo "expected BibTeX output for $SELECTED_KEY" >&2
     printf '%s\n' "$out" >&2
     return 1
   fi
