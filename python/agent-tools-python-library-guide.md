@@ -13,6 +13,8 @@ The Python package exposes two public concerns: `AgentTools` for local document 
 
 The primary source is required when the catalogue is loaded. The secondary source is optional. Duplicate keys keep their first record within a source; primary metadata wins across sources.
 
+Consumers should use `catalog.ready` to decide whether catalogue-backed capabilities are available. Readiness means a usable primary snapshot exists, not merely that the configured file happens to exist at this instant; last-good data remains ready across temporary deletion or malformed writes.
+
 ## Reference search
 
 ```python
@@ -32,12 +34,14 @@ secondary = catalog.search("mind", limit=20, scope="secondary")
 all_refs = catalog.search("mind", limit=20, scope="all")
 
 record = catalog.resolve_key("davidson1963actions")
-by_doi = catalog.get_by_doi("https://doi.org/10.1000/example")
+doi_records = catalog.find_by_doi("https://doi.org/10.1000/example")
 ```
 
 `search()` always returns ranked candidates and does not apply a relevance threshold. `search_hits()` returns the same ordering with raw ranking scores and field evidence for consumers such as citation resolvers. Scores are implementation details and should not be compared across language bindings.
 
-`get_by_key()` is exact. `resolve_key()` adds case-insensitive and punctuation-insensitive lookup when the relaxed form is unique. `get_by_doi()` normalizes `doi:` and doi.org forms and resolves only unique DOI membership.
+`get_by_key()` is exact. `resolve_key()` adds case-insensitive and punctuation-insensitive lookup when the relaxed form is unique.
+
+Citation keys are catalogue identities; DOIs are non-unique indexed attributes. `find_by_doi()` normalizes `doi:` and doi.org forms and returns every matching canonical record in catalogue order. Multiple matching records must not be collapsed or treated as automatically duplicated merely because they share a DOI.
 
 The Python catalogue refreshes source metadata lazily on public operations and atomically keeps the last good snapshot when a source is temporarily unreadable or malformed.
 
