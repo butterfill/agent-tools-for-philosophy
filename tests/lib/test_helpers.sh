@@ -5,8 +5,9 @@ set -euo pipefail
 #
 # Contract for tests:
 # - Set REPO_ROOT before calling helpers that execute repository tools.
-# - run_output intentionally evaluates commands through bash -lc so call sites can
-#   use environment-prefixed commands such as BIB_FILE=... "$TOOL" key.
+# - run_output evaluates commands through a non-login bash so call sites can use
+#   environment-prefixed commands such as BIB_FILE=... "$TOOL" key without
+#   allowing login-shell startup files to rewrite the injected repo-first PATH.
 # - run_output puts REPO_ROOT first on PATH so tests prefer repo-local tools.
 # - with_tmpdir, with_tmpfile, run_in_tmpdir, and it_in_tmpdir are the preferred
 #   APIs for temporary resources; test scratch files must not be written to the
@@ -139,7 +140,7 @@ require_command() {
 run_output() {
   local cmd
   printf -v cmd '%q ' "$@"
-  PATH="$REPO_ROOT:$PATH" bash -lc "$cmd"
+  PATH="$REPO_ROOT:$PATH" bash -c "$cmd"
 }
 
 has_line_matching() {
@@ -251,24 +252,31 @@ with_tmpfile() {
 }
 
 suite_failures_for_recap() {
-  # Prints unique failure lines (first line only). Keep this Bash 3-compatible:
-  # macOS still ships Bash 3.2, which has indexed but not associative arrays.
+  # Prints unique failure lines (first line only). Use an explicit element count
+  # instead of expanding an empty array: Bash 3.2 + set -u treats that expansion
+  # as an unbound variable.
   if [[ ${#__suite_failure_lines[@]} -eq 0 ]]; then
     return 0
   fi
-  local line previous duplicate
-  local -a seen=()
+  local line previous duplicate index
+  local seen_count=0
+  local -a seen
+  seen=()
   for line in "${__suite_failure_lines[@]}"; do
     duplicate=0
-    for previous in "${seen[@]}"; do
+    index=0
+    while [[ $index -lt $seen_count ]]; do
+      previous="${seen[$index]}"
       if [[ "$previous" == "$line" ]]; then
         duplicate=1
         break
       fi
+      index=$((index + 1))
     done
     if [[ "$duplicate" -eq 0 ]]; then
       printf '%s\n' "$line"
-      seen+=("$line")
+      seen[$seen_count]="$line"
+      seen_count=$((seen_count + 1))
     fi
   done
 }
