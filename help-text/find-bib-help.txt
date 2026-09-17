@@ -1,4 +1,4 @@
-find-bib — search a CSL-JSON bibliography for matching entries
+find-bib — filter the canonical bibliography catalogue by fields
 
 Usage:
   find-bib [filters...] [--cat]
@@ -10,21 +10,30 @@ Filters (repeatable; case-insensitive substrings):
   --title TXT
   --abstract TXT
 
+Matching:
+  - AND across different fields
+  - OR across repeated values of the same field
+
+Catalogue:
+  - searches the full ReferenceCatalog union (primary + secondary-only records)
+  - primary metadata wins when a citation key occurs in both sources
+  - BIB_JSON is the required primary source; ZOTERO_JSON is optional secondary data
+
 Output:
-  - default: print matching keys (one per line)
+  - default: print matching citation keys, one per line
   - --cat: print each match as BibTeX via cite2bib
 
 Exit codes:
   - 0 at least one match emitted
-  - 1 no matches
-  - 2 usage or configuration error (e.g. missing jq, bad flag)
+  - 1 no matches, or a matched key could not be emitted by --cat
+  - 2 usage/configuration error
 
 Examples (list → then read one):
   find-bib --author vesper --year 2013 --title jump > keys.txt
   key=$(sed -n '1p' keys.txt)
   cite2bib "$key"
-  # Or: p=$(cite2md "$key")
+  # Or: cite2md --cat "$key"
 
 Notes:
-  - Supports multiple filters of the same type to narrow long lists.
-  - Pair with cite2md to inspect fulltext once a key is selected.
+  - Secondary-only catalogue records may not have local BibTeX/fulltext artifacts.
+  - Pair with cite2md or cite2bib after selecting a key.
