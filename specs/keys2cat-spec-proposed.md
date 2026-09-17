@@ -21,6 +21,6 @@ Dependencies
 - `cite2md`, `cat-sources`.
 
 Examples
-- `find-bib --abstract "joint action" --limit 5 | keys2cat`
+- `find-bib --abstract "joint action" | head -5 | keys2cat`
 - `keys2cat vesper:2012_jumping butterfill:2019_goals`
 

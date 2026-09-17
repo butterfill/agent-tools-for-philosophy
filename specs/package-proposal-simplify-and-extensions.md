@@ -33,7 +33,7 @@ Why these help philosophers
 Common Flows (with proposed tools)
 - Quote hunt with traceability: `snip-sources -i --json "causal effect"`
 - Read all sources cited in a draft: `draft2keys draft.md --cat`
-- Curate a topic pack: `find-bib --abstract "joint action" --limit 10 | keys2cat`
+- Curate a topic pack: `find-bib --abstract "joint action" | head -10 | keys2cat`
 - File hygiene: `index-sources --write && validate-sources`
 
 Compatibility & Scope
