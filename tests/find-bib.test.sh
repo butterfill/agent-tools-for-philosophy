@@ -109,7 +109,9 @@ BIB
   it_in_tmpdir "returns non-zero in --cat mode when cite2bib cannot emit entries" _cat_mode_fails_when_cite2bib_fails
 
   _secondary_only_cat_fails_naturally_without_bibtex() {
+    local tmpdir="$1"
     local out rc
+    [[ -d "$tmpdir" ]] || return 1
     set +e
     out=$(BIB_FILE="$REPO_ROOT/tests/fixtures/sample.bib" BIB_JSON="$FIXTURE_JSON" ZOTERO_JSON="$FIXTURE_ZOTERO" \
       "$TOOL" --author new --cat 2>&1)
@@ -117,7 +119,7 @@ BIB
     set -e
     [[ $rc -eq 1 ]] && rg -q '^MISSING cite2bib: new:2026_secondary' <<< "$out"
   }
-  it "does not invent BibTeX for secondary-only catalogue records" _secondary_only_cat_fails_naturally_without_bibtex
+  it_in_tmpdir "does not invent BibTeX for secondary-only catalogue records" _secondary_only_cat_fails_naturally_without_bibtex
 else
   skip "emits BibTeX via --cat for smith:2021_joint" "cite2bib not found"
   skip "returns non-zero in --cat mode when cite2bib cannot emit entries" "cite2bib not found"
