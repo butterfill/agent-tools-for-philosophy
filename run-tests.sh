@@ -129,14 +129,18 @@ for suite in "${suites[@]}"; do
   suite_rc=$?
   set -e
 
-  cat "$suite_output"
-  rm -f "$suite_output"
-
   failure_lines=""
   if [[ -s "$failure_file" ]]; then
     failure_lines=$(<"$failure_file")
+  elif [[ "$suite_rc" -ne 0 && "$suite_rc" -ne 2 && -s "$suite_output" ]]; then
+    # A suite can abort before complete_suite writes HARNESS_FAILURE_FILE (for
+    # example because a top-level dependency/import failed). Preserve the tail
+    # so the final recap remains useful instead of saying only "no details".
+    failure_lines=$(tail -n 20 "$suite_output" | sed '/^[[:space:]]*$/d')
   fi
-  rm -f "$failure_file"
+
+  cat "$suite_output"
+  rm -f "$suite_output" "$failure_file"
 
   case "$suite_rc" in
     0)
