@@ -12,6 +12,8 @@ The package exposes `AgentTools` for local document actions and `ReferenceCatalo
 
 The primary source must be usable at `start()`. The secondary source is optional. Duplicate keys keep the first record within a source and primary metadata wins when a key occurs in both sources.
 
+Consumers should use `catalog.ready` to decide whether catalogue-backed capabilities are available after `start()`/`reload()`. Readiness means a usable primary snapshot exists, not merely that the configured path currently exists; a retained last-good snapshot remains ready across temporary deletion or malformed writes.
+
 ## Reference search
 
 ```ts
@@ -30,14 +32,16 @@ const secondary = catalog.search('mind', 20, 'secondary');
 const allRefs = catalog.search('mind', 20, 'all');
 
 const relaxed = catalog.resolveKey('davidson1963actions');
-const doi = catalog.getByDoi('https://doi.org/10.1000/example');
+const doiRecords = catalog.findByDoi('https://doi.org/10.1000/example');
 
 catalog.close();
 ```
 
 `search()` returns ranked candidates without a relevance threshold. `searchHits()` returns exactly the same ordering with raw score and field evidence for consumers that need to interpret ranking. Scores are implementation details and are not a cross-language contract.
 
-`getByKey()` is exact. `resolveKey()` adds case-insensitive and punctuation-insensitive lookup when unique. `getByDoi()` resolves a normalized DOI when unique. `getRawByKey()` preserves the authoritative CSL row when a consumer must return CSL without catalogue identity normalization.
+`getByKey()` is exact. `resolveKey()` adds case-insensitive and punctuation-insensitive lookup when unique. `getRawByKey()` preserves the authoritative CSL row when a consumer must return CSL without catalogue identity normalization.
+
+Citation keys are catalogue identities; DOIs are non-unique indexed attributes. `findByDoi()` normalizes `doi:` and doi.org forms and returns every matching canonical record in catalogue order. The catalogue deliberately does not infer that same-DOI records are duplicates.
 
 The TypeScript catalogue polls for file changes (two seconds by default), publishes replacement indexes atomically, exposes `revision`, and retains the last good source snapshot across malformed or missing intermediate writes.
 
