@@ -1,20 +1,16 @@
 {
   "name": "@butterfill/agent-tools",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "TypeScript bindings for agent-tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "test": "jest",
     "prepare": "npm run build"
   },
-  "dependencies": {
-    "fuzzysort": "^2.0.4"
-  },
+  "dependencies": { "fuzzysort": "^2.0.4" },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
