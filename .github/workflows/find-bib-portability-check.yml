@@ -8,6 +8,7 @@ on:
       - '.github/workflows/find-bib-portability-check.yml'
 
 # Temporary matrix used to verify the hotfix against stock macOS Bash 3.2.
+# This run also exercises shellcheck discovery under the stock shell.
 jobs:
   install-and-test:
     strategy:
