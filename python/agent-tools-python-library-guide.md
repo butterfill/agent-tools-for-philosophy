@@ -1,151 +1,59 @@
 # Python Developer Guide: `agent-tools`
 
-This package provides Python bindings for the `agent-tools` shell suite. It offers two primary components:
-1.  **`AgentTools`**: A wrapper around the shell CLI tools (like `cite2md`, `cite2pdf`) to interact with the file system.
-2.  **`Bibliography`**: A pure Python class for high-performance fuzzy searching of your CSL-JSON bibliography.
+The Python package exposes two public concerns: `AgentTools` for local document actions and `ReferenceCatalog` for bibliography identity/search. The old file-backed `Bibliography` API was removed in 0.2.0; search indexes are now an implementation detail of the catalogue.
 
-## 1. Installation
+## Configuration
 
-You can install the package directly from the repository using `pip` or `uv`.
+`ReferenceCatalog` uses:
 
-```bash
-# Using pip
-pip install "git+ssh://git@github.com/butterfill/agent-tools.git#subdirectory=python"
+- `BIB_JSON` — authoritative/cited CSL-JSON source; default `~/endnote/phd_biblio.json`.
+- `ZOTERO_JSON` — complete/secondary CSL-JSON source; default `~/endnote/zotero-export.json`.
+- `ZOTERO_RECENT_DAYS` — recent-secondary window; default `14`.
+- `PAPERS_DIR` and `BIB_FILE` remain relevant to `AgentTools` shell-backed document actions.
 
-# Using uv
-uv add "agent-tools @ git+ssh://git@github.com/butterfill/agent-tools.git#subdirectory=python"
-```
+The primary source is required when the catalogue is loaded. The secondary source is optional. Duplicate keys keep their first record within a source; primary metadata wins across sources.
 
-### Prerequisites
-The Python package relies on the underlying shell scripts for file operations. Ensure you have run the main installation script and the tools are in your `PATH`.
+Consumers should use `catalog.ready` to decide whether catalogue-backed capabilities are available. Readiness means a usable primary snapshot exists, not merely that the configured file happens to exist at this instant; last-good data remains ready across temporary deletion or malformed writes.
 
-```bash
-./install.sh
-```
-
-## 2. Configuration
-
-The library uses the same environment variables as the CLI tools.
-
-*   `PAPERS_DIR`: Path to your Markdown notes (Default: `~/papers`).
-*   `BIB_JSON`: Path to your CSL-JSON bibliography (Default: `~/endnote/phd_biblio.json`).
-
-## 3. Usage: `AgentTools`
-
-Use `AgentTools` to resolve citations to file paths or content. This is a synchronous wrapper around `subprocess` calls to `cite2md`, `cite2pdf`, etc.
+## Reference search
 
 ```python
-from agent_tools import AgentTools, ActionResult, ToolNotFoundError, ToolExecutionError
+from agent_tools import ReferenceCatalog
 
-# Initialize (optional: override PAPERS_DIR)
-client = AgentTools(papers_dir="/users/me/papers")
+catalog = ReferenceCatalog()
+catalog.load()  # or: await catalog.load_async()
 
-# Load bibliography (non-blocking constructor)
-bib = Bibliography()
-bib.load()  # or: asyncio.run(bib.load_async())
+# Automatic policy: primary + recent secondary-only records, widening to the
+# complete union for citation-key-shaped queries or weak primary matches.
+for entry in catalog.search("davidson reasons", limit=5):
+    print(entry["id"], entry.get("title"))
 
-try:
-    # 1. Resolve a key to a Markdown path
-    md_path = client.get_md_path("vesper:2012_jumping")
-    if md_path:
-        print(f"Found markdown at: {md_path}")
+# Structured scopes are available to applications; command syntax belongs in
+# the application rather than the library.
+secondary = catalog.search("mind", limit=20, scope="secondary")
+all_refs = catalog.search("mind", limit=20, scope="all")
 
-    # 2. Get full content (equivalent to cite2md --cat)
-    content = client.get_md_content("vesper:2012_jumping")
-
-    # 3. Resolve PDF path
-    pdf_path = client.get_pdf_path("vesper:2012_jumping")
-
-    # 4. Extract keys from a draft using draft2keys
-    keys = client.get_keys_from_draft("/path/to/draft.md")
-    print(keys)
-except ToolNotFoundError:
-    print("agent-tools not installed or not in PATH. Please run ./install.sh")
-except ToolExecutionError as e:
-    print(f"CLI failed: {e}")
-
-# 5. Human Interactions (UI actions)
-# These open the file in the respective application and return a success indicator
-res = client.open_vscode("vesper:2012_jumping")
-if not res.ok:
-    print(f"Could not open VS Code: {res.error}")
-
-res = client.open_pdf("vesper:2012_jumping")
-if not res.ok:
-    print(f"Could not open PDF: {res.error}")
-
-res = client.reveal_md("vesper:2012_jumping") # Show in Finder/Explorer
-if not res.ok:
-    print(f"Could not reveal markdown: {res.error}")
+record = catalog.resolve_key("davidson1963actions")
+doi_records = catalog.find_by_doi("https://doi.org/10.1000/example")
 ```
 
-**Return Types and Errors:**
-- Getter methods return `Optional[str]` and may be `None` only when the command succeeded (exit code 0) but produced no output.
-- If the underlying executable is missing, getters raise `ToolNotFoundError`.
-- If the command exits non-zero, getters raise `ToolExecutionError` which includes the exit code and stderr.
-- UI action methods return `ActionResult` with fields: `ok: bool`, `error: Optional[str]`.
+`search()` always returns ranked candidates and does not apply a relevance threshold. `search_hits()` returns the same ordering with raw ranking scores and field evidence for consumers such as citation resolvers. Scores are implementation details and should not be compared across language bindings.
 
-## 4. Usage: `Bibliography`
+`get_by_key()` is exact. `resolve_key()` adds case-insensitive and punctuation-insensitive lookup when the relaxed form is unique.
 
-Use the `Bibliography` class to search your reference library. This runs entirely in Python using `rapidfuzz` and does not spawn shell processes.
+Citation keys are catalogue identities; DOIs are non-unique indexed attributes. `find_by_doi()` normalizes `doi:` and doi.org forms and returns every matching canonical record in catalogue order. Multiple matching records must not be collapsed or treated as automatically duplicated merely because they share a DOI.
+
+The Python catalogue refreshes source metadata lazily on public operations and atomically keeps the last good snapshot when a source is temporarily unreadable or malformed.
+
+## `AgentTools`
 
 ```python
-from agent_tools import Bibliography
+from agent_tools import AgentTools
 
-# Initialize (loads data from env var BIB_JSON or default path)
-bib = Bibliography()
-
-# Search
-# Query matches against Author, Year, Title, and ID
-results = bib.search("davidson 1963", limit=5)
-
-for item in results:
-    # item is a CSL-JSON dictionary
-    print(f"Key: {item.get('id')}")
-    print(f"Title: {item.get('title')}")
-    print(f"Type: {item.get('type')}")
+client = AgentTools()
+markdown = client.get_md_content("vesper:2012_jumping")
+pdf_path = client.get_pdf_path("vesper:2012_jumping")
+bibtex = client.get_bib_entry("vesper:2012_jumping")
 ```
 
-**Data Structure:**
-The `results` are standard CSL-JSON dictionaries (parsed from your JSON file).
-
-## 5. API Reference
-
-### `class AgentTools`
-
-*   `__init__(papers_dir: Optional[str] = None)`
-*   `get_md_path(key: str) -> Optional[str]`
-    *   Returns absolute path to `.md` file.
-*   `get_pdf_path(key: str) -> Optional[str]`
-    *   Returns absolute path to `.pdf` file.
-*   `get_md_content(key: str) -> Optional[str]`
-    *   Returns the full text content of the Markdown file.
-*   `get_bib_entry(key: str) -> Optional[str]`
-    *   Returns the raw BibTeX entry string.
-*   `get_keys_from_draft(draft_path: str) -> List[str]`
-    *   Runs `draft2keys` and returns a list of keys found in the given draft.
-*   `open_vscode(key: str) -> ActionResult`: Opens in `code`.
-*   `open_vscode_insiders(key: str) -> ActionResult`: Opens in `code-insiders`.
-*   `open_pdf(key: str) -> ActionResult`: Opens in system default PDF viewer.
-*   `reveal_md(key: str) -> ActionResult`: Reveals file in Finder/Explorer.
-*   `reveal_pdf(key: str) -> ActionResult`: Reveals PDF in Finder/Explorer.
-*   `get_keys_from_draft(draft_path: str) -> List[str]`
-    *   Runs `draft2keys` and returns a list of keys found in the given draft.
-*   `rg_sources(args: List[str]) -> Optional[str]`
-    *   Runs `rg-sources` with the given flags/args and returns raw stdout (or None if empty).
-*   `rg_sources_lines(args: List[str]) -> List[str]`
-    *   Convenience: runs `rg-sources` and returns output split into lines.
-
-### `class Bibliography`
-
-*   `__init__(json_path: str = None)`
-    *   Initializes the bibliography instance. Uses `BIB_JSON` env var if `json_path` is not provided. Does NOT load data automatically.
-*   `load() -> None`
-    *   Loads the JSON file from disk synchronously. Must be called before searching.
-*   `load_async() -> None`
-    *   Loads the JSON file from disk asynchronously (awaitable).
-*   `search(query: str, limit: int = 20) -> List[Dict]`
-    *   Performs a fuzzy search. Returns a list of CSL-JSON objects.
-    *   If `query` is empty, returns the first `limit` items.
-*   `__len__() -> int`
-    *   Returns total number of entries.
+Bibliography membership and local artifacts are deliberately separate: a catalogue record does not guarantee that Markdown, PDF or BibTeX exists.

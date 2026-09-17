@@ -1,54 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { Bibliography } from '../src/bibliography';
-
-describe('Bibliography Async Behavior', () => {
-  let tmpFile: string;
-
-  beforeAll(() => {
-    tmpFile = path.join(os.tmpdir(), `async_test_${Date.now()}.json`);
-    const data = {
-      items: [{ id: 'test:1', title: 'Async Title', type: 'article' }]
-    };
-    fs.writeFileSync(tmpFile, JSON.stringify(data));
-  });
-
-  afterAll(() => {
-    if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
-  });
-
-  test('search returns empty array before load() is called', () => {
-    // This confirms the "safe by default" behavior, even if potentially confusing
-    const bib = new Bibliography(tmpFile);
-    expect(bib.length).toBe(0);
-    expect(bib.search('Async')).toEqual([]);
-  });
-
-  test('search works after await load()', async () => {
-    const bib = new Bibliography(tmpFile);
-    await bib.load();
-    expect(bib.length).toBe(1);
-    expect(bib.search('Async')[0].id).toBe('test:1');
-  });
-
-  test('load() handles non-existent file gracefully (empty lib)', async () => {
-    const bib = new Bibliography('/non/existent/path.json');
-    await bib.load();
-    expect(bib.length).toBe(0);
-    // Should not throw
-  });
-
-  test('load() throws on invalid JSON (if improvement applied)', async () => {
-    const badFile = path.join(os.tmpdir(), `bad_json_${Date.now()}.json`);
-    fs.writeFileSync(badFile, '{ "broken": ... '); // Invalid JSON
-    
-    const bib = new Bibliography(badFile);
-    
-    // If the improvement in Step 1 is applied, this assertion passes.
-    // If the original code is kept, this will fail (it would resolve successfully with 0 entries).
-    await expect(bib.load()).rejects.toThrow();
-    
-    if (fs.existsSync(badFile)) fs.unlinkSync(badFile);
-  });
+import * as fs from 'fs'; import * as path from 'path'; import * as os from 'os'; import { ReferenceCatalog } from '../src/reference-catalog';
+describe('ReferenceCatalog loading',()=>{ let tmpFile:string; beforeEach(()=>{ tmpFile=path.join(os.tmpdir(),`catalog_${Date.now()}_${Math.random()}.json`); fs.writeFileSync(tmpFile,JSON.stringify({items:[{id:'test:1',title:'Async Title',type:'article'}]})); }); afterEach(()=>{if(fs.existsSync(tmpFile))fs.unlinkSync(tmpFile);});
+ test('start loads a usable primary',async()=>{const c=new ReferenceCatalog({primaryPath:tmpFile,secondaryPath:`${tmpFile}.missing`,pollMs:60000}); await c.start(); expect(c.length).toBe(1); expect(c.search('Async')[0].id).toBe('test:1'); c.close();});
+ test('start rejects missing primary',async()=>{const c=new ReferenceCatalog({primaryPath:`${tmpFile}.missing-primary`,secondaryPath:`${tmpFile}.missing-secondary`,warn:()=>undefined}); await expect(c.start()).rejects.toThrow(/Primary bibliography unavailable/); c.close();});
+ test('start rejects invalid primary JSON',async()=>{fs.writeFileSync(tmpFile,'{"broken": ...'); const c=new ReferenceCatalog({primaryPath:tmpFile,secondaryPath:`${tmpFile}.missing`,warn:()=>undefined}); await expect(c.start()).rejects.toThrow(/Primary bibliography unavailable/); c.close();});
 });

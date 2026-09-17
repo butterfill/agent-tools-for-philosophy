@@ -1,192 +1,59 @@
-# TypeScript Developer Guide for `agent-tools`
+# TypeScript Developer Guide: `agent-tools`
 
-This package provides TypeScript bindings for the `agent-tools` shell suite, allowing Node.js applications (such as AI agents) to search bibliographies, resolve citations to file paths, and read full-text content.
+The package exposes `AgentTools` for local document actions and `ReferenceCatalog` for bibliography identity/search. The old public `Bibliography` class was removed in 0.2.0; the in-memory ranker is now an implementation detail so applications cannot accidentally reimplement source policy.
 
-## Installation
-
-```bash
-# Via Git
-pnpm install "git+ssh://git@github.com/butterfill/agent-tools.git#subdirectory=typescript"
-
-# Or local development linking
-pnpm link ./typescript
-```
-
-## Prerequisites
-
-The TypeScript wrapper relies on the underlying shell scripts being installed and available in your system `$PATH`.
-
-1. Run `./install.sh` in the root of this repository.
-2. Ensure `PAPERS_DIR` and `BIB_JSON` environment variables are set, or pass them to the constructors explicitly.
-
-## Core Components
-
-The library exports two main classes: `AgentTools` (CLI wrapper) and `Bibliography` (Search).
-
-### 1. `AgentTools` Client
-
-The `AgentTools` class provides a programmatic interface to the shell scripts (`cite2md`, `cite2pdf`, etc.). It spawns child processes to execute commands.
-
-**Import:**
-```typescript
-import { AgentTools } from '@butterfill/agent-tools';
-```
-
-**Usage:**
-```typescript
-// Optional: Pass papers directory. Defaults to process.env.PAPERS_DIR
-const client = new AgentTools('/Users/me/papers');
-
-// 1. Get full text content (resolve with cite2md, then read the file directly)
-const markdown = await client.getMdContent('vesper:2012_jumping');
-if (markdown) {
-  console.log('File content:', markdown);
-}
-
-// 2. Get absolute file paths
-const mdPath = await client.getMdPath('vesper:2012_jumping');
-const pdfPath = await client.getPdfPath('vesper:2012_jumping');
-
-// 3. Get raw BibTeX entry
-const bibTex = await client.getBibEntry('vesper:2012_jumping');
-
-// 4. Extract keys from a draft file (wraps `draft2keys`)
-const keys = await client.getKeysFromDraft('/path/to/draft.md');
-console.log(keys); // ['davidson:1963_actions', 'vesper:2012_jumping']
-
-// 5. UI actions with success indicator
-const r1 = await client.openVsCode('vesper:2012_jumping');
-if (!r1.ok) console.error('VS Code failed:', r1.error);
-
-const r2 = await client.openPdf('vesper:2012_jumping');
-if (!r2.ok) console.error('Open PDF failed:', r2.error);
-
-const r3 = await client.revealMd('vesper:2012_jumping');
-if (!r3.ok) console.error('Reveal failed:', r3.error);
-
-const r4 = await client.revealPdf('vesper:2012_jumping');
-if (!r4.ok) console.error('Reveal PDF failed:', r4.error);
-```
-
-### 2. `Bibliography` Engine
-
-The `Bibliography` class loads a CSL-JSON file into memory and provides fuzzy search capabilities suitable for finding citations based on partial queries (author, year, title).
-
-**Import:**
-```typescript
-import { Bibliography, CslEntry } from '@butterfill/agent-tools';
-```
-
-**Usage:**
-```typescript
-// Optional: Pass CSL-JSON path. Defaults to process.env.BIB_JSON
-// Non-blocking constructor; explicitly load bibliography
-const bib = new Bibliography('/Users/me/endnote/phd_biblio.json');
-await bib.load();
-
-console.log(`Loaded ${bib.length} entries.`);
-
-// Fuzzy search (Author, Year, Title, ID)
-const limit = 5;
-const results: CslEntry[] = bib.search('davidson reasons', limit);
-
-results.forEach(entry => {
-  console.log(entry.id);    // e.g., "davidson:1963_actions"
-  console.log(entry.title); // e.g., "Actions, Reasons, and Causes"
-  console.log(entry.type);  // e.g., "article-journal"
-});
-```
-
-## Type Definitions
-
-### `CslEntry`
-Represents a parsed CSL-JSON bibliography item.
-
-```typescript
-interface CslEntry {
-  id: string;
-  type: string;
-  title?: string;
-  author?: { 
-    family?: string; 
-    given?: string 
-  }[];
-  issued?: { 
-    'date-parts'?: (number | string)[][] 
-  };
-  [key: string]: any; // Allows for dynamic CSL fields
-}
-```
-
-## API Reference
-
-### `class AgentTools`
-
-*   `constructor(papersDir?: string)`
-*   `getMdPath(key: string): Promise<string | null>`
-    *   Returns absolute path to `.md` file.
-*   `getPdfPath(key: string): Promise<string | null>`
-    *   Returns absolute path to `.pdf` file.
-*   `getMdContent(key: string): Promise<string | null>`
-    *   Resolves the Markdown path with `cite2md`, then reads and returns the file contents directly. The source is returned verbatim rather than passing the full document through child-process stdout.
-*   `getBibEntry(key: string): Promise<string | null>`
-    *   Returns the raw BibTeX entry string.
-*   `openVsCode(key: string): Promise<ActionResult>`
-*   `openVsCodeInsiders(key: string): Promise<ActionResult>`
-*   `openPdf(key: string): Promise<ActionResult>`
-*   `revealMd(key: string): Promise<ActionResult>`
-*   `revealPdf(key: string): Promise<ActionResult>`
-*   `getKeysFromDraft(draftPath: string): Promise<string[]>`
-    *   Runs `draft2keys` and returns a normalized array of keys from the draft.
-*   `rgSources(args: string[]): Promise<string | null>`
-    *   Runs `rg-sources` with the given flags/args and returns raw stdout (or null if empty).
-*   `rgSourcesLines(args: string[]): Promise<string[]>`
-    *   Convenience: runs `rg-sources` and returns output split into lines.
-
-### `class Bibliography`
-
-*   `constructor(jsonPath?: string)`
-    *   Initializes the bibliography instance. Does NOT load data automatically.
-*   `load(): Promise<void>`
-    *   Loads the JSON file from disk. Call before searching a file-backed instance.
-*   `static fromEntries(entries: readonly CslEntry[]): Bibliography`
-    *   Builds an immediately searchable index without filesystem I/O. Copies array membership, retaining entry objects; treat records as immutable after indexing. Callers own validation, deduplication and source precedence.
-*   `hasPlausibleMatch(query: string): boolean`
-    *   Reports normalized key containment or full query-token coverage using the ranking engine's existing prefix/typo matcher. Blank queries match any nonempty index. Useful for deciding when to broaden search: `search()` may pad results with weak candidates, so array length alone is not evidence of relevance. This method does not change search ranking or filter results.
-*   `search(query: string, limit: number = 20): CslEntry[]`
-    *   Performs a fuzzy search.
-*   `get length(): number`
-
-## Error Handling
-
-- Getter methods in `AgentTools` return `null` only when the command succeeds (exit code 0) but there is no output (e.g., no result). If the executable is missing, they throw `ToolNotFoundError`. Other command failures throw `ToolExecutionError`, which exposes a numeric `exitCode` when the process exited normally, a string `errorCode` for process errors such as `EACCES` or `ERR_CHILD_PROCESS_STDIO_MAXBUFFER`, and captured stderr when available.
-- Captured CLI output uses a 64 MiB `execFile` buffer instead of Node's 1 MiB default. `getMdContent()` avoids that buffer entirely for document contents by resolving the path and reading the Markdown file directly.
-- UI action methods in `AgentTools` return `Promise<ActionResult>`. If spawning the command fails with ENOENT, they do not throw; instead they resolve with `{ ok: false, error }` for convenience in UI flows. If you prefer exceptions for actions too, you can check `!res.ok` and throw manually.
-- `Bibliography`: If the JSON file cannot be loaded, `bib.entries` defaults to an empty array and `bib.length` will be 0.
-
-Example:
-```ts
-try {
-  const path = await client.getMdPath('some:key');
-  if (!path) {
-    // Command succeeded but no result
-  }
-} catch (err) {
-  if (err instanceof ToolNotFoundError) {
-    // Ask user to run ./install.sh or set PATH
-  } else if (err instanceof ToolExecutionError) {
-    console.error('CLI failed:', err.exitCode ?? err.errorCode, err.stderr);
-  } else {
-    throw err;
-  }
-}
-```
 ## Configuration
 
-The wrappers respect the standard environment variables used by the shell tools:
+`ReferenceCatalog` uses:
 
-| Variable | Description |
-| :--- | :--- |
-| `PAPERS_DIR` | Root directory for Markdown sources and PDFs. |
-| `BIB_JSON` | Path to the CSL-JSON bibliography file (for `Bibliography` class). |
-| `BIB_FILE` | Path to the BibTeX file (used indirectly by `cite2bib`). |
+- `BIB_JSON` — authoritative/cited CSL-JSON source; default `~/endnote/phd_biblio.json`.
+- `ZOTERO_JSON` — complete/secondary CSL-JSON source; default `~/endnote/zotero-export.json`.
+- `ZOTERO_RECENT_DAYS` — recent-secondary window; default `14`.
+
+The primary source must be usable at `start()`. The secondary source is optional. Duplicate keys keep the first record within a source and primary metadata wins when a key occurs in both sources.
+
+Consumers should use `catalog.ready` to decide whether catalogue-backed capabilities are available after `start()`/`reload()`. Readiness means a usable primary snapshot exists, not merely that the configured path currently exists; a retained last-good snapshot remains ready across temporary deletion or malformed writes.
+
+## Reference search
+
+```ts
+import { ReferenceCatalog } from '@butterfill/agent-tools';
+
+const catalog = new ReferenceCatalog();
+await catalog.start();
+
+// Automatic policy: primary plus recent secondary-only records, widening to
+// the complete union for citation-key-shaped queries or weak primary matches.
+const results = catalog.search('davidson reasons', 5);
+
+// Applications can request source membership structurally. UI tokens such as
+// bibq-w's !z are intentionally not part of this API.
+const secondary = catalog.search('mind', 20, 'secondary');
+const allRefs = catalog.search('mind', 20, 'all');
+
+const relaxed = catalog.resolveKey('davidson1963actions');
+const doiRecords = catalog.findByDoi('https://doi.org/10.1000/example');
+
+catalog.close();
+```
+
+`search()` returns ranked candidates without a relevance threshold. `searchHits()` returns exactly the same ordering with raw score and field evidence for consumers that need to interpret ranking. Scores are implementation details and are not a cross-language contract.
+
+`getByKey()` is exact. `resolveKey()` adds case-insensitive and punctuation-insensitive lookup when unique. `getRawByKey()` preserves the authoritative CSL row when a consumer must return CSL without catalogue identity normalization.
+
+Citation keys are catalogue identities; DOIs are non-unique indexed attributes. `findByDoi()` normalizes `doi:` and doi.org forms and returns every matching canonical record in catalogue order. The catalogue deliberately does not infer that same-DOI records are duplicates.
+
+The TypeScript catalogue polls for file changes (two seconds by default), publishes replacement indexes atomically, exposes `revision`, and retains the last good source snapshot across malformed or missing intermediate writes.
+
+## `AgentTools`
+
+```ts
+import { AgentTools } from '@butterfill/agent-tools';
+
+const client = new AgentTools();
+const markdown = await client.getMdContent('vesper:2012_jumping');
+const pdfPath = await client.getPdfPath('vesper:2012_jumping');
+const bibtex = await client.getBibEntry('vesper:2012_jumping');
+```
+
+Catalogue membership and local artifacts are deliberately separate: a reference may be searchable even when no Markdown, PDF or BibTeX is available.

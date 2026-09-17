@@ -1,168 +1,198 @@
-import json
-import os
+from __future__ import annotations
+
 import re
 import unicodedata
-from rapidfuzz import process, fuzz
+from dataclasses import dataclass
+from typing import Any, Iterable
+
+from rapidfuzz import fuzz, process
+
+CslEntry = dict[str, Any]
 
 
-def _normalize(value):
+def normalize_search_text(value: Any) -> str:
     text = unicodedata.normalize("NFKD", str(value or ""))
-    text = text.encode("ascii", "ignore").decode("ascii")
-    text = text.lower()
+    text = text.encode("ascii", "ignore").decode("ascii").lower()
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return re.sub(r"\s+", " ", text).strip()
 
 
-def _compact(value):
-    return re.sub(r"[^a-z0-9]+", "", _normalize(value))
+def compact_search_text(value: Any) -> str:
+    return re.sub(r"[^a-z0-9]+", "", normalize_search_text(value))
 
 
-def _tokens(value):
-    normalized = _normalize(value)
-    if not normalized:
-        return []
-    return normalized.split()
+def _tokens(value: Any) -> list[str]:
+    normalized = normalize_search_text(value)
+    return normalized.split() if normalized else []
 
 
-def _token_matches(token, field_tokens):
+def _token_matches(token: str, field_tokens: list[str]) -> bool:
     return any(candidate == token or candidate.startswith(token) for candidate in field_tokens)
 
 
-class Bibliography:
-    def __init__(self, json_path: str = None):
-        self.path = json_path or os.environ.get("BIB_JSON", os.path.expanduser("~/endnote/phd_biblio.json"))
-        self.entries = []
-        self._search_corpus = []
-        self._search_records = []
-        # Note: constructor no longer loads automatically to avoid blocking.
-        self._loaded = False
+def _plausible_token_matches(token: str, field_tokens: list[str]) -> bool:
+    return any(
+        candidate == token
+        or candidate.startswith(token)
+        or fuzz.ratio(token, candidate) >= 82
+        for candidate in field_tokens
+    )
 
-    def __len__(self):
+
+@dataclass(frozen=True, slots=True)
+class SearchHit:
+    entry: CslEntry
+    score: float
+    match_basis: tuple[str, ...]
+
+
+class BibliographyIndex:
+    """Pure in-memory bibliography ranker; source/file policy lives elsewhere."""
+
+    def __init__(self, entries: Iterable[CslEntry]):
+        self.entries = list(entries)
+        self._search_corpus: list[str] = []
+        self._search_records: list[dict[str, Any]] = []
+        for entry in self.entries:
+            year = self._get_year(entry)
+            authors = self._get_authors(entry)
+            title = str(entry.get("title") or "")
+            key = str(entry.get("id") or entry.get("citation-key") or "")
+            full = " ".join([year, authors, title, key])
+            self._search_corpus.append(full)
+            self._search_records.append(
+                {
+                    "entry": entry,
+                    "key": key,
+                    "key_norm": normalize_search_text(key),
+                    "key_compact": compact_search_text(key),
+                    "key_tokens": _tokens(key),
+                    "authors": authors,
+                    "authors_norm": normalize_search_text(authors),
+                    "authors_tokens": _tokens(authors),
+                    "title": title,
+                    "title_norm": normalize_search_text(title),
+                    "title_tokens": _tokens(title),
+                    "year": year,
+                    "year_norm": normalize_search_text(year),
+                    "year_tokens": _tokens(year),
+                    "full": full,
+                    "full_norm": normalize_search_text(full),
+                    "full_tokens": _tokens(full),
+                }
+            )
+
+    @classmethod
+    def from_entries(cls, entries: Iterable[CslEntry]) -> "BibliographyIndex":
+        return cls(entries)
+
+    def __len__(self) -> int:
         return len(self.entries)
 
-    def load(self):
-        if not os.path.exists(self.path):
-            self.entries = []
-            self._search_corpus = []
-            self._search_records = []
-            return
+    def has_plausible_match(self, query: str) -> bool:
+        if not query.strip():
+            return bool(self.entries)
+        info = self._query_info(query)
+        return any(
+            self._is_key_candidate(info, record)
+            or (
+                info["tokens"]
+                and all(
+                    _plausible_token_matches(token, record["full_tokens"])
+                    for token in info["tokens"]
+                )
+            )
+            for record in self._search_records
+        )
 
-        with open(self.path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            self.entries = data.get('items', data) if isinstance(data, dict) else data
-        
-        # Prepare search records for field-aware ranking.
-        self._search_corpus = []
-        self._search_records = []
-        for e in self.entries:
-            year = self._get_year(e)
-            authors_str = self._get_authors(e)
-            title = str(e.get('title') or '')
-            key = str(e.get('id') or e.get('citation-key') or '')
-            parts = [
-                year,
-                authors_str,
-                title,
-                key
-            ]
-            full = " ".join(parts)
-            self._search_corpus.append(full)
-            self._search_records.append({
-                "entry": e,
-                "key": key,
-                "key_norm": _normalize(key),
-                "key_compact": _compact(key),
-                "key_tokens": _tokens(key),
-                "authors": authors_str,
-                "authors_norm": _normalize(authors_str),
-                "authors_tokens": _tokens(authors_str),
-                "title": title,
-                "title_norm": _normalize(title),
-                "title_tokens": _tokens(title),
-                "year": year,
-                "year_norm": _normalize(year),
-                "year_tokens": _tokens(year),
-                "full": full,
-                "full_norm": _normalize(full),
-                "full_tokens": _tokens(full),
-            })
-        self._loaded = True
+    def search(self, query: str, limit: int = 20) -> list[CslEntry]:
+        return [hit.entry for hit in self.search_hits(query, limit)]
 
-    async def load_async(self):
-        import asyncio
-        await asyncio.to_thread(self.load)
-
-    def search(self, query: str, limit: int = 20):
-        if not self._loaded and not self.entries:
-             # Logic implies it's empty, but let's be explicitly silent 
-             # only if we attempted to load. 
-             pass 
-         
-        if not self.entries:
+    def search_hits(self, query: str, limit: int = 20) -> list[SearchHit]:
+        if not self.entries or limit <= 0:
             return []
-        if not query: return self.entries[:limit]
+        if not query:
+            return [
+                SearchHit(entry=entry, score=0.0, match_basis=())
+                for entry in self.entries[:limit]
+            ]
 
         query_info = self._query_info(query)
         candidate_indexes = self._candidate_indexes(query_info, limit)
         ranked = sorted(
-            ((idx, self._search_records[idx]) for idx in candidate_indexes),
-            key=lambda pair: (-self._score_record(query_info, pair[1]), pair[0])
+            (
+                (
+                    idx,
+                    self._search_records[idx],
+                    self._score_record(query_info, self._search_records[idx]),
+                )
+                for idx in candidate_indexes
+            ),
+            key=lambda row: (-row[2], row[0]),
         )
-        return [record["entry"] for _, record in ranked[:limit]]
+        return [
+            SearchHit(
+                entry=record["entry"],
+                score=float(score),
+                match_basis=self._match_basis(query_info, record),
+            )
+            for _, record, score in ranked[:limit]
+        ]
 
     @staticmethod
-    def _get_authors(e):
-        authors_list = e.get('author')
-        if isinstance(authors_list, list):
-            return " ".join([a.get('family', '') for a in authors_list if isinstance(a, dict)])
+    def _get_authors(entry: CslEntry) -> str:
+        authors = entry.get("author")
+        if isinstance(authors, list):
+            return " ".join(
+                str(author.get("family", ""))
+                for author in authors
+                if isinstance(author, dict)
+            )
         return ""
 
     @staticmethod
-    def _get_year(e):
+    def _get_year(entry: CslEntry) -> str:
         try:
-            issued = e.get('issued')
+            issued = entry.get("issued")
             if issued:
-                date_parts = issued.get('date-parts')
-                # Expect list of lists: [[2018, 1, 1]] or [[2018]]
-                if date_parts and isinstance(date_parts, list) and len(date_parts) > 0:
-                    first_part = date_parts[0]
-                    if isinstance(first_part, list) and len(first_part) > 0:
-                        return str(first_part[0])
+                date_parts = issued.get("date-parts")
+                if date_parts and isinstance(date_parts, list):
+                    first = date_parts[0]
+                    if isinstance(first, list) and first:
+                        return str(first[0])
         except Exception:
             pass
         return ""
 
     @staticmethod
-    def _query_info(query):
+    def _query_info(query: str) -> dict[str, Any]:
         return {
             "raw": str(query or ""),
-            "norm": _normalize(query),
-            "compact": _compact(query),
+            "norm": normalize_search_text(query),
+            "compact": compact_search_text(query),
             "tokens": _tokens(query),
         }
 
-    def _candidate_indexes(self, query, limit):
+    def _candidate_indexes(self, query: dict[str, Any], limit: int) -> set[int]:
         candidate_limit = min(len(self.entries), max(limit * 10, 200))
         candidates = {
-            idx for _, _, idx in process.extract(
+            idx
+            for _, _, idx in process.extract(
                 query["raw"],
                 self._search_corpus,
                 limit=candidate_limit,
-                scorer=fuzz.partial_ratio
+                scorer=fuzz.partial_ratio,
             )
         }
-
         for idx, record in enumerate(self._search_records):
             if self._is_key_candidate(query, record) or self._has_full_token_coverage(query, record):
                 candidates.add(idx)
-
         if len(candidates) < limit:
             candidates.update(range(min(len(self.entries), limit)))
-
         return candidates
 
     @staticmethod
-    def _is_key_candidate(query, record):
+    def _is_key_candidate(query: dict[str, Any], record: dict[str, Any]) -> bool:
         query_compact = query["compact"]
         key_compact = record["key_compact"]
         return bool(
@@ -176,14 +206,14 @@ class Bibliography:
         )
 
     @staticmethod
-    def _has_full_token_coverage(query, record):
+    def _has_full_token_coverage(query: dict[str, Any], record: dict[str, Any]) -> bool:
         query_tokens = query["tokens"]
-        if not query_tokens:
-            return False
-        return all(_token_matches(token, record["full_tokens"]) for token in query_tokens)
+        return bool(query_tokens) and all(
+            _token_matches(token, record["full_tokens"]) for token in query_tokens
+        )
 
     @staticmethod
-    def _score_record(query, record):
+    def _score_record(query: dict[str, Any], record: dict[str, Any]) -> float:
         query_norm = query["norm"]
         query_compact = query["compact"]
         query_tokens = query["tokens"]
@@ -209,27 +239,44 @@ class Bibliography:
                 score += 25
 
         if not query_tokens:
-            return score
+            return float(score)
 
-        field_tokens = {
-            "key": record["key_tokens"],
-            "authors": record["authors_tokens"],
-            "title": record["title_tokens"],
-            "year": record["year_tokens"],
-            "full": record["full_tokens"],
-        }
-        covered = sum(1 for token in query_tokens if _token_matches(token, field_tokens["full"]))
+        covered = sum(
+            1 for token in query_tokens if _token_matches(token, record["full_tokens"])
+        )
         score += 8 * covered / len(query_tokens)
 
-        has_author_token = any(_token_matches(token, field_tokens["authors"]) for token in query_tokens)
+        has_author_token = any(
+            _token_matches(token, record["authors_tokens"]) for token in query_tokens
+        )
         has_title_or_key_token = any(
-            _token_matches(token, field_tokens["title"]) or _token_matches(token, field_tokens["key"])
+            _token_matches(token, record["title_tokens"])
+            or _token_matches(token, record["key_tokens"])
             for token in query_tokens
         )
         if has_author_token and has_title_or_key_token:
             score += 12
 
-        if any(_token_matches(token, field_tokens["year"]) for token in query_tokens):
+        if any(_token_matches(token, record["year_tokens"]) for token in query_tokens):
             score += 8
 
-        return score
+        return float(score)
+
+    @staticmethod
+    def _match_basis(query: dict[str, Any], record: dict[str, Any]) -> tuple[str, ...]:
+        basis: set[str] = set()
+        query_compact = query["compact"]
+        key_compact = record["key_compact"]
+        if query_compact and key_compact and (
+            query_compact == key_compact
+            or (len(query_compact) >= 3 and key_compact.startswith(query_compact))
+        ):
+            basis.add("key")
+        tokens = query["tokens"]
+        if any(_token_matches(token, record["authors_tokens"]) for token in tokens):
+            basis.add("author")
+        if any(_token_matches(token, record["title_tokens"]) for token in tokens):
+            basis.add("title")
+        if any(_token_matches(token, record["year_tokens"]) for token in tokens):
+            basis.add("year")
+        return tuple(sorted(basis))
