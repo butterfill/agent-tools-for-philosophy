@@ -8,7 +8,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -16,14 +20,21 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install system dependencies on Ubuntu
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq fd-find ripgrep
+          sudo apt-get install -y jq fd-find ripgrep shellcheck
           if command -v fdfind >/dev/null 2>&1; then
             sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
           fi
-          python -m pip install --disable-pip-version-check -e ./python pytest pytest-asyncio
+
+      - name: Install system dependencies on macOS
+        if: runner.os == 'macOS'
+        run: brew install jq fd ripgrep shellcheck
+
+      - name: Install Python dependencies
+        run: python -m pip install --disable-pip-version-check -e ./python pytest pytest-asyncio
 
       - name: Run CLI test suite
         run: ./run-tests.sh
