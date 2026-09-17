@@ -1,8 +1,6 @@
 import json
 from datetime import datetime, timezone
 
-import pytest
-
 from agent_tools import ReferenceCatalog
 from agent_tools.reference_catalog import is_recent, parse_references
 
@@ -96,6 +94,7 @@ def test_readiness_uses_last_good_snapshot_not_current_file_state(tmp_path):
     write(p, [{"id": "a:2020_x", "type": "article"}])
     c = ReferenceCatalog(p, s, warn=lambda _: None)
     assert c.ready
+    assert len(c) == 1
     p.unlink()
     assert c.ready
     assert c.keys() == ["a:2020_x"]
