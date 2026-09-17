@@ -248,16 +248,24 @@ with_tmpfile() {
 }
 
 suite_failures_for_recap() {
-  # Prints unique failure lines (first line only) for harness recap.
+  # Prints unique failure lines (first line only). Keep this Bash 3-compatible:
+  # macOS still ships Bash 3.2, which has indexed but not associative arrays.
   if [[ ${#__suite_failure_lines[@]} -eq 0 ]]; then
     return 0
   fi
-  local -A seen=()
-  local line
+  local line previous duplicate
+  local -a seen=()
   for line in "${__suite_failure_lines[@]}"; do
-    if [[ -z "${seen[$line]:-}" ]]; then
+    duplicate=0
+    for previous in "${seen[@]}"; do
+      if [[ "$previous" == "$line" ]]; then
+        duplicate=1
+        break
+      fi
+    done
+    if [[ "$duplicate" -eq 0 ]]; then
       printf '%s\n' "$line"
-      seen["$line"]=1
+      seen+=("$line")
     fi
   done
 }
