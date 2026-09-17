@@ -207,19 +207,30 @@ class ReferenceCatalog:
         await asyncio.to_thread(self.load)
 
     def reload(self) -> None:
+        previous_sources = self._sources
         next_sources = [
-            self._read_source(self.primary_path, self._sources[0], optional=False),
-            self._read_source(self.secondary_path, self._sources[1], optional=True),
+            self._read_source(self.primary_path, previous_sources[0], optional=False),
+            self._read_source(self.secondary_path, previous_sources[1], optional=True),
         ]
-        if any(source.raw != previous.raw for source, previous in zip(next_sources, self._sources)):
-            try:
-                snapshot = self._build(next_sources)
-            except Exception as exc:
-                self._warn(f"Bibliography index reload failed: {exc}")
-            else:
-                self._snapshot = snapshot
-                self._revision += 1
+        content_changed = any(
+            source.raw != previous.raw
+            for source, previous in zip(next_sources, previous_sources)
+        )
+        if not content_changed:
+            self._sources = next_sources
+            return
+        try:
+            snapshot = self._build(next_sources)
+        except Exception as exc:
+            self._warn(f"Bibliography index reload failed: {exc}")
+            self._sources = [
+                source if source.raw == previous.raw else previous
+                for source, previous in zip(next_sources, previous_sources)
+            ]
+            return
+        self._snapshot = snapshot
         self._sources = next_sources
+        self._revision += 1
 
     def get_record_by_key(self, key: str) -> ReferenceRecord | None:
         self._ensure_fresh()
@@ -291,7 +302,8 @@ class ReferenceCatalog:
         self,
         path: Path,
         previous: _SourceSnapshot,
-        *,        optional: bool,
+        *,
+        optional: bool,
     ) -> _SourceSnapshot:
         path_key = str(path)
         try:
