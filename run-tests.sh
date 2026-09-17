@@ -125,38 +125,41 @@ for suite in "${suites[@]}"; do
 
   suite_output=$(mktemp)
   failure_file=$(mktemp)
+  skip_file=$(mktemp)
 
   set +e
-  HARNESS_FAILURE_FILE="$failure_file" bash "$suite" >"$suite_output" 2>&1
+  HARNESS_FAILURE_FILE="$failure_file" HARNESS_SKIP_FILE="$skip_file" \
+    bash "$suite" >"$suite_output" 2>&1
   suite_rc=$?
   set -e
+
+  skip_reason=""
+  if [[ -s "$skip_file" ]]; then
+    skip_reason=$(<"$skip_file")
+  fi
 
   failure_lines=""
   if [[ -s "$failure_file" ]]; then
     failure_lines=$(<"$failure_file")
-  elif [[ "$suite_rc" -ne 0 && "$suite_rc" -ne 2 && -s "$suite_output" ]]; then
+  elif [[ "$suite_rc" -ne 0 && -z "$skip_reason" && -s "$suite_output" ]]; then
     # A suite can abort before complete_suite writes HARNESS_FAILURE_FILE (for
-    # example because a top-level dependency/import failed). Preserve the tail
-    # so the final recap remains useful instead of saying only "no details".
+    # example because a top-level dependency/import or syntax error occurred).
+    # Preserve the tail so the final recap remains actionable.
     failure_lines=$(tail -n 20 "$suite_output" | sed '/^[[:space:]]*$/d')
   fi
 
   cat "$suite_output"
-  rm -f "$suite_output" "$failure_file"
+  rm -f "$suite_output" "$failure_file" "$skip_file"
 
-  case "$suite_rc" in
-    0)
-      passed_suites=$((passed_suites + 1))
-      ;;
-    2)
-      skipped_suites=$((skipped_suites + 1))
-      ;;
-    *)
-      failed_suites=$((failed_suites + 1))
-      failure_suite_names+=("$suite")
-      failure_suite_lines+=("$failure_lines")
-      ;;
-  esac
+  if [[ "$suite_rc" -eq 0 ]]; then
+    passed_suites=$((passed_suites + 1))
+  elif [[ "$suite_rc" -eq 2 && -n "$skip_reason" ]]; then
+    skipped_suites=$((skipped_suites + 1))
+  else
+    failed_suites=$((failed_suites + 1))
+    failure_suite_names+=("$suite")
+    failure_suite_lines+=("$failure_lines")
+  fi
 done
 
 elapsed=$SECONDS
