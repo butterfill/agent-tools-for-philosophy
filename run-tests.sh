@@ -76,7 +76,9 @@ declare -a suites=()
 if [[ ${#requested_suites[@]} -gt 0 ]]; then
   suites=("${requested_suites[@]}")
 else
-  mapfile -t suites < <(discover_all_suites)
+  while IFS= read -r suite; do
+    [[ -n "$suite" ]] && suites+=("$suite")
+  done < <(discover_all_suites)
 fi
 
 if [[ -n "$match_pattern" ]]; then
