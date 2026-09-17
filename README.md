@@ -53,7 +53,7 @@ Eleven command-line tools for working with your research library:
 | **`cite2bib`** | Get the BibTeX entry for a citation or key |
 | **`cite2pdf`** | Locate the PDF file for a citation or key |
 | **`draft2keys`** | Extract all BibTeX keys from a draft document |
-| **`find-bib`** | Search your bibliography by author, title, year, or abstract |
+| **`find-bib`** | Filter the complete canonical bibliography catalogue by author, title, year, DOI, or abstract |
 | **`path2key`** | Extract the BibTeX key from a filename or path |
 | **`rg-sources`** | Search full text of all papers using ripgrep |
 | **`rg-abstracts`** | Search Markdown abstracts using ripgrep |
@@ -82,7 +82,13 @@ cd agent-tools-for-philosophy
 Before using the tools, set these environment variables (add to your `.bashrc`, `.zshrc`, etc.):
 
 ```bash
-# Path to your BibTeX file
+# Required primary/cited CSL-JSON bibliography
+export BIB_JSON="$HOME/endnote/phd_biblio.json"
+
+# Optional complete Zotero CSL-JSON export
+export ZOTERO_JSON="$HOME/endnote/zotero-export.json"
+
+# Path to your BibTeX file (used for BibTeX artifact commands)
 export BIB_FILE="$HOME/documents/research/my-bibliography.bib"
 
 # Path to your directory of markdown papers
@@ -128,18 +134,19 @@ cite2md --cat vesper:2012_jumping | glow
 - macOS or Linux
 
 ### Required Dependencies
-- **`jq`** — JSON processing (required for `find-bib`, `cite2bib`, `cite2md`; [installation guide](https://github.com/jqlang/jq))
+- **`jq`** — JSON processing (required for `cite2bib` and `cite2md`; [installation guide](https://github.com/jqlang/jq))
+- **Python 3 + pip** — used to install/run the canonical `ReferenceCatalog` backing `find-bib`
 - **`fd`** — Fast file finding; alias to `fd` if it’s `fdfind` on your platform ([installation guide](https://github.com/sharkdp/fd#installation))
 - **`rg`** (ripgrep) — Fast text search ([installation guide](https://github.com/BurntSushi/ripgrep#installation))
 
 Install on macOS:
 ```bash
-brew install jq fd ripgrep
+brew install jq fd ripgrep python
 ```
 
 Install on Ubuntu/Debian:
 ```bash
-sudo apt install jq fd-find ripgrep
+sudo apt install jq fd-find ripgrep python3 python3-pip
 ln -s $(command -v fdfind) ~/.local/bin/fd
 ```
 
@@ -151,6 +158,8 @@ ln -s $(command -v fdfind) ~/.local/bin/fd
 - On macOS, upgrade Bash via `brew install bash` so that built-in utilities like `mapfile` are available when running the test suite (`./run-tests.sh`).
 
 ### Environment Variables
+- **`$BIB_JSON`** — Required primary/cited CSL-JSON bibliography; defaults to `$HOME/endnote/phd_biblio.json`
+- **`$ZOTERO_JSON`** — Optional complete-library CSL-JSON export; defaults to `$HOME/endnote/zotero-export.json`
 - **`$BIB_FILE`** — Must point to your BibTeX file
 - **`$PAPERS_DIR`** — Must point to your directory of `.md` files
   - Each markdown filename should include the BibTeX key with colons removed
@@ -178,9 +187,10 @@ Run the install script:
 ```
 
 This will:
-1. Copy all executable tools to a directory on your PATH (tries `~/syncthing/bin`, `~/.local/bin`, or `~/bin`)
-2. Copy help text files to `help-text/` subdirectory
-3. Run the test suite to verify everything works
+1. Install the canonical Python `ReferenceCatalog` runtime and dependencies beside the CLI tools
+2. Copy all executable tools to a directory on your PATH (tries `~/syncthing/bin`, `~/.local/bin`, or `~/bin`)
+3. Copy help text files to `help-text/` subdirectory
+4. Run the test suite to verify everything works
 
 If the installer reports that the target directory is not on your PATH, add it to your shell profile:
 
@@ -373,7 +383,7 @@ bash tests/rg-sources.e2e.test.sh
 - Tests call scripts via `./` prefix (assuming current directory)
 - Some tests use fixtures in `tests/fixtures/`
 - `tests/shellcheck.test.sh` runs shellcheck across every shell script; install `shellcheck` locally so it doesn't skip
-- The `find-bib` tests use `tests/fixtures/phd_biblio.json` (CSL-JSON)
+- The `find-bib` tests use primary and secondary CSL-JSON fixtures to protect canonical union/precedence behavior
 - The `cite2bib` tests use `tests/fixtures/sample.bib`
 
 ---

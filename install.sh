@@ -39,6 +39,29 @@ fi
 
 echo "Installing tools to: $TARGET_DIR"
 
+command -v python3 >/dev/null 2>&1 || {
+  echo "install.sh: python3 is required for the canonical ReferenceCatalog runtime used by find-bib" >&2
+  exit 2
+}
+python3 -m pip --version >/dev/null 2>&1 || {
+  echo "install.sh: python3 pip is required to install the canonical ReferenceCatalog runtime used by find-bib" >&2
+  exit 2
+}
+
+PYTHON_RUNTIME_DIR="$TARGET_DIR/.agent-tools-python"
+PYTHON_RUNTIME_TMP=$(mktemp -d "$TARGET_DIR/.agent-tools-python.tmp.XXXXXX")
+cleanup_runtime_tmp() {
+  rm -rf "$PYTHON_RUNTIME_TMP"
+}
+trap cleanup_runtime_tmp EXIT
+
+PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet --target "$PYTHON_RUNTIME_TMP" "$SCRIPT_DIR/python"
+rm -rf "$PYTHON_RUNTIME_DIR"
+mv "$PYTHON_RUNTIME_TMP" "$PYTHON_RUNTIME_DIR"
+trap - EXIT
+
+echo "Installed canonical ReferenceCatalog runtime to: $PYTHON_RUNTIME_DIR"
+
 installed=()
 
 shopt -s nullglob
@@ -80,6 +103,10 @@ esac
 # Run test suite after installation
 if [[ -x "$SCRIPT_DIR/run-tests.sh" ]]; then
   echo "Running test suite..."
-  # Prepend install dir to PATH so tests that rely on installed names work
-  PATH="$TARGET_DIR:$PATH" "$SCRIPT_DIR/run-tests.sh"
+  # Prepend install dir to PATH so tests that rely on installed names work.
+  # Expose the installed Python runtime so the repository copy of find-bib can
+  # exercise the same canonical ReferenceCatalog implementation during tests.
+  PATH="$TARGET_DIR:$PATH" \
+    PYTHONPATH="$PYTHON_RUNTIME_DIR${PYTHONPATH:+:$PYTHONPATH}" \
+    "$SCRIPT_DIR/run-tests.sh"
 fi

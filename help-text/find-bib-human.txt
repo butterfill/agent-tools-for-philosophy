@@ -1,4 +1,4 @@
-find-bib — search a CSL-JSON bibliography for matching entries
+find-bib — filter the canonical bibliography catalogue by fields
 
 Usage:
   find-bib [filters...] [--cat]
@@ -10,24 +10,39 @@ Filters (repeatable; case-insensitive substrings):
   --title TXT      Match title text
   --abstract TXT   Match abstract text
 
-Environment:
-  - BIB_JSON (default: $HOME/endnote/phd_biblio.json) — CSL-JSON library
-  - BIB_FILE (used indirectly by cite2bib when --cat is present)
+Matching:
+  - Different fields are combined with AND.
+  - Repeating the same field is OR (for example, --author steward --author velleman).
+  - Matching ignores case, repeated whitespace, and braces.
+
+Canonical catalogue:
+  - BIB_JSON is the required primary/cited CSL-JSON source (default: $HOME/endnote/phd_biblio.json).
+  - ZOTERO_JSON is the optional complete-library CSL-JSON source (default: $HOME/endnote/zotero-export.json).
+  - find-bib searches the full canonical union, including secondary-only records.
+  - If the same citation key exists in both sources, primary metadata is used.
+  - Citation keys identify records; shared DOI values are not used to de-duplicate them.
 
 Output:
-  - default: print matching keys (one per line)
+  - default: print matching citation keys, one per line
   - --cat: pipe each key through cite2bib and emit full BibTeX entries
 
+Environment:
+  - BIB_JSON and ZOTERO_JSON configure ReferenceCatalog source files.
+  - BIB_FILE is used only indirectly by cite2bib when --cat is present.
+
 Dependencies:
-  - jq, cite2bib (required when --cat is specified)
+  - Python 3 and the canonical agent-tools Python runtime (installed by install.sh)
+  - cite2bib when --cat is specified
+  - jq is no longer used by find-bib
 
 Workflow tips:
-  - Chain multiple filters to zero in on specific works (e.g. author + title keyword).
-  - Store keys in a file, then feed them into cite2md or cite2pdf for fulltext.
-  - Use --cat when exporting a quick BibTeX bundle from filtered results.
+  - Use field filters for precise catalogue discovery; use bibq/research search when you want fuzzy ranking.
+  - Store keys in a file, then feed them into cite2md or cite2bib one at a time.
+  - A secondary-only catalogue record can be a valid search result even when BibTeX, Markdown, or PDF is unavailable locally.
 
-Examples (list → then read one):
+Examples:
   find-bib --author vesper --year 2013 --title jump > keys.txt
+  find-bib --author steward --author velleman
+  find-bib --abstract "joint action"
   key=$(sed -n '1p' keys.txt)
   cite2bib "$key"
-  # Or: p=$(cite2md "$key")
