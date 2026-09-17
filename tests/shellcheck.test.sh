@@ -15,7 +15,10 @@ if ! command -v shellcheck >/dev/null 2>&1; then
   skip_suite "shellcheck not found; install shellcheck to enable this test"
 fi
 
-mapfile -d '' scripts < <(
+declare -a scripts=()
+while IFS= read -r -d '' path; do
+  scripts+=("$path")
+done < <(
   git ls-files -z | while IFS= read -r -d '' path; do
     [[ -f "$path" ]] || continue
     case "$path" in
