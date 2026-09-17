@@ -1,6 +1,8 @@
 import json
 from datetime import datetime, timezone
 
+import pytest
+
 from agent_tools import ReferenceCatalog
 from agent_tools.reference_catalog import is_recent, parse_references
 
@@ -112,6 +114,33 @@ def test_last_good_and_optional_secondary(tmp_path):
     assert c.keys() == ["Cullen:2014_individual"]
     write(s, [{"id": "b:2021_y", "type": "article"}])
     assert "b:2021_y" in c.keys()
+
+
+def test_rebuild_failure_keeps_last_good_source_state_and_retries(tmp_path, monkeypatch):
+    p = tmp_path / "primary.json"
+    s = tmp_path / "secondary.json"
+    write(p, [{"id": "a:2020_x", "type": "article", "title": "Old"}])
+    c = ReferenceCatalog(p, s, warn=lambda _: None)
+    c.load()
+    old_revision = c.revision
+
+    original_build = c._build
+    failed_once = False
+
+    def fail_once(sources):
+        nonlocal failed_once
+        if not failed_once and sources[0].raw != c._sources[0].raw:
+            failed_once = True
+            raise RuntimeError("synthetic rebuild failure")
+        return original_build(sources)
+
+    monkeypatch.setattr(c, "_build", fail_once)
+    write(p, [{"id": "b:2021_y", "type": "article", "title": "New"}])
+
+    assert c.keys() == ["a:2020_x"]
+    assert c.revision == old_revision
+    assert c.keys() == ["b:2021_y"]
+    assert c.revision == old_revision + 1
 
 
 def test_parse_and_recent_strictness():
