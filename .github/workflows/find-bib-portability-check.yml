@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/find-bib-portability-check.yml'
 
+# Temporary matrix used to verify the hotfix against stock macOS Bash 3.2.
 jobs:
   install-and-test:
     strategy:
