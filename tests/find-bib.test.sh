@@ -18,6 +18,22 @@ export PATH="$REPO_ROOT:$PATH"
 
 require_command python3 rg
 
+# find-bib is a canonical field-filter consumer, not a fuzzy-search consumer.
+# Shadow rapidfuzz with a module that raises if imported so this remains true
+# even on developer/CI machines where the real dependency is installed.
+_field_filters_do_not_import_rapidfuzz() {
+  local tmpdir="$1"
+  local out
+  cat > "$tmpdir/rapidfuzz.py" <<'PY'
+raise ModuleNotFoundError("rapidfuzz intentionally blocked for find-bib field-filter test")
+PY
+  out=$(PYTHONPATH="$tmpdir${PYTHONPATH:+:$PYTHONPATH}" \
+    BIB_JSON="$FIXTURE_JSON" ZOTERO_JSON="$FIXTURE_ZOTERO" \
+    "$TOOL" --author steward --year 2009 --title animal)
+  rg -q '^steward:2009_animal$' <<< "$out"
+}
+it_in_tmpdir "field filters do not import rapidfuzz" _field_filters_do_not_import_rapidfuzz
+
 # 1) Existing field-filter behavior is preserved over canonical entries.
 it "finds Steward 2009 Animal Agency by field filters" \
   has_line_matching '^steward:2009_animal$' \
